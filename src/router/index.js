@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 
 const routes = [
   {
@@ -35,7 +35,7 @@ const routes = [
     name: 'Dynamic',
     component: () => import('../views/dynamicBackground.vue'),
     //props: true,
-  },{
+  }, {
     path: '/background',
     name: 'Background',
     component: () => import('../views/background.vue'),
@@ -44,7 +44,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL),
+  history: createWebHashHistory(process.env.BASE_URL),
   routes
 })
 

@@ -18,8 +18,8 @@
         transition: 'opacity 0.8s ease-in-out'
       }"
     />
-    <div class="app-container">
-      <div class="app-header">
+    <div class="app-container" :class="{ 'immersive-mode': isImmersiveMode }">
+      <div class="app-header" :style="{ opacity: isImmersiveMode ? 0 : 1, pointerEvents: isImmersiveMode ? 'none' : 'auto' }">
         <div class="app-header-left">
           <i class="fa fa-music" style="font-size: 24px"></i>
           <p class="app-name">Neon</p>
@@ -59,7 +59,7 @@
           </button>
         </div>
       </div>
-      <div class="app-content">
+      <div class="app-content" :style="{ opacity: isImmersiveMode ? 0 : 1, pointerEvents: isImmersiveMode ? 'none' : 'auto' }">
         <div class="app-sidebar">
           <router-link :to="{ name: 'Home' }">
             <p class="app-sidebar-link">
@@ -126,7 +126,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["tracks", "index", "nowPlay", "isPlaying", "currentTrackCover"]),
+    ...mapState(["tracks", "index", "nowPlay", "isPlaying", "currentTrackCover", "isImmersiveMode"]),
     ...mapGetters([]),
   },
   watch: {
@@ -287,6 +287,7 @@ body {
     height: 100%;
     overflow: hidden;
     padding: 16px 24px 24px 0;
+    transition: opacity 0.8s ease-in-out;
   }
 
   &-header {
@@ -296,6 +297,7 @@ body {
     width: 100%;
     padding: 16px 24px;
     position: relative;
+    transition: opacity 0.8s ease-in-out;
 
     &-left,
     &-right {

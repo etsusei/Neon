@@ -5,3 +5,4 @@ export const PushSearchTracks = "PushSearchTracks";
 export const SetIsPlaying = "SetIsPlaying";
 export const SetCurrentTrackCover = "SetCurrentTrackCover";
 export const SetAudioIntensity = "SetAudioIntensity";
+export const ToggleImmersiveMode = "ToggleImmersiveMode";

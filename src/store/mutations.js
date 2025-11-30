@@ -47,6 +47,10 @@ const mutations = {
     },
     [types.SetAudioIntensity](state, intensity) {
         state.audioIntensity = intensity;
+    },
+    [types.ToggleImmersiveMode](state) {
+        state.isImmersiveMode = !state.isImmersiveMode;
+        console.log('[mutations] ToggleImmersiveMode:', state.isImmersiveMode);
     }
 }
 export default mutations;

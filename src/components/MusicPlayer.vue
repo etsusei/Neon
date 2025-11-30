@@ -3,14 +3,20 @@
     <div class="musicplayer">
       <div class="musicplayer-left">
         <div class="album-info">
-          <div
+          <div 
             class="player-cover__item"
+            @click="toggleImmersiveMode"
             :style="{ 
               backgroundImage: `url(${currentTrack.cover})`,
               transform: `scale(${albumScale})`,
               transition: 'transform 0.1s ease-out'
             }"
-          ></div>
+          >
+            <!-- 覆盖层 -->
+            <div class="cover-overlay">
+              <i class="fa fa-eye"></i>
+            </div>
+          </div>
           <div class="album-right">
             <div class="album-right_name">{{ currentTrack.name }}</div>
             <div class="album-right_info">
@@ -509,6 +515,10 @@ export default {
         this.smoothedIntensity = 0.0;
       }
     },
+    
+    toggleImmersiveMode() {
+      this.$store.commit('ToggleImmersiveMode');
+    }
   },
   created() {
     this.initialPlayer();
@@ -577,6 +587,13 @@ export default {
   height: 80px;
   border-radius: 15px;
   margin-top: -30px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: scale(1.05) !important;
+  }
 
   &:before {
     content: "";
@@ -606,6 +623,34 @@ export default {
     border-radius: 15px;
   }
 }
+
+/* 专辑封面覆盖层 */
+.cover-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 80px;
+  height: 80px;
+  border-radius: 15px;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 3;
+
+  i {
+    font-size: 32px;
+    color: white;
+    opacity: 0.9;
+  }
+}
+
+.player-cover__item:hover .cover-overlay {
+  opacity: 1;
+}
+
 
 .album-right {
   display: flex;

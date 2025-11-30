@@ -10,7 +10,8 @@ const state = {
     currentIndex: null,
     isPlaying: false,
     currentTrackCover: '',
-    audioIntensity: 0.0  // 0.0 - 1.0, represents low-frequency audio intensity
+    audioIntensity: 0.0,  // 0.0 - 1.0, represents low-frequency audio intensity
+    isImmersiveMode: false  // 沉浸式背景观看模式
 }
 
 export default state;
