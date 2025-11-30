@@ -11,8 +11,8 @@
         :style="{ backgroundImage: `url(${track.cover})` }"
       ></div>
       <div class="info">
-        <div class="songname">{{ track.name }}</div>
-        <div class="albuminfo">{{ track.artist }}</div>
+        <div class="songname" :title="track.name">{{ track.name }}</div>
+        <div class="albuminfo" :title="track.artist">{{ track.artist }}</div>
       </div>
     </div>
   </div>
@@ -96,15 +96,22 @@ export default {
   width: 150px;
   overflow: hidden;
 }
+
 .songname {
   font-size: 16px;
   text-align: left;
   overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: help; /* 提示用户可以悬停查看 */
 }
 .albuminfo {
   font-size: 10px;
   text-align: left;
   border-bottom-style: ridge;
   overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: help; /* 提示用户可以悬停查看 */
 }
 </style>
