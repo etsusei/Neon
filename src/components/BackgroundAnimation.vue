@@ -28,6 +28,7 @@ export default {
       heightHandle: null,
       lastFrame: null,
       thisFrame: null,
+      isPaused: false,
     };
   },
   methods: {
@@ -105,6 +106,12 @@ export default {
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
         this.gl.uniform1f(this.widthHandle, window.innerWidth);
         this.gl.uniform1f(this.heightHandle, window.innerHeight);
+        
+        // 即使在暂停状态下，也要渲染一帧以更新画面，避免黑屏
+        if (this.isPaused) {
+          this.gl.uniform1f(this.timeHandle, this.time);
+          this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+        }
       }
     },
     compileShader(shaderSource, shaderType) {
@@ -131,6 +138,11 @@ export default {
       return attributeLocation;
     },
     draw() {
+      // 如果暂停，停止渲染
+      if (this.isPaused) {
+        return;
+      }
+      
       //Update time
       this.thisFrame = Date.now();
       this.time += (this.thisFrame - this.lastFrame) / 5000;
@@ -142,6 +154,17 @@ export default {
       //Draw a triangle strip connecting vertices 0-4
       this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
       requestAnimationFrame(this.draw);
+    },
+    pauseRendering() {
+      console.log('[BackgroundAnimation] Rendering paused');
+      this.isPaused = true;
+    },
+    resumeRendering() {
+      if (!this.isPaused) return;
+      console.log('[BackgroundAnimation] Rendering resumed');
+      this.isPaused = false;
+      this.lastFrame = Date.now(); // 重置时间，避免时间跳跃
+      this.draw();
     },
   },
   mounted() {

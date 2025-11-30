@@ -1,12 +1,16 @@
 <template>
   <div>
     <!-- 静态背景 - 始终渲染，通过opacity控制显示 -->
-    <background-animation :style="{ 
-      opacity: isPlaying ? 0 : 1,
-      transition: 'opacity 0.8s ease-in-out'
-    }" />
+    <background-animation 
+      ref="backgroundAnimation"
+      :style="{ 
+        opacity: isPlaying ? 0 : 1,
+        transition: 'opacity 0.8s ease-in-out'
+      }" 
+    />
     <!-- 动态背景 - 始终渲染，通过opacity控制显示 -->
     <dynamic-background 
+      ref="dynamicBackground"
       :visible="isPlaying" 
       :coverImage="currentCover"
       :style="{ 
@@ -117,7 +121,8 @@ export default {
       day: "",
       dayjs: null,
       dateToday: new Date(),
-      currentCover: ''
+      currentCover: '',
+      renderSwitchTimer: null // 渲染切换定时器
     };
   },
   computed: {
@@ -147,6 +152,26 @@ export default {
     isPlaying(newVal) {
       console.log('[App.vue] isPlaying changed from Vuex:', newVal);
       console.log('[App.vue] Current cover:', this.currentCover);
+      
+      // 清除之前的延迟器
+      if (this.renderSwitchTimer) {
+        clearTimeout(this.renderSwitchTimer);
+      }
+      
+      // 延迟1秒切换渲染
+      this.renderSwitchTimer = setTimeout(() => {
+        if (newVal) {
+          // 播放中：暂停待机背景渲染，恢复动态背景渲染
+          console.log('[App.vue] Pausing idle background, resuming dynamic background');
+          this.$refs.backgroundAnimation?.pauseRendering();
+          this.$refs.dynamicBackground?.resumeRendering();
+        } else {
+          // 停止：暂停动态背景渲染，恢复待机背景渲染
+          console.log('[App.vue] Pausing dynamic background, resuming idle background');
+          this.$refs.dynamicBackground?.pauseRendering();
+          this.$refs.backgroundAnimation?.resumeRendering();
+        }
+      }, 1000);
     }
   },
   methods: {
@@ -161,6 +186,12 @@ export default {
     
     console.log('[App.vue] mounted - using Vuex isPlaying state');
   },
+  beforeUnmount() {
+    // 清理定时器
+    if (this.renderSwitchTimer) {
+      clearTimeout(this.renderSwitchTimer);
+    }
+  }
 };
 </script>
 

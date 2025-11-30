@@ -56,7 +56,10 @@ export default {
       },
       
       // 颜色过渡速度
-      colorTransitionSpeed: 0.05
+      colorTransitionSpeed: 0.05,
+      
+      // 渲染控制
+      isPaused: false
     };
   },
   computed: {
@@ -259,6 +262,11 @@ export default {
     },
     
     animate() {
+      // 如果暂停，停止渲染
+      if (this.isPaused) {
+        return;
+      }
+      
       this.animationId = requestAnimationFrame(this.animate);
       
       // Update time uniform
@@ -379,6 +387,31 @@ export default {
     onWindowResize() {
       this.renderer.setSize(window.innerWidth, window.innerHeight);
       this.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+      
+      // 即使在暂停状态下，也要渲染一帧以更新画面，避免黑屏
+      if (this.isPaused && this.renderer && this.scene && this.camera) {
+        this.renderer.render(this.scene, this.camera);
+      }
+    },
+    
+    pauseRendering() {
+      console.log('[DynamicBackground] Rendering paused');
+      this.isPaused = true;
+      if (this.animationId) {
+        cancelAnimationFrame(this.animationId);
+        this.animationId = null;
+      }
+    },
+    
+    resumeRendering() {
+      if (!this.isPaused) return;
+      console.log('[DynamicBackground] Rendering resumed');
+      this.isPaused = false;
+      // 重置时钟，避免时间跳跃
+      if (this.clock) {
+        this.clock.start();
+      }
+      this.animate();
     }
   }
 };
