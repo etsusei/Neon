@@ -1,0 +1,243 @@
+{
+    "songs": [
+        {
+            "name": "Activation",
+            "id": 5268348,
+            "pst": 0,
+            "t": 0,
+            "ar": [
+                {
+                    "id": 896513,
+                    "name": "Music therapy",
+                    "tns": [],
+                    "alias": []
+                }
+            ],
+            "alia": [],
+            "pop": 90,
+            "st": 0,
+            "rt": "",
+            "fee": 0,
+            "v": 6,
+            "crbt": null,
+            "cf": "",
+            "al": {
+                "id": 512848,
+                "name": "神奇的α波 潜意识疗法 纤纤美人",
+                "picUrl": "https://p1.music.126.net/QNzkhvfHqeoiWN0b-4vIgw==/120946279073328.jpg",
+                "tns": [],
+                "pic": 120946279073328
+            },
+            "dt": 474000,
+            "h": {
+                "br": 320000,
+                "fid": 0,
+                "size": 18976435,
+                "vd": 3914
+            },
+            "m": {
+                "br": 192000,
+                "fid": 0,
+                "size": 11385878,
+                "vd": 6738
+            },
+            "l": {
+                "br": 128000,
+                "fid": 0,
+                "size": 7590599,
+                "vd": 7054
+            },
+            "a": null,
+            "cd": "1",
+            "no": 4,
+            "rtUrl": null,
+            "ftype": 0,
+            "rtUrls": [],
+            "djId": 0,
+            "copyright": 2,
+            "s_id": 0,
+            "mark": 131072,
+            "originCoverType": 0,
+            "originSongSimpleData": null,
+            "tagPicList": null,
+            "resourceState": true,
+            "version": 6,
+            "songJumpInfo": null,
+            "entertainmentTags": null,
+            "single": 0,
+            "noCopyrightRcmd": null,
+            "mst": 9,
+            "cp": 0,
+            "rtype": 0,
+            "rurl": null,
+            "mv": 0,
+            "publishTime": 1056988800000
+        },
+        {
+            "name": "Floating in the City",
+            "id": 5268325,
+            "pst": 0,
+            "t": 0,
+            "ar": [
+                {
+                    "id": 896513,
+                    "name": "Music therapy",
+                    "tns": [],
+                    "alias": []
+                }
+            ],
+            "alia": [],
+            "pop": 100,
+            "st": 0,
+            "rt": "",
+            "fee": 0,
+            "v": 7,
+            "crbt": null,
+            "cf": "",
+            "al": {
+                "id": 512845,
+                "name": "神奇的α波 潜意识疗法 舒眠",
+                "picUrl": "https://p1.music.126.net/cZsPhjGaVX8yPTEDJabWng==/35184372105675.jpg",
+                "tns": [],
+                "pic": 35184372105675
+            },
+            "dt": 470000,
+            "h": null,
+            "m": null,
+            "l": {
+                "br": 96000,
+                "fid": 0,
+                "size": 5651031,
+                "vd": 38325
+            },
+            "a": null,
+            "cd": "1",
+            "no": 3,
+            "rtUrl": null,
+            "ftype": 0,
+            "rtUrls": [],
+            "djId": 0,
+            "copyright": 2,
+            "s_id": 0,
+            "mark": 131072,
+            "originCoverType": 0,
+            "originSongSimpleData": null,
+            "tagPicList": null,
+            "resourceState": true,
+            "version": 7,
+            "songJumpInfo": null,
+            "entertainmentTags": null,
+            "single": 0,
+            "noCopyrightRcmd": null,
+            "mst": 9,
+            "cp": 0,
+            "rtype": 0,
+            "rurl": null,
+            "mv": 0,
+            "publishTime": 1056988800000
+        }
+    ],
+    "privileges": [
+        {
+            "id": 5268348,
+            "fee": 0,
+            "payed": 0,
+            "st": 0,
+            "pl": 320000,
+            "dl": 320000,
+            "sp": 7,
+            "cp": 1,
+            "subp": 1,
+            "cs": false,
+            "maxbr": 320000,
+            "fl": 320000,
+            "toast": false,
+            "flag": 0,
+            "preSell": false,
+            "playMaxbr": 320000,
+            "downloadMaxbr": 320000,
+            "rscl": null,
+            "freeTrialPrivilege": {
+                "resConsumable": false,
+                "userConsumable": false
+            },
+            "chargeInfoList": [
+                {
+                    "rate": 128000,
+                    "chargeUrl": null,
+                    "chargeMessage": null,
+                    "chargeType": 0
+                },
+                {
+                    "rate": 192000,
+                    "chargeUrl": null,
+                    "chargeMessage": null,
+                    "chargeType": 0
+                },
+                {
+                    "rate": 320000,
+                    "chargeUrl": null,
+                    "chargeMessage": null,
+                    "chargeType": 0
+                },
+                {
+                    "rate": 999000,
+                    "chargeUrl": null,
+                    "chargeMessage": null,
+                    "chargeType": 1
+                }
+            ]
+        },
+        {
+            "id": 5268325,
+            "fee": 0,
+            "payed": 0,
+            "st": 0,
+            "pl": 96000,
+            "dl": 96000,
+            "sp": 7,
+            "cp": 1,
+            "subp": 1,
+            "cs": false,
+            "maxbr": 96000,
+            "fl": 96000,
+            "toast": false,
+            "flag": 0,
+            "preSell": false,
+            "playMaxbr": 96000,
+            "downloadMaxbr": 96000,
+            "rscl": null,
+            "freeTrialPrivilege": {
+                "resConsumable": false,
+                "userConsumable": false
+            },
+            "chargeInfoList": [
+                {
+                    "rate": 128000,
+                    "chargeUrl": null,
+                    "chargeMessage": null,
+                    "chargeType": 0
+                },
+                {
+                    "rate": 192000,
+                    "chargeUrl": null,
+                    "chargeMessage": null,
+                    "chargeType": 0
+                },
+                {
+                    "rate": 320000,
+                    "chargeUrl": null,
+                    "chargeMessage": null,
+                    "chargeType": 0
+                },
+                {
+                    "rate": 999000,
+                    "chargeUrl": null,
+                    "chargeMessage": null,
+                    "chargeType": 1
+                }
+            ]
+        }
+    ],
+    "code": 200
+}

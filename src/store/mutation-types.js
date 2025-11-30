@@ -1,0 +1,7 @@
+export const PushTracks = "PushTracks";
+export const GetIndex = "GetIndex";
+export const PushIndex = "PushIndex";
+export const PushSearchTracks = "PushSearchTracks";
+export const SetIsPlaying = "SetIsPlaying";
+export const SetCurrentTrackCover = "SetCurrentTrackCover";
+export const SetAudioIntensity = "SetAudioIntensity";

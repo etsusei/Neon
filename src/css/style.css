@@ -1,0 +1,12 @@
+body {
+  background-color: #000;    
+  margin: 0;
+  overflow: hidden;
+  background-repeat: no-repeat;
+}
+#canvas
+{
+	postion: relative;
+	-webkit-filter:blur(20px);
+	filter:blur(20px)
+}

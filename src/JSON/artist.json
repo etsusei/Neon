@@ -1,0 +1,576 @@
+{
+    "artist": {
+        "img1v1Id": 109951163806722670,
+        "topicPerson": 0,
+        "followed": false,
+        "alias": [],
+        "picId": 109951163806415330,
+        "briefDesc": "我是ExclusiveYao，来自上海。喜欢Jpop，最喜欢的乐队是川谷绘音的indigo la end 和 ゲスの極み乙女 。\n在B站有上传翻弹视频以及音乐相关内容。\n梦想是组一个日系乐队。",
+        "musicSize": 5,
+        "albumSize": 1,
+        "picUrl": "https://p1.music.126.net/513PCm5sj_vFkg5G3y4SFA==/109951163806415330.jpg",
+        "img1v1Url": "https://p1.music.126.net/Dp_Zf9m4t7s3_IOxKb5GpQ==/109951163806722668.jpg",
+        "trans": "",
+        "name": "ExclusiveYao",
+        "id": 34744867,
+        "publishTime": 0,
+        "accountId": 9922962,
+        "picId_str": "109951163806415330",
+        "img1v1Id_str": "109951163806722668",
+        "mvSize": 0
+    },
+    "hotSongs": [
+        {
+            "rtUrls": [],
+            "ar": [
+                {
+                    "id": 34744867,
+                    "name": "ExclusiveYao"
+                }
+            ],
+            "al": {
+                "id": 87516173,
+                "name": "Neon of Night",
+                "picUrl": "https://p2.music.126.net/w4DRqUC2UcEF74Bx3y_4YA==/109951164884279462.jpg",
+                "pic_str": "109951164884279462",
+                "pic": 109951164884279460
+            },
+            "st": 3,
+            "noCopyrightRcmd": null,
+            "songJumpInfo": null,
+            "ftype": 0,
+            "rtype": 0,
+            "rurl": null,
+            "pst": 0,
+            "alia": [],
+            "pop": 10,
+            "rt": "",
+            "mst": 9,
+            "cp": 0,
+            "crbt": null,
+            "cf": "",
+            "dt": 200000,
+            "h": {
+                "br": 320000,
+                "fid": 0,
+                "size": 8002917,
+                "vd": 6409
+            },
+            "l": {
+                "br": 128000,
+                "fid": 0,
+                "size": 3201193,
+                "vd": 10832
+            },
+            "rtUrl": null,
+            "no": 3,
+            "fee": 8,
+            "djId": 0,
+            "mv": 0,
+            "v": 4,
+            "t": 0,
+            "cd": "01",
+            "a": null,
+            "m": {
+                "br": 192000,
+                "fid": 0,
+                "size": 4801768,
+                "vd": 8983
+            },
+            "name": "1 A.M Streets",
+            "id": 1438897773,
+            "privilege": {
+                "id": 1438897773,
+                "fee": 8,
+                "payed": 0,
+                "st": 0,
+                "pl": 128000,
+                "dl": 0,
+                "sp": 7,
+                "cp": 1,
+                "subp": 1,
+                "cs": false,
+                "maxbr": 999000,
+                "fl": 128000,
+                "toast": false,
+                "flag": 0,
+                "preSell": false,
+                "playMaxbr": 999000,
+                "downloadMaxbr": 999000,
+                "rscl": null,
+                "freeTrialPrivilege": {
+                    "resConsumable": false,
+                    "userConsumable": false
+                },
+                "chargeInfoList": [
+                    {
+                        "rate": 128000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 0
+                    },
+                    {
+                        "rate": 192000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 1
+                    },
+                    {
+                        "rate": 320000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 1
+                    },
+                    {
+                        "rate": 999000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 1
+                    }
+                ]
+            }
+        },
+        {
+            "rtUrls": [],
+            "ar": [
+                {
+                    "id": 34744867,
+                    "name": "ExclusiveYao"
+                }
+            ],
+            "al": {
+                "id": 87516173,
+                "name": "Neon of Night",
+                "picUrl": "https://p2.music.126.net/w4DRqUC2UcEF74Bx3y_4YA==/109951164884279462.jpg",
+                "pic_str": "109951164884279462",
+                "pic": 109951164884279460
+            },
+            "st": 3,
+            "noCopyrightRcmd": null,
+            "songJumpInfo": null,
+            "ftype": 0,
+            "rtype": 0,
+            "rurl": null,
+            "pst": 0,
+            "alia": [],
+            "pop": 10,
+            "rt": "",
+            "mst": 9,
+            "cp": 0,
+            "crbt": null,
+            "cf": "",
+            "dt": 200000,
+            "h": {
+                "br": 320000,
+                "fid": 0,
+                "size": 8002917,
+                "vd": 27949
+            },
+            "l": {
+                "br": 128000,
+                "fid": 0,
+                "size": 3201193,
+                "vd": 32409
+            },
+            "rtUrl": null,
+            "no": 4,
+            "fee": 8,
+            "djId": 0,
+            "mv": 0,
+            "v": 4,
+            "t": 0,
+            "cd": "01",
+            "a": null,
+            "m": {
+                "br": 192000,
+                "fid": 0,
+                "size": 4801768,
+                "vd": 30508
+            },
+            "name": "1 A.M Streets(Off Melody)",
+            "id": 1440637657,
+            "privilege": {
+                "id": 1440637657,
+                "fee": 8,
+                "payed": 0,
+                "st": 0,
+                "pl": 128000,
+                "dl": 0,
+                "sp": 7,
+                "cp": 1,
+                "subp": 1,
+                "cs": false,
+                "maxbr": 999000,
+                "fl": 128000,
+                "toast": false,
+                "flag": 0,
+                "preSell": false,
+                "playMaxbr": 999000,
+                "downloadMaxbr": 999000,
+                "rscl": null,
+                "freeTrialPrivilege": {
+                    "resConsumable": false,
+                    "userConsumable": false
+                },
+                "chargeInfoList": [
+                    {
+                        "rate": 128000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 0
+                    },
+                    {
+                        "rate": 192000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 1
+                    },
+                    {
+                        "rate": 320000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 1
+                    },
+                    {
+                        "rate": 999000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 1
+                    }
+                ]
+            }
+        },
+        {
+            "rtUrls": [],
+            "ar": [
+                {
+                    "id": 34744867,
+                    "name": "ExclusiveYao"
+                }
+            ],
+            "al": {
+                "id": 87516173,
+                "name": "Neon of Night",
+                "picUrl": "https://p2.music.126.net/w4DRqUC2UcEF74Bx3y_4YA==/109951164884279462.jpg",
+                "pic_str": "109951164884279462",
+                "pic": 109951164884279460
+            },
+            "st": 3,
+            "noCopyrightRcmd": null,
+            "songJumpInfo": null,
+            "ftype": 0,
+            "rtype": 0,
+            "rurl": null,
+            "pst": 0,
+            "alia": [],
+            "pop": 5,
+            "rt": "",
+            "mst": 9,
+            "cp": 0,
+            "crbt": null,
+            "cf": "",
+            "dt": 242872,
+            "h": {
+                "br": 320000,
+                "fid": 0,
+                "size": 9717595,
+                "vd": -18275
+            },
+            "l": {
+                "br": 128000,
+                "fid": 0,
+                "size": 3887064,
+                "vd": -13902
+            },
+            "rtUrl": null,
+            "no": 2,
+            "fee": 8,
+            "djId": 0,
+            "mv": 0,
+            "v": 3,
+            "t": 0,
+            "cd": "01",
+            "a": null,
+            "m": {
+                "br": 192000,
+                "fid": 0,
+                "size": 5830574,
+                "vd": -15647
+            },
+            "name": "Neon of Night",
+            "id": 1438895972,
+            "privilege": {
+                "id": 1438895972,
+                "fee": 8,
+                "payed": 0,
+                "st": 0,
+                "pl": 128000,
+                "dl": 0,
+                "sp": 7,
+                "cp": 1,
+                "subp": 1,
+                "cs": false,
+                "maxbr": 999000,
+                "fl": 128000,
+                "toast": false,
+                "flag": 0,
+                "preSell": false,
+                "playMaxbr": 999000,
+                "downloadMaxbr": 999000,
+                "rscl": null,
+                "freeTrialPrivilege": {
+                    "resConsumable": false,
+                    "userConsumable": false
+                },
+                "chargeInfoList": [
+                    {
+                        "rate": 128000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 0
+                    },
+                    {
+                        "rate": 192000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 1
+                    },
+                    {
+                        "rate": 320000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 1
+                    },
+                    {
+                        "rate": 999000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 1
+                    }
+                ]
+            }
+        },
+        {
+            "rtUrls": [],
+            "ar": [
+                {
+                    "id": 34744867,
+                    "name": "ExclusiveYao"
+                }
+            ],
+            "al": {
+                "id": 87516173,
+                "name": "Neon of Night",
+                "picUrl": "https://p2.music.126.net/w4DRqUC2UcEF74Bx3y_4YA==/109951164884279462.jpg",
+                "pic_str": "109951164884279462",
+                "pic": 109951164884279460
+            },
+            "st": 0,
+            "noCopyrightRcmd": null,
+            "songJumpInfo": null,
+            "ftype": 0,
+            "rtype": 0,
+            "rurl": null,
+            "pst": 0,
+            "alia": [],
+            "pop": 5,
+            "rt": "",
+            "mst": 9,
+            "cp": 0,
+            "crbt": null,
+            "cf": "",
+            "dt": 89063,
+            "h": {
+                "br": 320004,
+                "fid": 0,
+                "size": 3565236,
+                "vd": 30082
+            },
+            "l": {
+                "br": 128004,
+                "fid": 0,
+                "size": 1426120,
+                "vd": 34412
+            },
+            "rtUrl": null,
+            "no": 1,
+            "fee": 0,
+            "djId": 0,
+            "mv": 0,
+            "v": 2,
+            "t": 0,
+            "cd": "01",
+            "a": null,
+            "m": {
+                "br": 192004,
+                "fid": 0,
+                "size": 2139159,
+                "vd": 32702
+            },
+            "name": "Intro",
+            "id": 1816075932,
+            "privilege": {
+                "id": 1816075932,
+                "fee": 0,
+                "payed": 0,
+                "st": 0,
+                "pl": 320000,
+                "dl": 999000,
+                "sp": 7,
+                "cp": 1,
+                "subp": 1,
+                "cs": false,
+                "maxbr": 999000,
+                "fl": 320000,
+                "toast": false,
+                "flag": 1,
+                "preSell": false,
+                "playMaxbr": 999000,
+                "downloadMaxbr": 999000,
+                "rscl": null,
+                "freeTrialPrivilege": {
+                    "resConsumable": false,
+                    "userConsumable": false
+                },
+                "chargeInfoList": [
+                    {
+                        "rate": 128000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 0
+                    },
+                    {
+                        "rate": 192000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 0
+                    },
+                    {
+                        "rate": 320000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 0
+                    },
+                    {
+                        "rate": 999000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 1
+                    }
+                ]
+            }
+        },
+        {
+            "rtUrls": [],
+            "ar": [
+                {
+                    "id": 34744867,
+                    "name": "ExclusiveYao"
+                }
+            ],
+            "al": {
+                "id": 87516173,
+                "name": "Neon of Night",
+                "picUrl": "https://p1.music.126.net/w4DRqUC2UcEF74Bx3y_4YA==/109951164884279462.jpg",
+                "pic_str": "109951164884279462",
+                "pic": 109951164884279460
+            },
+            "st": 3,
+            "noCopyrightRcmd": null,
+            "songJumpInfo": null,
+            "ftype": 0,
+            "rtype": 0,
+            "rurl": null,
+            "pst": 0,
+            "alia": [],
+            "pop": 5,
+            "rt": "",
+            "mst": 9,
+            "cp": 0,
+            "crbt": null,
+            "cf": "",
+            "dt": 301132,
+            "h": {
+                "br": 320001,
+                "fid": 0,
+                "size": 12047717,
+                "vd": 6502
+            },
+            "l": {
+                "br": 128001,
+                "fid": 0,
+                "size": 4819113,
+                "vd": 10959
+            },
+            "rtUrl": null,
+            "no": 1,
+            "fee": 8,
+            "djId": 0,
+            "mv": 0,
+            "v": 3,
+            "t": 0,
+            "cd": "01",
+            "a": null,
+            "m": {
+                "br": 192001,
+                "fid": 0,
+                "size": 7228648,
+                "vd": 9146
+            },
+            "name": "SANDWAVE(Instrumental)",
+            "id": 1852369772,
+            "privilege": {
+                "id": 1852369772,
+                "fee": 8,
+                "payed": 0,
+                "st": 0,
+                "pl": 128000,
+                "dl": 0,
+                "sp": 7,
+                "cp": 1,
+                "subp": 1,
+                "cs": false,
+                "maxbr": 999000,
+                "fl": 128000,
+                "toast": false,
+                "flag": 0,
+                "preSell": false,
+                "playMaxbr": 999000,
+                "downloadMaxbr": 999000,
+                "rscl": null,
+                "freeTrialPrivilege": {
+                    "resConsumable": false,
+                    "userConsumable": false
+                },
+                "chargeInfoList": [
+                    {
+                        "rate": 128000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 0
+                    },
+                    {
+                        "rate": 192000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 1
+                    },
+                    {
+                        "rate": 320000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 1
+                    },
+                    {
+                        "rate": 999000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 1
+                    }
+                ]
+            }
+        }
+    ],
+    "more": false,
+    "code": 200
+}
