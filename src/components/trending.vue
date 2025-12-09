@@ -88,11 +88,13 @@ export default {
       this.toPlay(index);
     },
     async download(track) {
+      const artistName = track.ar && track.ar[0] ? track.ar[0].name : 'Unknown';
+      const filename = `${track.name} - ${artistName}.mp3`;
+      
+      // 方法1: 尝试原接口
       const qualities = ['exhigh', 'standard'];
       const apiTemplate = (id, level) => 
         `https://api.kxzjoker.cn/api/163_music?url=https://y.music.163.com/m/song?id=${id}&userid=8719916627&dlt=0846&level=${level}&type=json`;
-      
-      const artistName = track.ar && track.ar[0] ? track.ar[0].name : 'Unknown';
       
       for (const quality of qualities) {
         try {
@@ -100,37 +102,51 @@ export default {
           const data = await response.json();
           
           if (data.status === 200 && data.url) {
-            const ext = data.level && data.level.includes('无损') ? '.flac' : '.mp3';
-            const filename = `${track.name} - ${artistName}${ext}`;
-            
-            console.log(`开始下载: ${filename} (${data.level || quality})`);
-            
-            try {
-              const fileResponse = await fetch(data.url);
-              const blob = await fileResponse.blob();
-              const blobUrl = URL.createObjectURL(blob);
-              
-              const link = document.createElement('a');
-              link.href = blobUrl;
-              link.download = filename;
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
-              
-              setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-              console.log(`下载完成: ${filename}`);
-            } catch (downloadErr) {
-              console.warn('Blob下载失败，尝试直接打开:', downloadErr);
-              window.open(data.url, '_blank');
-            }
+            console.log(`[下载] 原接口成功: ${filename}`);
+            await this.downloadFile(data.url, filename);
             return;
           }
         } catch (e) {
-          console.error(`音质 ${quality} 获取失败:`, e);
+          console.warn(`[下载] 原接口 ${quality} 失败`);
         }
       }
       
+      // 方法2: 使用代理接口
+      console.log('[下载] 原接口失败，尝试代理接口...');
+      try {
+        const proxyResponse = await fetch(`https://neon.zeabur.app/proxy?id=${track.id}`);
+        const proxyData = await proxyResponse.json();
+        
+        if (proxyData.code === 200 && proxyData.url) {
+          console.log(`[下载] 代理接口成功: ${filename}`);
+          await this.downloadFile(proxyData.url, filename);
+          return;
+        }
+      } catch (e) {
+        console.error('[下载] 代理接口也失败:', e);
+      }
+      
       alert('获取下载链接失败，请稍后重试');
+    },
+    async downloadFile(url, filename) {
+      try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+        console.log(`[下载] 完成: ${filename}`);
+      } catch (e) {
+        console.warn('[下载] Blob下载失败，尝试直接打开');
+        window.open(url, '_blank');
+      }
     },
     handleScroll(e) {
       const container = e.target;
