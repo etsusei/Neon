@@ -57,6 +57,9 @@ const mutations = {
     },
     [types.SetSeekTime](state, time) {
         state.seekTime = time;
+    },
+    [types.SetLyricDarkMode](state, isDark) {
+        state.lyricDarkMode = isDark;
     }
 }
 export default mutations;

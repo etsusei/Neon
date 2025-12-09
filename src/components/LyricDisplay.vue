@@ -1,5 +1,5 @@
 <template>
-  <div class="lyric-container" ref="container">
+  <div class="lyric-container" :class="{ 'dark-mode': lyricDarkMode }" ref="container">
     <div 
       class="lyric-content" 
       ref="content"
@@ -46,7 +46,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(['tracks', 'currentIndex', 'currentTime', 'isPlaying']),
+    ...mapState(['tracks', 'currentIndex', 'currentTime', 'isPlaying', 'lyricDarkMode']),
     currentTrack() {
       if (this.tracks && this.currentIndex !== null && this.tracks[this.currentIndex]) {
         return this.tracks[this.currentIndex];
@@ -255,6 +255,41 @@ export default {
   i {
     font-size: 32px;
     color: rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* 深色模式 - 深色背景时使用白色歌词 */
+.lyric-container.dark-mode {
+  .lyric-line {
+    color: rgba(255, 255, 255, 0.3);
+    
+    &.active {
+      color: rgba(255, 255, 255, 0.95);
+    }
+    
+    &.near {
+      color: rgba(255, 255, 255, 0.5);
+    }
+    
+    &.far {
+      color: rgba(255, 255, 255, 0.2);
+    }
+    
+    &:hover {
+      color: rgba(255, 255, 255, 0.7);
+    }
+  }
+  
+  .no-lyric {
+    color: rgba(255, 255, 255, 0.4);
+    
+    i {
+      color: rgba(255, 255, 255, 0.3);
+    }
+  }
+  
+  .loading i {
+    color: rgba(255, 255, 255, 0.4);
   }
 }
 </style>

@@ -306,6 +306,23 @@ export default {
         this.targetColors.color3 = colors[2];
         this.targetColors.color4 = colors[3];
         console.log('[DynamicBackground] Target colors updated');
+        
+        // 计算 uColor1 和 uColor4 的亮度来决定歌词颜色
+        // 使用相对亮度公式: L = 0.299*R + 0.587*G + 0.114*B
+        const luminance1 = 0.299 * colors[0].r + 0.587 * colors[0].g + 0.114 * colors[0].b;
+        const luminance4 = 0.299 * colors[3].r + 0.587 * colors[3].g + 0.114 * colors[3].b;
+        
+        // 取两个颜色中较暗的亮度作为判断标准
+        const minLuminance = Math.min(luminance1, luminance4);
+        
+        // 如果亮度低于 0.4（较暗），则启用深色模式（白色歌词）
+        const isDarkBackground = minLuminance < 0.4;
+        console.log('[DynamicBackground] Luminance - color1:', luminance1.toFixed(3), 
+                    'color4:', luminance4.toFixed(3), 
+                    'min:', minLuminance.toFixed(3), 
+                    'isDark:', isDarkBackground);
+        
+        this.$store.commit('SetLyricDarkMode', isDarkBackground);
       };
       img.onerror = (error) => {
         console.error('[DynamicBackground] Failed to load cover image:', error);

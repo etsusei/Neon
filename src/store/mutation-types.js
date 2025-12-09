@@ -8,3 +8,4 @@ export const SetAudioIntensity = "SetAudioIntensity";
 export const ToggleImmersiveMode = "ToggleImmersiveMode";
 export const SetCurrentTime = "SetCurrentTime";
 export const SetSeekTime = "SetSeekTime";
+export const SetLyricDarkMode = "SetLyricDarkMode"; // 歌词深色模式（背景太暗时启用白色歌词）
