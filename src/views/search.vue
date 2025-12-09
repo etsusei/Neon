@@ -1,10 +1,38 @@
 <template>
   <div class="search-warpper">
     <el-tabs type="border-card">
-      <el-tab-pane label="Song"><list-search :result="songResult"/></el-tab-pane>
-      <el-tab-pane label="Album"><search-album :result="albumResult" /></el-tab-pane>
-      <el-tab-pane label="Artist"><search-artist :result="artistResult" /></el-tab-pane>
-      <el-tab-pane label="List"><search-list :result="listResult"/></el-tab-pane>
+      <el-tab-pane label="Song">
+        <list-search 
+          :result="songResult" 
+          :loading="songLoading"
+          :hasMore="songHasMore"
+          @load-more="loadMoreSongs"
+        />
+      </el-tab-pane>
+      <el-tab-pane label="Album">
+        <search-album 
+          :result="albumResult" 
+          :loading="albumLoading"
+          :hasMore="albumHasMore"
+          @load-more="loadMoreAlbums"
+        />
+      </el-tab-pane>
+      <el-tab-pane label="Artist">
+        <search-artist 
+          :result="artistResult" 
+          :loading="artistLoading"
+          :hasMore="artistHasMore"
+          @load-more="loadMoreArtists"
+        />
+      </el-tab-pane>
+      <el-tab-pane label="List">
+        <search-list 
+          :result="listResult"
+          :loading="listLoading"
+          :hasMore="listHasMore"
+          @load-more="loadMoreLists"
+        />
+      </el-tab-pane>
     </el-tabs>
   </div>
 </template>
@@ -14,7 +42,10 @@ import listSearch from "../components/listSearch.vue"
 import searchAlbum from "../components/searchAlbum.vue"
 import searchArtist from "../components/searchArtist.vue"
 import searchList from "../components/searchList.vue"
-import {searchSongs,searchAlbums,searchArtists,searchLists} from "../api/neteaseApi"
+import {searchSongs,searchAlbums,searchArtists,searchLists,getSongsDetailBatch} from "../api/neteaseApi"
+
+const PAGE_SIZE = 20;
+
 export default {
     components:{
         listSearch,
@@ -25,40 +56,186 @@ export default {
     props:['keyword'],
     data(){
       return{
-        songResult:null,
-        albumResult:null,
-        artistResult:null,
-        listResult:null
+        // Song
+        songResult: [],
+        songOffset: 0,
+        songLoading: false,
+        songHasMore: true,
+        // Album
+        albumResult: [],
+        albumOffset: 0,
+        albumLoading: false,
+        albumHasMore: true,
+        // Artist
+        artistResult: [],
+        artistOffset: 0,
+        artistLoading: false,
+        artistHasMore: true,
+        // List
+        listResult: [],
+        listOffset: 0,
+        listLoading: false,
+        listHasMore: true
       }
     },
     methods:{
-      getSongs(){
-        searchSongs(this.keyword).then((result)=>{
-          if(result.data.code=="200"){
-            this.songResult=result.data.result.songs;
-          }
-        })
+      // ========== Song ==========
+      resetSongSearch() {
+        this.songResult = [];
+        this.songOffset = 0;
+        this.songHasMore = true;
       },
-      getAlbums(){
-        searchAlbums(this.keyword).then((result)=>{
-          if(result.data.code=="200"){
-            this.albumResult=result.data.result.albums;
+      async getSongs(isLoadMore = false) {
+        if (this.songLoading) return;
+        if (!isLoadMore) this.resetSongSearch();
+        
+        this.songLoading = true;
+        try {
+          const result = await searchSongs(this.keyword, this.songOffset, PAGE_SIZE);
+          if (result.data.code == "200" && result.data.result.songs) {
+            const songs = result.data.result.songs;
+            if (songs.length < PAGE_SIZE) this.songHasMore = false;
+            
+            // 使用官方API批量获取封面（一次请求，更可靠）
+            const songIds = songs.map(s => s.id);
+            const detailSongs = await getSongsDetailBatch(songIds);
+            
+            // 创建 ID 到封面的映射
+            const coverMap = {};
+            detailSongs.forEach(ds => {
+              if (ds && ds.al && ds.al.picUrl) {
+                coverMap[ds.id] = ds.al.picUrl;
+              }
+            });
+            
+            // 为每首歌设置封面
+            songs.forEach(song => {
+              song.album = song.album || {};
+              song.album.img1v1Url = coverMap[song.id] || song.album.picUrl || '';
+            });
+            
+            this.songResult = isLoadMore ? [...this.songResult, ...songs] : songs;
+            this.songOffset += songs.length;
+          } else {
+            this.songHasMore = false;
           }
-        })
+        } catch (e) {
+          console.error('搜索歌曲失败:', e);
+        } finally {
+          this.songLoading = false;
+        }
       },
-      getArtists(){
-        searchArtists(this.keyword).then((result)=>{
-          if(result.data.code=="200"){
-            this.artistResult=result.data.result.artists;
-          }
-        })
+      loadMoreSongs() {
+        if (this.songHasMore && !this.songLoading) this.getSongs(true);
       },
-      getLists(){
-        searchLists(this.keyword).then((result)=>{
-          if(result.data.code=="200"){
-            this.listResult=result.data.result.playlists;
+
+      // ========== Album ==========
+      resetAlbumSearch() {
+        this.albumResult = [];
+        this.albumOffset = 0;
+        this.albumHasMore = true;
+      },
+      async getAlbums(isLoadMore = false) {
+        if (this.albumLoading) return;
+        if (!isLoadMore) this.resetAlbumSearch();
+        
+        this.albumLoading = true;
+        try {
+          const result = await searchAlbums(this.keyword, this.albumOffset, PAGE_SIZE);
+          if (result.data.code == "200" && result.data.result.albums) {
+            const albums = result.data.result.albums;
+            if (albums.length < PAGE_SIZE) this.albumHasMore = false;
+            
+            this.albumResult = isLoadMore ? [...this.albumResult, ...albums] : albums;
+            this.albumOffset += albums.length;
+          } else {
+            this.albumHasMore = false;
           }
-        })
+        } catch (e) {
+          console.error('搜索专辑失败:', e);
+        } finally {
+          this.albumLoading = false;
+        }
+      },
+      loadMoreAlbums() {
+        if (this.albumHasMore && !this.albumLoading) this.getAlbums(true);
+      },
+
+      // ========== Artist ==========
+      resetArtistSearch() {
+        this.artistResult = [];
+        this.artistOffset = 0;
+        this.artistHasMore = true;
+      },
+      async getArtists(isLoadMore = false) {
+        if (this.artistLoading) return;
+        if (!isLoadMore) this.resetArtistSearch();
+        
+        this.artistLoading = true;
+        try {
+          const result = await searchArtists(this.keyword, this.artistOffset, PAGE_SIZE);
+          if (result.data.code == "200" && result.data.result.artists) {
+            const artists = result.data.result.artists;
+            if (artists.length < PAGE_SIZE) this.artistHasMore = false;
+            
+            this.artistResult = isLoadMore ? [...this.artistResult, ...artists] : artists;
+            this.artistOffset += artists.length;
+          } else {
+            this.artistHasMore = false;
+          }
+        } catch (e) {
+          console.error('搜索艺人失败:', e);
+        } finally {
+          this.artistLoading = false;
+        }
+      },
+      loadMoreArtists() {
+        if (this.artistHasMore && !this.artistLoading) this.getArtists(true);
+      },
+
+      // ========== List ==========
+      resetListSearch() {
+        this.listResult = [];
+        this.listOffset = 0;
+        this.listHasMore = true;
+      },
+      async getLists(isLoadMore = false) {
+        if (this.listLoading) return;
+        if (!isLoadMore) this.resetListSearch();
+        
+        this.listLoading = true;
+        try {
+          const result = await searchLists(this.keyword, this.listOffset, PAGE_SIZE);
+          if (result.data.code == "200" && result.data.result.playlists) {
+            const playlists = result.data.result.playlists;
+            if (playlists.length < PAGE_SIZE) this.listHasMore = false;
+            
+            this.listResult = isLoadMore ? [...this.listResult, ...playlists] : playlists;
+            this.listOffset += playlists.length;
+          } else {
+            this.listHasMore = false;
+          }
+        } catch (e) {
+          console.error('搜索歌单失败:', e);
+        } finally {
+          this.listLoading = false;
+        }
+      },
+      loadMoreLists() {
+        if (this.listHasMore && !this.listLoading) this.getLists(true);
+      }
+    },
+    watch: {
+      keyword: {
+        handler(newKeyword, oldKeyword) {
+          if (newKeyword && newKeyword !== oldKeyword) {
+            this.getSongs();
+            this.getAlbums();
+            this.getArtists();
+            this.getLists();
+          }
+        },
+        immediate: false
       }
     },
     mounted(){

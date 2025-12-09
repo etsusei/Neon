@@ -72,10 +72,14 @@
                 ></div>
               </div>
             </div>
+            <div class="playlist-btn" @click="showPlaylist = true">
+              <i class="fa fa-list"></i>
+            </div>
           </div>
         </div>
       </div>
     </div>
+    <playlist-popup :show="showPlaylist" @close="showPlaylist = false" />
   </div>
 </template>
 
@@ -84,7 +88,11 @@ import { mapGetters } from "vuex";
 import { mapMutations } from "vuex";
 import { getSongUrl } from "../api/neteaseApi";
 import { ElMessage } from "element-plus";
+import PlaylistPopup from "./PlaylistPopup.vue";
 export default {
+  components: {
+    PlaylistPopup
+  },
   data() {
     return {
       audio: null,
@@ -115,10 +123,14 @@ export default {
       gateTime: 250, // Gate time in ms - ignore onsets within this period
       smoothedIntensity: 0.0, // Smoothed output value for visualization
       decayRate: 0.92, // How fast the value decays after onset (0.9-0.95 recommended)
+      showPlaylist: false // 播放列表弹窗
     };
   },
   computed: {
     ...mapGetters(["tracks", "index"]),
+    seekTime() {
+      return this.$store.state.seekTime;
+    }
   },
   watch: {
     tracks: {
@@ -143,6 +155,13 @@ export default {
       deep: true,
       immediate: true,
     },
+    seekTime(time) {
+      if (time !== null && time !== undefined) {
+        this.seekToTime(time);
+        // 重置 seekTime
+        this.$store.commit('SetSeekTime', null);
+      }
+    }
   },
   methods: {
     ...mapMutations({ pushIndex: "PushIndex" }),
@@ -186,6 +205,8 @@ export default {
       }
       this.duration = durmin + ":" + dursec;
       this.currentTime = curmin + ":" + cursec;
+      // 同步时间到 store 用于歌词同步
+      this.$store.commit('SetCurrentTime', this.audio.currentTime);
     },
     updateBar(x) {
       let progress = this.$refs.progress;
@@ -518,6 +539,17 @@ export default {
     
     toggleImmersiveMode() {
       this.$store.commit('ToggleImmersiveMode');
+    },
+    seekToTime(time) {
+      if (this.audio && !isNaN(time)) {
+        this.audio.currentTime = time;
+        if (!this.isTimerPlaying) {
+          this.audio.play();
+          this.isTimerPlaying = true;
+          this.$store.commit('SetIsPlaying', true);
+          this.startVisualization();
+        }
+      }
     }
   },
   created() {
@@ -748,6 +780,19 @@ export default {
   margin: auto;
   font-size: 18px;
   padding: 0 10px 0 0;
+}
+
+.playlist-btn {
+  margin: auto;
+  font-size: 18px;
+  padding: 0 0 0 15px;
+  cursor: pointer;
+  color: rgba(153, 153, 153, 0.8);
+  transition: all 0.2s ease;
+  
+  &:hover {
+    color: rgba(0, 0, 0, 0.7);
+  }
 }
 
 .track-control {

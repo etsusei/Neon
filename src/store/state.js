@@ -11,7 +11,9 @@ const state = {
     isPlaying: false,
     currentTrackCover: '',
     audioIntensity: 0.0,  // 0.0 - 1.0, represents low-frequency audio intensity
-    isImmersiveMode: false  // 沉浸式背景观看模式
+    isImmersiveMode: false,  // 沉浸式背景观看模式
+    currentTime: 0,  // 当前播放时间（秒）
+    seekTime: null  // 歌词跳转时间
 }
 
 export default state;

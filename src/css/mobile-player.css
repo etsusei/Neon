@@ -1,0 +1,139 @@
+/* Mobile Responsive Styles for MusicPlayer */
+
+/* 平板设备及以下 (768px) */
+@media screen and (max-width: 768px) {
+  .musicplayer {
+    min-width: unset !important;
+    width: 100% !important;
+    padding: 0 12px !important;
+  }
+  
+  .album-info {
+    padding: 0 0 0 12px !important;
+  }
+  
+  .volume-control {
+    padding: 0 12px 0 0 !important;
+  }
+}
+
+/* 手机设备 (520px及以下) */  
+@media screen and (max-width: 520px) {
+  .playerwarper {
+    height: 90px !important;
+  }
+  
+  .musicplayer {
+    height: 60px !important;
+    border-top-left-radius: 20px !important;
+    border-top-right-radius: 20px !important;
+  }
+  
+  .musicplayer-left {
+    position: relative !important;
+  }
+  
+  .album-info {
+    padding: 0 0 0 8px !important;
+  }
+  
+  .player-cover__item {
+    width: 60px !important;
+    height: 60px !important;
+    margin-top: -20px !important;
+  }
+  
+  .player-cover__item:before,
+  .player-cover__item:after {
+    width: 60px !important;
+    height: 60px !important;
+  }
+  
+  .cover-overlay {
+    width: 60px !important;
+    height: 60px !important;
+  }
+  
+  .cover-overlay i {
+    font-size: 24px !important;
+  }
+  
+  .album-right {
+    padding: 0 8px !important;
+    max-width: 120px !important;
+  }
+  
+  .album-right_name,
+  .album-right_info {
+    font-size: 12px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  
+  .player-controls {
+    margin-top: -20px !important;
+  }
+  
+  .track-control {
+    height: 52px !important;
+    width: 240px !important;
+  }
+  
+  .track-control_row {
+    width: 80% !important;
+  }
+  
+  .track-control_icon {
+    font-size: 18px !important;
+  }
+  
+  .track-control_iconPlay,
+  .track-control_iconPlay:hover {
+    font-size: 40px !important;
+  }
+  
+  .progress_bar {
+    height: 4px !important;
+  }
+  
+  .volume-control {
+    padding: 0 8px 0 0 !important;
+  }
+  
+  .volume-control_row {
+    flex-direction: column !important;
+  }
+  
+  .bar {
+    width: 60px !important;
+    height: 4px !important;
+    transform: rotate(90deg) !important;
+    margin-top: 30px !important;
+  }
+  
+  .volume-control_speaker {
+    padding: 0 !important;
+    font-size: 14px !important;
+  }
+}
+
+/* 超小屏幕设备 (375px及以下) */
+@media screen and (max-width: 375px) {
+  .album-right {
+    display: none !important;
+  }
+  
+  .track-control {
+    width: 200px !important;
+  }
+  
+  .track-control_icon {
+    font-size: 16px !important;
+  }
+  
+  .track-control_iconPlay,
+  .track-control_iconPlay:hover {
+    font-size: 36px !important;
+  }
+}

@@ -11,6 +11,7 @@
       <div class="head-list-content">Artist</div>
     </div>
     <div class="head-plus-icon"></div>
+    <div class="head-download-icon"></div>
   </div>
   <div class="listRow" v-for="(track, $index) in tracks" :key="$index" @click="play(tracks,$index)">
     <div
@@ -37,6 +38,9 @@
     <div class="plus-icon">
       <i class="fa fa-plus"></i>
     </div>
+    <div class="download-icon" @click.stop="download(track)">
+      <i class="fa fa-download"></i>
+    </div>
   </div>
 </template>
 
@@ -57,6 +61,53 @@ export default {
       this.pushToPlayer(tracks);
       this.toPlay(index);
       this.pushIndex(index);
+    },
+    async download(track) {
+      const qualities = ['exhigh', 'standard'];
+      const apiTemplate = (id, level) => 
+        `https://api.kxzjoker.cn/api/163_music?url=https://y.music.163.com/m/song?id=${id}&userid=8719916627&dlt=0846&level=${level}&type=json`;
+      
+      for (const quality of qualities) {
+        try {
+          const response = await fetch(apiTemplate(track.id, quality));
+          const data = await response.json();
+          
+          if (data.status === 200 && data.url) {
+            const ext = data.level && data.level.includes('无损') ? '.flac' : '.mp3';
+            const filename = `${track.name} - ${track.ar[0].name}${ext}`;
+            
+            console.log(`开始下载: ${filename} (${data.level || quality})`);
+            
+            // 使用 fetch 获取文件内容，再创建 Blob 下载
+            try {
+              const fileResponse = await fetch(data.url);
+              const blob = await fileResponse.blob();
+              const blobUrl = URL.createObjectURL(blob);
+              
+              const link = document.createElement('a');
+              link.href = blobUrl;
+              link.download = filename;
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              
+              // 释放 Blob URL
+              setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+              
+              console.log(`下载完成: ${filename}`);
+            } catch (downloadErr) {
+              // 如果 fetch 下载失败（可能是跨域），直接打开链接
+              console.warn('Blob下载失败，尝试直接打开:', downloadErr);
+              window.open(data.url, '_blank');
+            }
+            return;
+          }
+        } catch (e) {
+          console.error(`音质 ${quality} 获取失败:`, e);
+        }
+      }
+      
+      alert('获取下载链接失败，请稍后重试');
     }
   }
 };
@@ -128,8 +179,23 @@ export default {
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
+  margin-right: 10px;
+  width: auto;
+}
+.download-icon {
+  margin: auto 0;
+  color: rgb(0, 150, 246);
+  font-size: 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
   margin-right: 20px;
-  width: 100%;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+.download-icon:hover {
+  color: rgb(0, 100, 200);
+  transform: scale(1.1);
 }
 .link {
   color: black;
@@ -180,7 +246,16 @@ export default {
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
+  margin-right: 10px;
+  width: auto;
+}
+.head-download-icon {
+  margin: auto 0;
+  font-size: 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
   margin-right: 20px;
-  width: 100%;
+  width: 20px;
 }
 </style>

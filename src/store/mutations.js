@@ -21,7 +21,7 @@ const mutations = {
                 name: songs[i].name,
                 artist: songs[i].artists[0].name,
                 album: songs[i].album.name,
-                cover: "",
+                cover: songs[i].album.img1v1Url || songs[i].album.picUrl || "",
                 source: "https://music.163.com/song/media/outer/url?id=" + songs[i].id + ".mp3"
             })
         }
@@ -51,6 +51,12 @@ const mutations = {
     [types.ToggleImmersiveMode](state) {
         state.isImmersiveMode = !state.isImmersiveMode;
         console.log('[mutations] ToggleImmersiveMode:', state.isImmersiveMode);
+    },
+    [types.SetCurrentTime](state, time) {
+        state.currentTime = time;
+    },
+    [types.SetSeekTime](state, time) {
+        state.seekTime = time;
     }
 }
 export default mutations;

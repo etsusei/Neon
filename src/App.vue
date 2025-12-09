@@ -18,6 +18,12 @@
         transition: 'opacity 0.8s ease-in-out'
       }"
     />
+    <!-- 沉浸式模式下的歌词显示 -->
+    <transition name="lyric-fade">
+      <div v-if="isImmersiveMode" class="immersive-lyric">
+        <lyric-display :immersive="true" />
+      </div>
+    </transition>
     <div class="app-container" :class="{ 'immersive-mode': isImmersiveMode }">
       <div class="app-header" :style="{ opacity: isImmersiveMode ? 0 : 1, pointerEvents: isImmersiveMode ? 'none' : 'auto' }">
         <div class="app-header-left">
@@ -29,6 +35,7 @@
               v-model="search"
               type="text"
               placeholder="Search"
+              @keyup.enter="searchClick"
             />
             <svg
               @click="searchClick"
@@ -88,10 +95,10 @@
         </div>
         <div class="messages-section">
           <div class="projects-section-header">
-            <p>Playlist</p>
+            <p>Lyrics</p>
           </div>
           <div class="messages">
-            <playlist />
+            <lyric-display />
           </div>
         </div>
       </div>
@@ -102,18 +109,18 @@
 
 <script>
 import dayjs from "dayjs";
-import playlist from "../src/components/playlist.vue";
 import MusicPlayer from "../src/components/MusicPlayer.vue";
 import BackgroundAnimation from "../src/components/BackgroundAnimation.vue";
 import DynamicBackground from "../src/components/DynamicBackground.vue";
+import LyricDisplay from "../src/components/LyricDisplay.vue";
 import { mapGetters, mapState } from 'vuex';
 
 export default {
   components: {
-    playlist,
     MusicPlayer,
     BackgroundAnimation,
-    DynamicBackground
+    DynamicBackground,
+    LyricDisplay
   },
   data() {
     return {
@@ -178,6 +185,9 @@ export default {
     searchClick() {
       this.$router.push({ name: "Search", params: { keyword: this.search } });
     },
+    exitImmersiveMode() {
+      this.$store.commit('ToggleImmersiveMode');
+    }
   },
   created() {},
   mounted() {
@@ -235,6 +245,76 @@ a {
   --star: #1ff1c2e;
   --message-btn: #fff;
 }
+
+/* 沉浸式模式歌词 */
+.immersive-lyric {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 65px; // 播放器高度
+  z-index: 3; // 低于播放器(5)，高于背景
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none; // 不拦截点击事件
+  
+  :deep(.lyric-container) {
+    width: 80%;
+    max-width: 800px;
+    height: 70%;
+    pointer-events: auto; // 仅歌词可点击
+  }
+  
+  :deep(.lyric-line) {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 24px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    
+    &:hover {
+      color: rgba(255, 255, 255, 0.6);
+    }
+    
+    &.active {
+      color: rgba(255, 255, 255, 0.95);
+      font-size: 32px;
+    }
+    
+    &.near {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 22px;
+    }
+    
+    &.far {
+      color: rgba(255, 255, 255, 0.2);
+      font-size: 20px;
+    }
+  }
+  
+  :deep(.no-lyric) {
+    color: rgba(255, 255, 255, 0.5);
+    
+    i {
+      color: rgba(255, 255, 255, 0.4);
+    }
+  }
+  
+  :deep(.loading i) {
+    color: rgba(255, 255, 255, 0.4);
+  }
+}
+
+/* 沉浸模式歌词淡入淡出动画 */
+.lyric-fade-enter-active,
+.lyric-fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.lyric-fade-enter-from,
+.lyric-fade-leave-to {
+  opacity: 0;
+}
+
 .fade-enter {
   opacity: 0;
 }
@@ -603,6 +683,124 @@ a.router-link-active.router-link-exact-active {
   //background: rgba(190, 190, 190, 0.6);
 }
 
+// 平板设备及以下 (768px)
+@media screen and (max-width: 768px) {
+  .app-sidebar {
+    display: none; // 隐藏侧边栏导航
+  }
+  
+  .messages-section {
+    display: none; // 隐藏播放列表面板
+  }
+  
+  .app-content {
+    padding: 8px 8px 24px 8px;
+  }
+  
+  .projects-section {
+    margin-left: 0;
+    max-width: 100%;
+    width: 100%;
+    height: calc(100vh - 180px); // 为header和播放器留出空间
+    padding: 20px;
+  }
+  
+  .app-header {
+    padding: 12px;
+  }
+  
+  .search-wrapper {
+    max-width: 100%;
+    flex: 1;
+  }
+  
+  .app-name {
+    margin: 0 16px;
+  }
+}
+
+// 手机设备 (520px及以下)  
+@media screen and (max-width: 520px) {
+  .app-header {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+  }
+  
+  .app-header-left {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .app-header-right {
+    width: 100%;
+    justify-content: flex-end;
+    display: none; // 隐藏用户头像以节省空间
+  }
+  
+  .app-name {
+    display: none; // 在小屏幕隐藏应用名称以节省空间
+  }
+  
+  .profile-btn {
+    padding-left: 8px;
+    border-left: 1px solid #ddd;
+    span {
+      display: none;
+    }
+  }
+  
+  .search-wrapper {
+    max-width: calc(100% - 80px); // 为图标留空间
+  }
+  
+  .projects-section {
+    padding: 16px 12px;
+    border-radius: 20px;
+    height: calc(100vh - 200px);
+  }
+  
+  .projects-section-header {
+    margin-bottom: 16px;
+    
+    p {
+      font-size: 20px;
+      line-height: 28px;
+    }
+    
+    .time {
+      font-size: 16px;
+    }
+  }
+  
+  .project-boxes {
+    overflow-y: visible;
+  }
+}
+
+// 超小屏幕设备 (375px及以下)
+@media screen and (max-width: 375px) {
+  .app-header-left {
+    flex-wrap: wrap;
+  }
+  
+  .search-wrapper {
+    width: 100%;
+    max-width: 100%;
+    margin-top: 8px;
+  }
+  
+  .projects-section {
+    padding: 12px 8px;
+    border-radius: 16px;
+  }
+  
+  .projects-section-header p {
+    font-size: 18px;
+  }
+}
+
+// 保留原有的极窄屏幕处理
 @media screen and (max-width: 200px) {
   .messages-section {
     transform: translateX(100%);
@@ -616,24 +814,6 @@ a.router-link-active.router-link-exact-active {
     .messages-close {
       display: block;
     }
-  }
-}
-
-@media screen and (max-width: 720px) {
-  .app-name,
-  .profile-btn span {
-    display: none;
-  }
-  .app-header-right button {
-    margin-left: 4px;
-  }
-}
-@media screen and (max-width: 520px) {
-  .projects-section {
-    overflow: auto;
-  }
-  .project-boxes {
-    overflow-y: visible;
   }
 }
 </style>
