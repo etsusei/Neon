@@ -1,5 +1,5 @@
 <template>
-  <div class="lyric-container" :class="{ 'dark-mode': lyricDarkMode }" ref="container">
+  <div class="lyric-container" :class="{ 'dark-mode': immersive && lyricDarkMode }" ref="container">
     <div 
       class="lyric-content" 
       ref="content"
@@ -36,6 +36,12 @@ import { getLyric } from '../api/neteaseApi';
 
 export default {
   name: 'LyricDisplay',
+  props: {
+    immersive: {
+      type: Boolean,
+      default: false
+    }
+  },
   data() {
     return {
       lyrics: [],

@@ -302,6 +302,8 @@ export default {
             this.$store.commit('SetCurrentTrackCover', this.currentTrack.cover);
             // Start visualization
             this.startVisualization();
+            // 更新锁屏显示的歌曲信息
+            this.updateMediaSessionMetadata();
           }, { once: true });
           
           setTimeout(() => {
@@ -404,6 +406,10 @@ export default {
         this.audioSource.connect(this.analyser);
         this.analyser.connect(this.audioContext.destination);
       }
+      
+      // 初始化 Media Session API
+      this.setupMediaSession();
+      this.updateMediaSessionMetadata();
     },
     
     // Audio Visualization Methods
@@ -518,6 +524,64 @@ export default {
     
     toggleImmersiveMode() {
       this.$store.commit('ToggleImmersiveMode');
+    },
+    
+    // Media Session API - 锁屏控制和元数据
+    setupMediaSession() {
+      if ('mediaSession' in navigator) {
+        // 设置控制按钮
+        navigator.mediaSession.setActionHandler('play', () => {
+          this.audio.play();
+          this.isTimerPlaying = true;
+          this.$store.commit('SetIsPlaying', true);
+          this.startVisualization();
+        });
+        
+        navigator.mediaSession.setActionHandler('pause', () => {
+          this.audio.pause();
+          this.isTimerPlaying = false;
+          this.$store.commit('SetIsPlaying', false);
+          this.stopVisualization();
+        });
+        
+        navigator.mediaSession.setActionHandler('previoustrack', () => {
+          this.prevTrack();
+        });
+        
+        navigator.mediaSession.setActionHandler('nexttrack', () => {
+          this.nextTrack();
+        });
+        
+        // 快进/快退
+        navigator.mediaSession.setActionHandler('seekbackward', (details) => {
+          const skipTime = details.seekOffset || 10;
+          this.audio.currentTime = Math.max(this.audio.currentTime - skipTime, 0);
+        });
+        
+        navigator.mediaSession.setActionHandler('seekforward', (details) => {
+          const skipTime = details.seekOffset || 10;
+          this.audio.currentTime = Math.min(this.audio.currentTime + skipTime, this.audio.duration || 0);
+        });
+        
+        console.log('[MusicPlayer] Media Session API initialized');
+      }
+    },
+    
+    updateMediaSessionMetadata() {
+      if ('mediaSession' in navigator && this.currentTrack) {
+        navigator.mediaSession.metadata = new window.MediaMetadata({
+          title: this.currentTrack.name || 'Unknown',
+          artist: this.currentTrack.artist || 'Unknown Artist',
+          album: this.currentTrack.album || 'Unknown Album',
+          artwork: this.currentTrack.cover ? [
+            { src: this.currentTrack.cover, sizes: '96x96', type: 'image/jpeg' },
+            { src: this.currentTrack.cover, sizes: '128x128', type: 'image/jpeg' },
+            { src: this.currentTrack.cover, sizes: '256x256', type: 'image/jpeg' },
+            { src: this.currentTrack.cover, sizes: '512x512', type: 'image/jpeg' }
+          ] : []
+        });
+        console.log('[MusicPlayer] Media Session metadata updated:', this.currentTrack.name);
+      }
     },
     seekToTime(time) {
       if (this.audio && !isNaN(time)) {
