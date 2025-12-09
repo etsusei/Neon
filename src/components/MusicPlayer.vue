@@ -167,7 +167,6 @@ export default {
     ...mapMutations({ pushIndex: "PushIndex" }),
     play() {
       if (this.audio.paused) {
-        console.log('[MusicPlayer] Calling audio.play()');
         this.audio.play();
         this.isTimerPlaying = true;
         this.$store.commit('SetIsPlaying', true);
@@ -176,7 +175,6 @@ export default {
           this.audioContext.resume();
         }
       } else {
-        console.log('[MusicPlayer] Calling audio.pause()');
         this.audio.pause();
         this.isTimerPlaying = false;
         this.$store.commit('SetIsPlaying', false);
@@ -260,7 +258,6 @@ export default {
       this.refreshPlayer();
     },
     prevTrack() {
-      console.log('[MusicPlayer] prevTrack called, current index:', this.currentTrackIndex);
       this.transitionName = "scale-in";
       this.isShowCover = false;
       if (this.currentTrackIndex > 0) {
@@ -268,18 +265,11 @@ export default {
       } else {
         this.currentTrackIndex = this.tracks.length - 1;
       }
-      console.log('[MusicPlayer] prevTrack - new index:', this.currentTrackIndex);
       this.currentTrack = this.tracks[this.currentTrackIndex];
-      console.log('[MusicPlayer] prevTrack - new track:', {
-        name: this.currentTrack.name,
-        cover: this.currentTrack.cover
-      });
       this.pushIndex(this.currentTrackIndex);
-      console.log('[MusicPlayer] prevTrack - pushed index to store:', this.currentTrackIndex);
       // Note: resetPlayer() removed - index watcher will handle refreshing via jumpToClick()
     },
     nextTrack() {
-      console.log('[MusicPlayer] nextTrack called, current index:', this.currentTrackIndex);
       this.transitionName = "sacle-out";
       this.isShowCover = false;
       if (this.currentTrackIndex < this.tracks.length - 1) {
@@ -287,14 +277,8 @@ export default {
       } else {
         this.currentTrackIndex = 0;
       }
-      console.log('[MusicPlayer] nextTrack - new index:', this.currentTrackIndex);
       this.currentTrack = this.tracks[this.currentTrackIndex];
-      console.log('[MusicPlayer] nextTrack - new track:', {
-        name: this.currentTrack.name,
-        cover: this.currentTrack.cover
-      });
       this.pushIndex(this.currentTrackIndex);
-      console.log('[MusicPlayer] nextTrack - pushed index to store:', this.currentTrackIndex);
       // Note: resetPlayer() removed - index watcher will handle refreshing via jumpToClick()
     },
 
@@ -313,10 +297,8 @@ export default {
           
           // Add event listener to set isPlaying and update cover when audio actually starts
           this.audio.addEventListener('playing', () => {
-            console.log('[MusicPlayer] Audio playing event - setting isPlaying to true');
             this.$store.commit('SetIsPlaying', true);
             // Update cover only when audio actually starts playing
-            console.log('[MusicPlayer] Audio playing event - updating currentTrackCover:', this.currentTrack.cover);
             this.$store.commit('SetCurrentTrackCover', this.currentTrack.cover);
             // Start visualization
             this.startVisualization();
@@ -487,7 +469,6 @@ export default {
         this.lastOnsetTime = now; // Reset gate
         // Set smoothed value to peak immediately
         this.smoothedIntensity = transientIntensity;
-        console.log('[MusicPlayer] 🎵 ONSET! delta:', delta.toFixed(4), 'intensity:', transientIntensity.toFixed(3));
       } else if (!isGated && delta > 0.005) {
         // Very subtle response for small changes when not gated
         transientIntensity = Math.min(0.3, delta * 10);
@@ -515,14 +496,12 @@ export default {
     
     startVisualization() {
       if (!this.visualizationFrameId && this.analyser) {
-        console.log('[MusicPlayer] Starting audio visualization');
         this.analyzeAudio();
       }
     },
     
     stopVisualization() {
       if (this.visualizationFrameId) {
-        console.log('[MusicPlayer] Stopping audio visualization');
         cancelAnimationFrame(this.visualizationFrameId);
         this.visualizationFrameId = null;
         // Reset scale to default
