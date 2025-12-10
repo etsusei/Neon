@@ -26,7 +26,7 @@
           </router-link>
         </div>
       </div>
-      <div class="plus-icon">
+      <div class="plus-icon" @click.stop="openAddToPlaylist(track)">
         <i class="fa fa-plus"></i>
       </div>
       <div class="download-icon" @click.stop="download(track)">
@@ -46,20 +46,33 @@
     <div v-if="!hasMore && displayedTracks.length > 0" class="no-more">
       <span>没有更多了</span>
     </div>
+    
+    <!-- 添加到歌单弹窗 -->
+    <add-to-playlist-popup 
+      :show="showAddPopup" 
+      :song="currentSongToAdd"
+      @close="showAddPopup = false"
+    />
   </div>
 </template>
 
 <script>
 import {mapMutations} from 'vuex';
+import AddToPlaylistPopup from './AddToPlaylistPopup.vue';
 
 const PAGE_SIZE = 15;
 
 export default {
   props:['tracks'],
+  components: {
+    AddToPlaylistPopup
+  },
   data() {
     return {
       displayCount: PAGE_SIZE,
-      loading: false
+      loading: false,
+      showAddPopup: false,
+      currentSongToAdd: null
     };
   },
   computed: {
@@ -86,6 +99,7 @@ export default {
     play(tracks,index){
       this.pushToPlayer(tracks);
       this.toPlay(index);
+      this.$store.commit('SetSinglePlay', false); // 歌单播放，非单次模式
     },
     async download(track) {
       const artistName = track.ar && track.ar[0] ? track.ar[0].name : 'Unknown';
@@ -166,6 +180,16 @@ export default {
         this.displayCount += PAGE_SIZE;
         this.loading = false;
       }, 300);
+    },
+    openAddToPlaylist(track) {
+      this.currentSongToAdd = {
+        id: track.id,
+        name: track.name,
+        artist: track.ar && track.ar[0] ? track.ar[0].name : '',
+        album: track.al ? track.al.name : '',
+        cover: track.al ? track.al.picUrl : ''
+      };
+      this.showAddPopup = true;
     }
   }
 };

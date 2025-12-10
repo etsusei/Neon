@@ -1,26 +1,42 @@
 <template>
-  <div class="albumRow" v-for="(track, $index) in tracks" :key="$index" @click="play(tracks,$index)">
-    <div class="album-index">
-      {{ $index + 1 }}
+  <div class="album-row-container">
+    <div class="albumRow" v-for="(track, $index) in tracks" :key="$index" @click="play(tracks,$index)">
+      <div class="album-index">
+        {{ $index + 1 }}
+      </div>
+      <div class="album-songname">
+        <div class="album-content">{{ track.name }}</div>
+      </div>
+      <div class="album-plus-icon" @click.stop="openAddToPlaylist(track)">
+        <i class="fa fa-plus"></i>
+      </div>
+      <div class="album-download-icon" @click.stop="download(track)">
+        <i class="fa fa-download"></i>
+      </div>
     </div>
-    <div class="album-songname">
-      <div class="album-content">{{ track.name }}</div>
-    </div>
-    <div class="album-plus-icon">
-      <i class="fa fa-plus"></i>
-    </div>
-    <div class="album-download-icon" @click.stop="download(track)">
-      <i class="fa fa-download"></i>
-    </div>
+    
+    <!-- 添加到歌单弹窗 -->
+    <add-to-playlist-popup 
+      :show="showAddPopup" 
+      :song="currentSongToAdd"
+      @close="showAddPopup = false"
+    />
   </div>
 </template>
 
 <script>
 import {mapMutations} from 'vuex';
+import AddToPlaylistPopup from './AddToPlaylistPopup.vue';
+
 export default {
-  props:['tracks'],
+  props:['tracks', 'albumInfo'],
+  components: {
+    AddToPlaylistPopup
+  },
   data() {
-    return {  
+    return {
+      showAddPopup: false,
+      currentSongToAdd: null
     };
   },
   methods:{
@@ -31,6 +47,18 @@ export default {
     play(tracks,index){
       this.pushToPlayer(tracks);
       this.toPlay(index);
+      this.$store.commit('SetSinglePlay', false); // 专辑播放，非单次模式
+    },
+    openAddToPlaylist(track) {
+      // 专辑歌曲可能没有封面，从 albumInfo prop 获取
+      this.currentSongToAdd = {
+        id: track.id,
+        name: track.name,
+        artist: track.ar && track.ar[0] ? track.ar[0].name : '',
+        album: track.al ? track.al.name : (this.albumInfo ? this.albumInfo.name : ''),
+        cover: track.al ? track.al.picUrl : (this.albumInfo ? this.albumInfo.picUrl : '')
+      };
+      this.showAddPopup = true;
     },
     async download(track) {
       // 从 track.ar 或 track.artists 获取艺术家名

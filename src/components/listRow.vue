@@ -1,55 +1,72 @@
 <template>
-  <div class="head-listRow">
-    <div class="head-list-album-img"></div>
-    <div class="head-list-songname">
-      <div class="head-list-content">Song</div>
+  <div class="list-row-container">
+    <div class="head-listRow">
+      <div class="head-list-album-img"></div>
+      <div class="head-list-songname">
+        <div class="head-list-content">Song</div>
+      </div>
+      <div class="head-list-albuminfo">
+        <div class="head-list-content">Album</div>
+      </div>
+      <div class="head-list-artist">
+        <div class="head-list-content">Artist</div>
+      </div>
+      <div class="head-plus-icon"></div>
+      <div class="head-download-icon"></div>
     </div>
-    <div class="head-list-albuminfo">
-      <div class="head-list-content">Album</div>
-    </div>
-    <div class="head-list-artist">
-      <div class="head-list-content">Artist</div>
-    </div>
-    <div class="head-plus-icon"></div>
-    <div class="head-download-icon"></div>
-  </div>
-  <div class="listRow" v-for="(track, $index) in tracks" :key="$index" @click="play(tracks,$index)">
-    <div
-      class="list-album-img"
-      :style="{ backgroundImage: `url(${track.al.picUrl})` }"
-    ></div>
-    <div class="list-songname">
-      <div class="list-content">{{ track.name }}</div>
-    </div>
-    <div class="list-albuminfo">
-      <div class="list-content">
-        <router-link :to="{name:'Album',params:{albumId:`${track.al.id}`}}">
-        <p class="link">{{ track.al.name }}</p>
-        </router-link>
+    <div class="listRow" v-for="(track, $index) in tracks" :key="$index" @click="play(tracks,$index)">
+      <div
+        class="list-album-img"
+        :style="{ backgroundImage: `url(${track.al.picUrl})` }"
+      ></div>
+      <div class="list-songname">
+        <div class="list-content">{{ track.name }}</div>
+      </div>
+      <div class="list-albuminfo">
+        <div class="list-content">
+          <router-link :to="{name:'Album',params:{albumId:`${track.al.id}`}}">
+          <p class="link">{{ track.al.name }}</p>
+          </router-link>
+        </div>
+      </div>
+      <div class="list-artist">
+        <div class="list-content">
+          <router-link :to="{name:'Artist',params:{artistId:`${track.ar[0].id}`}}">
+          <p class="link">{{ track.ar[0].name }}</p>
+          </router-link>
+        </div>
+      </div>
+      <div class="plus-icon" @click.stop="openAddToPlaylist(track)">
+        <i class="fa fa-plus"></i>
+      </div>
+      <div class="download-icon" @click.stop="download(track)">
+        <i class="fa fa-download"></i>
       </div>
     </div>
-    <div class="list-artist">
-      <div class="list-content">
-        <router-link :to="{name:'Artist',params:{artistId:`${track.ar[0].id}`}}">
-        <p class="link">{{ track.ar[0].name }}</p>
-        </router-link>
-      </div>
-    </div>
-    <div class="plus-icon">
-      <i class="fa fa-plus"></i>
-    </div>
-    <div class="download-icon" @click.stop="download(track)">
-      <i class="fa fa-download"></i>
-    </div>
+    
+    <!-- 添加到歌单弹窗 -->
+    <add-to-playlist-popup 
+      :show="showAddPopup" 
+      :song="currentSongToAdd"
+      @close="showAddPopup = false"
+    />
   </div>
 </template>
 
 <script>
 import {mapMutations} from 'vuex';
+import AddToPlaylistPopup from './AddToPlaylistPopup.vue';
+
 export default {
   props: ["tracks"],
+  components: {
+    AddToPlaylistPopup
+  },
   data() {
-    return {};
+    return {
+      showAddPopup: false,
+      currentSongToAdd: null
+    };
   },
   methods:{
     ...mapMutations({
@@ -60,7 +77,18 @@ export default {
     play(tracks,index){
       this.pushToPlayer(tracks);
       this.toPlay(index);
-      this.pushIndex(index);
+      // pushIndex 已被移除，由 GetIndex 统一处理
+      this.$store.commit('SetSinglePlay', false); // 歌单播放，非单次模式
+    },
+    openAddToPlaylist(track) {
+      this.currentSongToAdd = {
+        id: track.id,
+        name: track.name,
+        artist: track.ar && track.ar[0] ? track.ar[0].name : '',
+        album: track.al ? track.al.name : '',
+        cover: track.al ? track.al.picUrl : ''
+      };
+      this.showAddPopup = true;
     },
     async download(track) {
       const artistName = track.ar && track.ar[0] ? track.ar[0].name : 'Unknown';

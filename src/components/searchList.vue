@@ -169,6 +169,24 @@ export default {
   color: #999;
 }
 
+// iPad 响应式布局 (768px - 1024px)
+@media screen and (min-width: 768px) and (max-width: 1024px) {
+  .cover-warpper {
+    width: calc(33.33% - 20px);
+    height: 180px;
+    margin: 10px;
+  }
+  
+  .cover {
+    width: 140px;
+    height: 140px;
+  }
+  
+  .name {
+    font-size: 13px;
+  }
+}
+
 // 移动端响应式样式 - 使用行列表显示
 @media screen and (max-width: 768px) {
   .list-search-container {

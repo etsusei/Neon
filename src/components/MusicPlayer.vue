@@ -42,8 +42,10 @@
               <div class="track-control_icon" @click="nextTrack">
                 <i class="fa fa-forward"></i>
               </div>
-              <div class="track-control_icon">
-                <i class="fa fa-random"></i>
+              <div class="track-control_icon" @click="togglePlayMode" :title="playModeTitle">
+                <i class="fa fa-repeat" v-if="playMode === 'sequence'"></i>
+                <i class="fa fa-random" v-else-if="playMode === 'shuffle'"></i>
+                <i class="fa fa-repeat" style="color: #f6002e;" v-else></i>
               </div>
             </div>
           </div>
@@ -123,24 +125,49 @@ export default {
       gateTime: 250, // Gate time in ms - ignore onsets within this period
       smoothedIntensity: 0.0, // Smoothed output value for visualization
       decayRate: 0.92, // How fast the value decays after onset (0.9-0.95 recommended)
-      showPlaylist: false // 播放列表弹窗
+      showPlaylist: false, // 播放列表弹窗
+      // iOS 后台播放支持
+      isIOS: false
     };
   },
   computed: {
     ...mapGetters(["tracks", "index"]),
     seekTime() {
       return this.$store.state.seekTime;
+    },
+    playMode() {
+      return this.$store.state.playMode;
+    },
+    isSinglePlay() {
+      return this.$store.state.isSinglePlay;
+    },
+    shuffledIndices() {
+      return this.$store.state.shuffledIndices;
+    },
+    playModeTitle() {
+      const titles = {
+        'sequence': '顺序循环',
+        'shuffle': '随机播放',
+        'repeat-one': '单曲循环'
+      };
+      return titles[this.playMode] || '顺序循环';
     }
   },
   watch: {
     tracks: {
       handler: function (newtrack, oldtrack) {
-        if (!newtrack === oldtrack) {
-          this.initialPlayer();
+        // 当播放列表改变时，需要重新加载当前歌曲
+        // 使用 JSON 比较来检测实际内容变化
+        if (oldtrack && newtrack && JSON.stringify(newtrack) !== JSON.stringify(oldtrack)) {
+          console.log('[MusicPlayer] Tracks changed, refreshing player');
+          // 延迟执行以确保 index 也已更新
+          this.$nextTick(() => {
+            this.jumpToClick();
+          });
         }
       },
       deep: true,
-      immediate: true,
+      immediate: false, // 不在初始化时触发
     },
     index: {
       handler: function (newindex) {
@@ -260,26 +287,63 @@ export default {
     prevTrack() {
       this.transitionName = "scale-in";
       this.isShowCover = false;
-      if (this.currentTrackIndex > 0) {
-        this.currentTrackIndex--;
+      
+      if (this.playMode === 'shuffle' && this.shuffledIndices.length > 0) {
+        // 随机模式：在打乱的列表中找当前位置，往前移动
+        const shufflePos = this.shuffledIndices.indexOf(this.currentTrackIndex);
+        if (shufflePos > 0) {
+          this.currentTrackIndex = this.shuffledIndices[shufflePos - 1];
+        } else {
+          this.currentTrackIndex = this.shuffledIndices[this.shuffledIndices.length - 1];
+        }
       } else {
-        this.currentTrackIndex = this.tracks.length - 1;
+        // 顺序模式或单曲循环：正常上一首
+        if (this.currentTrackIndex > 0) {
+          this.currentTrackIndex--;
+        } else {
+          this.currentTrackIndex = this.tracks.length - 1;
+        }
       }
+      
       this.currentTrack = this.tracks[this.currentTrackIndex];
       this.pushIndex(this.currentTrackIndex);
-      // Note: resetPlayer() removed - index watcher will handle refreshing via jumpToClick()
     },
     nextTrack() {
       this.transitionName = "sacle-out";
       this.isShowCover = false;
-      if (this.currentTrackIndex < this.tracks.length - 1) {
-        this.currentTrackIndex++;
+      
+      if (this.playMode === 'shuffle') {
+        // 随机模式
+        // 如果 shuffledIndices 为空或无效，重新生成
+        if (!this.shuffledIndices || this.shuffledIndices.length === 0 || 
+            this.shuffledIndices.length !== this.tracks.length) {
+          this.generateShuffledIndices();
+        }
+        
+        const shufflePos = this.shuffledIndices.indexOf(this.currentTrackIndex);
+        
+        if (shufflePos === -1) {
+          // 当前索引不在随机列表中，从头开始
+          this.currentTrackIndex = this.shuffledIndices[0];
+        } else if (shufflePos < this.shuffledIndices.length - 1) {
+          // 还有下一首
+          this.currentTrackIndex = this.shuffledIndices[shufflePos + 1];
+        } else {
+          // 播完了，重新打乱并从头开始
+          this.generateShuffledIndices();
+          this.currentTrackIndex = this.shuffledIndices[0];
+        }
       } else {
-        this.currentTrackIndex = 0;
+        // 顺序模式或单曲循环：正常下一首
+        if (this.currentTrackIndex < this.tracks.length - 1) {
+          this.currentTrackIndex++;
+        } else {
+          this.currentTrackIndex = 0;
+        }
       }
+      
       this.currentTrack = this.tracks[this.currentTrackIndex];
       this.pushIndex(this.currentTrackIndex);
-      // Note: resetPlayer() removed - index watcher will handle refreshing via jumpToClick()
     },
 
     handlePlayerLogic() {
@@ -347,6 +411,37 @@ export default {
         this.skipFailedCount = 0;
       }
     },
+    // 播放模式切换
+    togglePlayMode() {
+      const modes = ['sequence', 'shuffle', 'repeat-one'];
+      const currentIndex = modes.indexOf(this.playMode);
+      const nextMode = modes[(currentIndex + 1) % modes.length];
+      this.$store.commit('SetPlayMode', nextMode);
+      
+      // 切换到随机模式时生成随机序列
+      if (nextMode === 'shuffle') {
+        this.generateShuffledIndices();
+      }
+      
+      // 显示切换提示
+      const modeNames = {
+        'sequence': '顺序循环',
+        'shuffle': '随机播放',
+        'repeat-one': '单曲循环'
+      };
+      ElMessage.success(`已切换为：${modeNames[nextMode]}`);
+    },
+    // 生成随机播放序列
+    generateShuffledIndices() {
+      const indices = Array.from({ length: this.tracks.length }, (_, i) => i);
+      // Fisher-Yates 洗牌算法
+      for (let i = indices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [indices[i], indices[j]] = [indices[j], indices[i]];
+      }
+      this.$store.commit('SetShuffledIndices', indices);
+      console.log('[MusicPlayer] Generated shuffled indices:', indices);
+    },
     refreshPlayer() {
       this.handlePlayerLogic();
     },
@@ -381,8 +476,41 @@ export default {
         vm.generateTime();
       };
       this.audio.onended = function () {
+        // 单次播放模式（搜索单曲）：播完停止
+        if (vm.isSinglePlay) {
+          vm.isTimerPlaying = false;
+          vm.$store.commit('SetIsPlaying', false);
+          vm.stopVisualization();
+          return;
+        }
+        
+        // 单曲循环：重新播放当前歌曲
+        if (vm.playMode === 'repeat-one') {
+          vm.audio.currentTime = 0;
+          vm.audio.play().then(() => {
+            vm.isTimerPlaying = true;
+            vm.$store.commit('SetIsPlaying', true);
+          }).catch(err => {
+            console.error('[MusicPlayer] Single repeat play failed:', err);
+          });
+          return;
+        }
+        
+        // 只有一首歌时，直接重新播放（不管是顺序还是随机模式）
+        if (vm.tracks.length === 1) {
+          vm.audio.currentTime = 0;
+          vm.audio.play().then(() => {
+            vm.isTimerPlaying = true;
+            vm.$store.commit('SetIsPlaying', true);
+          }).catch(err => {
+            console.error('[MusicPlayer] Single track loop play failed:', err);
+          });
+          return;
+        }
+        
+        // 顺序循环或随机播放：下一曲
         vm.nextTrack();
-        this.isTimerPlaying = true;
+        vm.isTimerPlaying = true;
       };
       
       // Add event listener to set isPlaying and update cover when audio starts playing
@@ -398,13 +526,32 @@ export default {
       
       this.audio.load();
 
-      if (!this.audioContext) {
+      // 检测 iOS/iPadOS 设备
+      // iPadOS 13+ Safari 默认伪装成 Mac，需要额外检测触摸能力
+      const isIPhone = /iPhone|iPod/.test(navigator.userAgent);
+      const isIPad = /iPad/.test(navigator.userAgent) || 
+                     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      this.isIOS = isIPhone || isIPad;
+      
+      console.log('[MusicPlayer] Device detection:', {
+        platform: navigator.platform,
+        maxTouchPoints: navigator.maxTouchPoints,
+        isIOS: this.isIOS
+      });
+      
+      // iOS 上不使用 AudioContext，避免影响后台播放
+      // createMediaElementSource 会将 Audio 元素绑定到 AudioContext，
+      // 当 iOS 进入后台时，AudioContext 被暂停，连带 Audio 也会停止
+      if (!this.audioContext && !this.isIOS) {
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
         this.analyser = this.audioContext.createAnalyser();
         this.analyser.fftSize = 1024; // Set FFT size for frequency analysis (higher resolution for precise 120-250Hz range)
         this.audioSource = this.audioContext.createMediaElementSource(this.audio);
         this.audioSource.connect(this.analyser);
         this.analyser.connect(this.audioContext.destination);
+        console.log('[MusicPlayer] AudioContext initialized for audio visualization');
+      } else if (this.isIOS) {
+        console.log('[MusicPlayer] iOS/iPadOS detected - AudioContext disabled for background playback support');
       }
       
       // 初始化 Media Session API
@@ -636,7 +783,7 @@ export default {
   background-color: rgba(255, 255, 255, 0.6);
   border-top-left-radius: 32px;
   border-top-right-radius: 32px;
-  min-width: 900px;
+  min-width: 0; // 允许响应式收缩
 }
 .musicplayer-left {
   display: flex;
@@ -827,14 +974,14 @@ export default {
 
 .playlist-btn {
   margin: auto;
-  font-size: 18px;
+  font-size: 20px;
   padding: 0 0 0 15px;
   cursor: pointer;
-  color: rgba(153, 153, 153, 0.8);
+  color: rgba(80, 80, 80, 0.9);
   transition: all 0.2s ease;
   
   &:hover {
-    color: rgba(0, 0, 0, 0.7);
+    color: rgba(0, 0, 0, 0.9);
   }
 }
 
@@ -883,5 +1030,21 @@ export default {
   margin: auto;
   font-size: 50px;
   color: rgba(0, 0, 0, 0.6);
+}
+
+// 移动端和平板隐藏音量条
+@media screen and (max-width: 1366px) {
+  .volume-control_speaker,
+  .volume-control_bar {
+    display: none;
+  }
+  
+  .volume-control {
+    padding: 0 20px 0 0;
+  }
+  
+  .musicplayer {
+    min-width: 0;
+  }
 }
 </style>

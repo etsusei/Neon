@@ -1,109 +1,116 @@
 <template>
   <div>
-    <!-- 静态背景 - 始终渲染，通过opacity控制显示 -->
-    <background-animation 
-      ref="backgroundAnimation"
-      :style="{ 
-        opacity: isPlaying ? 0 : 1,
-        transition: 'opacity 0.8s ease-in-out'
-      }" 
-    />
-    <!-- 动态背景 - 始终渲染，通过opacity控制显示 -->
-    <dynamic-background 
-      ref="dynamicBackground"
-      :visible="isPlaying" 
-      :coverImage="currentCover"
-      :style="{ 
-        opacity: isPlaying ? 1 : 0,
-        transition: 'opacity 0.8s ease-in-out'
-      }"
-    />
-    <!-- 沉浸式模式下的歌词显示 -->
-    <transition name="lyric-fade">
-      <div v-if="isImmersiveMode" class="immersive-lyric">
-        <lyric-display :immersive="true" />
-      </div>
-    </transition>
-    <div class="app-container" :class="{ 'immersive-mode': isImmersiveMode }">
-      <div class="app-header" :style="{ opacity: isImmersiveMode ? 0 : 1, pointerEvents: isImmersiveMode ? 'none' : 'auto' }">
-        <div class="app-header-left">
-          <i class="fa fa-music" style="font-size: 24px"></i>
-          <p class="app-name">Neon</p>
-          <div class="search-wrapper">
-            <input
-              class="search-input"
-              v-model="search"
-              type="text"
-              placeholder="Search"
-              @keyup.enter="searchClick"
-            />
-            <svg
-              @click="searchClick"
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              fill="none"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              class="feather feather-search"
-              viewBox="0 0 24 24"
-            >
-              <defs></defs>
-              <circle cx="11" cy="11" r="8"></circle>
-              <path d="M21 21l-4.35-4.35"></path>
-            </svg>
+    <!-- 登录页面：全屏显示，不显示主界面 -->
+    <template v-if="isLoginPage">
+      <router-view></router-view>
+    </template>
+    
+    <!-- 主界面：仅登录后显示 -->
+    <template v-else>
+      <!-- 静态背景 - 始终渲染，通过opacity控制显示 -->
+      <background-animation 
+        ref="backgroundAnimation"
+        :style="{ 
+          opacity: isPlaying ? 0 : 1,
+          transition: 'opacity 0.8s ease-in-out'
+        }" 
+      />
+      <!-- 动态背景 - 始终渲染，通过opacity控制显示 -->
+      <dynamic-background 
+        ref="dynamicBackground"
+        :visible="isPlaying" 
+        :coverImage="currentCover"
+        :style="{ 
+          opacity: isPlaying ? 1 : 0,
+          transition: 'opacity 0.8s ease-in-out'
+        }"
+      />
+      <!-- 沉浸式模式下的歌词显示 -->
+      <transition name="lyric-fade">
+        <div v-if="isImmersiveMode" class="immersive-lyric">
+          <lyric-display :immersive="true" />
+        </div>
+      </transition>
+      <div class="app-container" :class="{ 'immersive-mode': isImmersiveMode }">
+        <div class="app-header" :style="{ opacity: isImmersiveMode ? 0 : 1, pointerEvents: isImmersiveMode ? 'none' : 'auto' }">
+          <div class="app-header-left">
+            <i class="fa fa-music" style="font-size: 24px"></i>
+            <p class="app-name">Neon</p>
+            <div class="search-wrapper">
+              <input
+                class="search-input"
+                v-model="search"
+                type="text"
+                placeholder="Search"
+                @keyup.enter="searchClick"
+              />
+              <svg
+                @click="searchClick"
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                class="feather feather-search"
+                viewBox="0 0 24 24"
+              >
+                <defs></defs>
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="M21 21l-4.35-4.35"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="app-header-right">
+            <router-link :to="{ name: 'Settings' }" class="profile-btn">
+              <img
+                src="https://img0.baidu.com/it/u=3522288622,363838562&fm=253&fmt=auto&app=138&f=JPEG?w=537&h=269"
+              />
+              <span>{{ displayUsername }}</span>
+            </router-link>
           </div>
         </div>
-        <div class="app-header-right">
-          <button class="profile-btn">
-            <img
-              src="https://img0.baidu.com/it/u=3522288622,363838562&fm=253&fmt=auto&app=138&f=JPEG?w=537&h=269"
-            />
-            <!-- http://p2.music.126.net/Dp_Zf9m4t7s3_IOxKb5GpQ==/109951163806722668.jpg -->
-            <span>RYOZO</span>
-          </button>
-        </div>
-      </div>
-      <div class="app-content" :style="{ opacity: isImmersiveMode ? 0 : 1, pointerEvents: isImmersiveMode ? 'none' : 'auto' }">
-        <div class="app-sidebar">
-          <router-link :to="{ name: 'Home' }">
-            <p class="app-sidebar-link">
-              <i class="fa fa-home" style="font-size: 24px"></i>
-            </p>
-          </router-link>
-          <a href="" class="app-sidebar-link">
-            <i class="fa fa-heart" style="font-size: 24px"></i>
-          </a>
-          <div class="back-warpper">
-            <div class="back" @click="$router.back(-1)">
-              <i class="fa fa-angle-left"></i>
+        <div class="app-content" :style="{ opacity: isImmersiveMode ? 0 : 1, pointerEvents: isImmersiveMode ? 'none' : 'auto' }">
+          <div class="app-sidebar">
+            <router-link :to="{ name: 'Home' }">
+              <p class="app-sidebar-link">
+                <i class="fa fa-home" style="font-size: 24px"></i>
+              </p>
+            </router-link>
+            <router-link :to="{ name: 'MyPlaylists' }" class="app-sidebar-link">
+              <i class="fa fa-heart" style="font-size: 24px"></i>
+            </router-link>
+            <div class="back-warpper">
+              <div class="back" @click="$router.back(-1)">
+                <i class="fa fa-angle-left"></i>
+              </div>
+            </div>
+          </div>
+          <div class="projects-section">
+            <div class="projects-section-header">
+              <p>{{ this.$route.name }}</p>
+              <p class="time">{{ this.dateToday }}</p>
+            </div>
+            <div class="projects-section-pages">
+              <transition name="fade">
+                <router-view></router-view>
+              </transition>
+            </div>
+          </div>
+          <div class="messages-section">
+            <div class="projects-section-header">
+              <p>Lyrics</p>
+            </div>
+            <div class="messages">
+              <lyric-display />
             </div>
           </div>
         </div>
-        <div class="projects-section">
-          <div class="projects-section-header">
-            <p>{{ this.$route.name }}</p>
-            <p class="time">{{ this.dateToday }}</p>
-          </div>
-          <div class="projects-section-pages">
-            <transition name="fade">
-              <router-view></router-view>
-            </transition>
-          </div>
-        </div>
-        <div class="messages-section">
-          <div class="projects-section-header">
-            <p>Lyrics</p>
-          </div>
-          <div class="messages">
-            <lyric-display />
-          </div>
-        </div>
+        <music-player />
       </div>
-      <music-player />
-    </div>
+    </template>
   </div>
 </template>
 
@@ -135,6 +142,23 @@ export default {
   computed: {
     ...mapState(["tracks", "index", "nowPlay", "isPlaying", "currentTrackCover", "isImmersiveMode"]),
     ...mapGetters([]),
+    // 判断当前是否为登录页面
+    isLoginPage() {
+      return this.$route.name === 'Login';
+    },
+    // 获取显示的用户名
+    displayUsername() {
+      try {
+        const userInfo = localStorage.getItem('user_info');
+        if (userInfo) {
+          const user = JSON.parse(userInfo);
+          return user.username || '用户';
+        }
+      } catch (e) {
+        console.error('解析用户信息失败:', e);
+      }
+      return '用户';
+    }
   },
   watch: {
     tracks: {
@@ -559,7 +583,7 @@ a.router-link-active.router-link-exact-active {
   border-radius: 32px;
   padding: 32px 32px 0 32px;
   overflow: hidden;
-  height: 80vh;
+  height: calc(100vh - 180px); // 为header和播放器留出空间
   display: flex;
   flex-direction: column;
   position: relative;
@@ -632,7 +656,7 @@ a.router-link-active.router-link-exact-active {
   flex-direction: column;
   justify-content: flex-start;
   width: 100%;
-  height: 80vh;
+  height: calc(100vh - 180px); // 为header和播放器留出空间
   //height:400px;
   border-radius: 30px;
   position: relative;
@@ -681,6 +705,45 @@ a.router-link-active.router-link-exact-active {
 .messages::-webkit-scrollbar-track {
   border-radius: 10px;
   //background: rgba(190, 190, 190, 0.6);
+}
+
+// iPad 横屏 (宽度 > 高度 且 触摸设备)
+@media screen and (min-width: 768px) and (max-width: 1366px) and (orientation: landscape) {
+  .app-content {
+    padding-bottom: 100px; // 为底部播放器留出更多空间
+  }
+  
+  .projects-section {
+    height: calc(100vh - 200px); // 增加播放器区域的间距
+    margin-bottom: 20px;
+  }
+  
+  .messages-section {
+    height: calc(100vh - 200px);
+    margin-bottom: 20px;
+  }
+}
+
+// iPad 竖屏 (portrait 方向)
+@media screen and (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+  .messages-section {
+    display: none; // 竖屏时隐藏歌词区域
+  }
+  
+  .app-sidebar {
+    display: none; // 隐藏侧边栏
+  }
+  
+  .app-content {
+    padding: 16px 16px 100px 16px; // 底部留出播放器空间
+  }
+  
+  .projects-section {
+    flex: 1;
+    max-width: 100%;
+    height: calc(100vh - 200px); // 为 header 和播放器留出空间
+    margin-bottom: 20px;
+  }
 }
 
 // 平板设备及以下 (768px)

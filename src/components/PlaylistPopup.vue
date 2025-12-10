@@ -50,15 +50,39 @@ export default {
     ...mapGetters(["tracks", "currentIndex"]),
     ...mapState(["isPlaying"])
   },
+  watch: {
+    show(visible) {
+      if (visible) {
+        // 弹窗打开时滚动到当前播放歌曲
+        this.$nextTick(() => {
+          this.scrollToCurrentTrack();
+        });
+      }
+    }
+  },
   methods: {
     ...mapMutations({
       toPlay: "GetIndex"
     }),
     playTrack(index) {
       this.toPlay(index);
+      // 从播放列表播放，非单次模式
+      this.$store.commit('SetSinglePlay', false);
     },
     close() {
       this.$emit('close');
+    },
+    scrollToCurrentTrack() {
+      const container = this.$el?.querySelector('.popup-content');
+      const currentItem = this.$el?.querySelector('.popup-item.playing');
+      if (container && currentItem) {
+        // 计算滚动位置使当前歌曲显示在中间
+        const containerHeight = container.clientHeight;
+        const itemTop = currentItem.offsetTop;
+        const itemHeight = currentItem.clientHeight;
+        const scrollTo = itemTop - (containerHeight / 2) + (itemHeight / 2);
+        container.scrollTop = Math.max(0, scrollTo);
+      }
     }
   }
 };

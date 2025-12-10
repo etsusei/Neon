@@ -141,4 +141,27 @@ export default {
   font-size: 12px;
   color: #999;
 }
+
+// iPad 响应式布局 (768px - 1024px)
+@media screen and (min-width: 768px) and (max-width: 1024px) {
+  .cover-warpper {
+    width: calc(33.33% - 20px);
+    height: 180px;
+    margin: 10px;
+  }
+  
+  .cover {
+    width: 140px;
+    height: 140px;
+  }
+  
+  .cover:hover {
+    width: 145px;
+    height: 145px;
+  }
+  
+  .name {
+    font-size: 13px;
+  }
+}
 </style>

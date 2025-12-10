@@ -255,6 +255,35 @@ h1 {
   font-size: 12px;
   color: #999;
 }
+// iPad 横竖屏响应式样式 (768px - 1024px)
+@media screen and (min-width: 768px) and (max-width: 1024px) {
+  .home-warpper {
+    width: 100%;
+    padding: 0 10px;
+  }
+  
+  .trending-row,
+  .ranking-row {
+    height: auto;
+    max-height: none;
+    justify-content: flex-start;
+  }
+  
+  .cover-warpper {
+    width: calc(33.33% - 20px); // 一行3个
+    height: 180px;
+    margin: 10px;
+  }
+  
+  .cover {
+    width: 140px;
+    height: 140px;
+  }
+  
+  .name {
+    font-size: 13px;
+  }
+}
 
 // 移动端响应式样式
 @media screen and (max-width: 768px) {

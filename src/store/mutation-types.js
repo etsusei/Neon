@@ -9,3 +9,7 @@ export const ToggleImmersiveMode = "ToggleImmersiveMode";
 export const SetCurrentTime = "SetCurrentTime";
 export const SetSeekTime = "SetSeekTime";
 export const SetLyricDarkMode = "SetLyricDarkMode"; // 歌词深色模式（背景太暗时启用白色歌词）
+// 播放模式
+export const SetPlayMode = "SetPlayMode";
+export const SetSinglePlay = "SetSinglePlay";
+export const SetShuffledIndices = "SetShuffledIndices";

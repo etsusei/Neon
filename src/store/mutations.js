@@ -27,15 +27,17 @@ const mutations = {
         }
     },
     [types.GetIndex](state, index) {
-        state.index = index
+        // 强制触发 watcher：先设为 null 再设为目标值
+        // 这样即使 index 相同也会触发更新
+        state.index = null;
+        setTimeout(() => {
+            state.index = index;
+        }, 0);
     },
     [types.PushIndex](state, currentIndex) {
-        console.log('[mutations] PushIndex called');
-        console.log('[mutations]   Old index:', state.index);
-        console.log('[mutations]   New index:', currentIndex);
+        // 直接设置，不使用强制触发（避免与 jumpToClick 形成循环）
         state.index = currentIndex;
         state.currentIndex = currentIndex;
-        console.log('[mutations]   State updated, index is now:', state.index);
     },
     [types.SetIsPlaying](state, isPlaying) {
         console.log('[mutations] SetIsPlaying:', isPlaying);
@@ -60,6 +62,19 @@ const mutations = {
     },
     [types.SetLyricDarkMode](state, isDark) {
         state.lyricDarkMode = isDark;
+    },
+    // 播放模式
+    [types.SetPlayMode](state, mode) {
+        state.playMode = mode;
+        console.log('[mutations] SetPlayMode:', mode);
+    },
+    [types.SetSinglePlay](state, isSingle) {
+        state.isSinglePlay = isSingle;
+        console.log('[mutations] SetSinglePlay:', isSingle);
+    },
+    [types.SetShuffledIndices](state, indices) {
+        state.shuffledIndices = indices;
+        console.log('[mutations] SetShuffledIndices:', indices.length, 'items');
     }
 }
 export default mutations;
