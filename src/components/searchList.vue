@@ -2,14 +2,8 @@
   <div class="list-search-container" ref="scrollContainer" @scroll="handleScroll">
     <div class="cover-warpper" v-for="(track, $index) in result" :key="$index">
       <router-link :to="{name:'List',params:{listId:`${track.id}`}}">
-        <div class="cover" @click="toList">
-          <img 
-            :src="track.coverImgUrl" 
-            referrerpolicy="no-referrer" 
-            alt="cover" 
-            @error="handleImageError($event, track)"
-          />
-          <div v-if="track.imageError" class="image-error">Img Err</div>
+        <div class="cover">
+          <skeleton-image :src="track.coverImgUrl" alt="playlist cover" />
         </div>
       </router-link>
       <div class="name">{{ track.name }}</div>
@@ -31,7 +25,12 @@
 </template>
 
 <script>
+import SkeletonImage from './SkeletonImage.vue';
+
 export default {
+  components: {
+    SkeletonImage
+  },
   props: {
     result: {
       type: Array,
@@ -50,14 +49,6 @@ export default {
     return {};
   },
   methods: {
-    toList() {
-      // Logic if needed, or rely on router-link
-    },
-    handleImageError(e, track) {
-      track.imageError = true; 
-      e.target.style.display = 'none';
-      e.target.parentElement.innerText = 'Img Err';
-    },
     handleScroll(e) {
       const container = e.target;
       const scrollTop = container.scrollTop;
@@ -70,20 +61,21 @@ export default {
         }
       }
     }
-  },
+  }
 };
 </script>
 
 <style lang="scss" scoped>
 .list-search-container {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: flex-start;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-auto-rows: min-content;
+  align-content: start;
+  gap: 20px;
+  padding: 20px;
   width: 100%;
   max-height: 60vh;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden auto;
 }
 .list-search-container::-webkit-scrollbar {
   width: 8px;
@@ -99,16 +91,15 @@ export default {
 .cover-warpper {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  height: 200px;
-  width: 200px;
-  margin: 30px 37px;
+  justify-content: flex-start;
+  align-items: center;
+  height: auto;
+  width: 100%;
 }
 .cover {
   width: 175px;
   height: 175px;
   border-radius: 20px;
-  padding: 0 0 0 0;
   margin: auto;
   cursor: pointer;
   overflow: hidden;
@@ -123,19 +114,15 @@ export default {
 .cover:hover img {
   transform: scale(1.05);
 }
-.image-error {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: #333;
-  font-size: 14px;
-}
 .name {
   text-align: center;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  width: 100%;
+  max-width: 175px;
+  padding: 8px 0;
+  font-size: 14px;
 }
 /* 加载状态样式 */
 .load-more-section {
@@ -143,8 +130,10 @@ export default {
   justify-content: center;
   align-items: center;
   width: 100%;
+  min-height: 200px;
   padding: 20px;
   color: #666;
+  grid-column: 1 / -1;
 }
 .loading-spinner {
   display: flex;
@@ -167,24 +156,7 @@ export default {
   padding: 15px;
   font-size: 12px;
   color: #999;
-}
-
-// iPad 响应式布局 (768px - 1024px)
-@media screen and (min-width: 768px) and (max-width: 1024px) {
-  .cover-warpper {
-    width: calc(33.33% - 20px);
-    height: 180px;
-    margin: 10px;
-  }
-  
-  .cover {
-    width: 140px;
-    height: 140px;
-  }
-  
-  .name {
-    font-size: 13px;
-  }
+  grid-column: 1 / -1;
 }
 
 // 移动端响应式样式 - 使用行列表显示
@@ -229,9 +201,7 @@ export default {
     padding-left: 12px;
     font-size: 14px;
     text-align: left;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    max-width: none;
   }
 }
 </style>

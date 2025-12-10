@@ -60,7 +60,7 @@
 import {mapMutations} from 'vuex';
 import AddToPlaylistPopup from './AddToPlaylistPopup.vue';
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 20;
 
 export default {
   props:['tracks'],

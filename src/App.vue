@@ -219,12 +219,32 @@ export default {
     this.dateToday = dayjs().format("YYYY,MMM,DD");
     
     console.log('[App.vue] mounted - using Vuex isPlaying state');
+    
+    // Page Visibility API - 页面不可见时暂停背景渲染
+    this.handleVisibilityChange = () => {
+      if (document.hidden) {
+        console.log('[App.vue] Page hidden - pausing all background rendering');
+        this.$refs.backgroundAnimation?.pauseRendering();
+        this.$refs.dynamicBackground?.pauseRendering();
+      } else {
+        console.log('[App.vue] Page visible - resuming appropriate background');
+        // 根据当前播放状态恢复相应的背景
+        if (this.isPlaying) {
+          this.$refs.dynamicBackground?.resumeRendering();
+        } else {
+          this.$refs.backgroundAnimation?.resumeRendering();
+        }
+      }
+    };
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
   },
   beforeUnmount() {
     // 清理定时器
     if (this.renderSwitchTimer) {
       clearTimeout(this.renderSwitchTimer);
     }
+    // 移除 visibility 监听
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
   }
 };
 </script>
@@ -392,6 +412,8 @@ body {
     overflow: hidden;
     padding: 16px 24px 24px 0;
     transition: opacity 0.8s ease-in-out;
+    position: relative;
+    z-index: 2; // 确保在动态背景之上
   }
 
   &-header {

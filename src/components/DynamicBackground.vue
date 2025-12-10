@@ -33,10 +33,10 @@ export default {
       // Shader uniforms
       uniforms: {
         uTime: { value: 0 },
-        uColor1: { value: new THREE.Color(0xff0000) },
-        uColor2: { value: new THREE.Color(0x0000ff) },
-        uColor3: { value: new THREE.Color(0x00ff00) },
-        uColor4: { value: new THREE.Color(0xffff00) },
+        uColor1: { value: new THREE.Color(0xffffff) },
+        uColor2: { value: new THREE.Color(0xffffff) },
+        uColor3: { value: new THREE.Color(0xffffff) },
+        uColor4: { value: new THREE.Color(0xffffff) },
         uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
         uAnchor1: { value: new THREE.Vector2(0.724, 0.724) },
         uAnchor2: { value: new THREE.Vector2(1.0, 0.429) },
@@ -49,10 +49,10 @@ export default {
       
       // 目标颜色（用于平滑过渡）
       targetColors: {
-        color1: new THREE.Color(0xff0000),
-        color2: new THREE.Color(0x0000ff),
-        color3: new THREE.Color(0x00ff00),
-        color4: new THREE.Color(0xffff00)
+        color1: new THREE.Color(0xffffff),
+        color2: new THREE.Color(0xffffff),
+        color3: new THREE.Color(0xffffff),
+        color4: new THREE.Color(0xffffff)
       },
       
       // 颜色过渡速度

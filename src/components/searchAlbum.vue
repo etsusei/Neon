@@ -2,7 +2,9 @@
   <div class="album-search-container" ref="scrollContainer" @scroll="handleScroll">
     <div class="cover-warpper" v-for="(track,$index) in result" :key="$index">
       <router-link :to="{name:'Album',params:{albumId:`${track.id}`}}">
-        <div class="cover" :style="{ backgroundImage:`url(${track.picUrl})`}"></div>
+        <div class="cover">
+          <skeleton-image :src="track.picUrl" alt="album cover" />
+        </div>
       </router-link>
       <div class="name">{{track.name}}</div>
     </div>
@@ -23,7 +25,12 @@
 </template>
 
 <script>
+import SkeletonImage from './SkeletonImage.vue';
+
 export default {
+  components: {
+    SkeletonImage
+  },
   props: {
     result: {
       type: Array,
@@ -60,14 +67,15 @@ export default {
 
 <style lang="scss" scoped>
 .album-search-container {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: flex-start;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-auto-rows: min-content;
+  align-content: start;
+  gap: 20px;
+  padding: 20px;
   width: 100%;
   max-height: 60vh;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden auto;
 }
 .album-search-container::-webkit-scrollbar {
   width: 8px;
@@ -83,32 +91,32 @@ export default {
 .cover-warpper {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  height: 200px;
-  width: 200px;
-  margin: 30px 37px;
+  justify-content: flex-start;
+  align-items: center;
+  height: auto;
+  width: 100%;
 }
 .cover {
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: cover;
   width: 175px;
   height: 175px;
   border-radius: 20px;
-  padding: 0 0 0 0;
   margin: auto;
   cursor: pointer;
+  overflow: hidden;
   transition: all 0.3s ease-in-out;
 }
 .cover:hover {
-  width: 185px;
-  height: 185px;
+  transform: scale(1.05);
 }
 .name {
   text-align: center;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  width: 100%;
+  max-width: 175px;
+  padding: 8px 0;
+  font-size: 14px;
 }
 /* 加载状态样式 */
 .load-more-section {
@@ -116,8 +124,10 @@ export default {
   justify-content: center;
   align-items: center;
   width: 100%;
+  min-height: 200px;
   padding: 20px;
   color: #666;
+  grid-column: 1 / -1;
 }
 .loading-spinner {
   display: flex;
@@ -140,28 +150,6 @@ export default {
   padding: 15px;
   font-size: 12px;
   color: #999;
-}
-
-// iPad 响应式布局 (768px - 1024px)
-@media screen and (min-width: 768px) and (max-width: 1024px) {
-  .cover-warpper {
-    width: calc(33.33% - 20px);
-    height: 180px;
-    margin: 10px;
-  }
-  
-  .cover {
-    width: 140px;
-    height: 140px;
-  }
-  
-  .cover:hover {
-    width: 145px;
-    height: 145px;
-  }
-  
-  .name {
-    font-size: 13px;
-  }
+  grid-column: 1 / -1;
 }
 </style>

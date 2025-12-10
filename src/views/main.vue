@@ -5,12 +5,7 @@
       <div class="cover-warpper" v-for="(track, $index) in displayedTrendList" :key="'trend-'+$index">
         <router-link :to="{name:'List',params:{listId:`${track.id}`}}">
           <div class="cover">
-            <img 
-              :src="track.coverImgUrl" 
-              referrerpolicy="no-referrer" 
-              alt="cover" 
-              @error="handleImageError($event, track)"
-            />
+            <skeleton-image :src="track.coverImgUrl" alt="cover" />
           </div>
         </router-link>
         <div class="name">{{ track.name }}</div>
@@ -30,12 +25,7 @@
       <div class="cover-warpper" v-for="(track, $index) in displayedRankList" :key="'rank-'+$index">
         <router-link :to="{name:'List',params:{listId:`${track.id}`}}">
           <div class="cover">
-            <img 
-              :src="track.coverImgUrl" 
-              referrerpolicy="no-referrer" 
-              alt="cover" 
-              @error="handleImageError($event, track)"
-            />
+            <skeleton-image :src="track.coverImgUrl" alt="cover" />
           </div>
         </router-link>
         <div class="name">{{ track.name }}</div>
@@ -55,10 +45,14 @@
 
 <script>
 import {getTrendList,getRank} from "../api/neteaseApi"
+import SkeletonImage from "../components/SkeletonImage.vue"
 
 const PAGE_SIZE = 8;
 
 export default {
+  components: {
+    SkeletonImage
+  },
   data(){
     return{
       trendList: [],
@@ -170,24 +164,26 @@ h1 {
 }
 .trending-row,
 .ranking-row {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: flex-start;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-auto-rows: min-content;
+  align-content: start;
+  gap: 20px;
+  padding: 20px;
   margin: auto 0;
-  height: 530px;
-  overflow-x: auto;
-  overflow-y: auto;
+  min-height: 300px;
+  max-height: 530px;
+  overflow: hidden auto;
   border-radius: 32px;
   background-color: rgba(196, 196, 196, 0.3);
 }
 .cover-warpper {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  height: 200px;
-  width: 200px;
-  margin: 30px 37px;
+  justify-content: flex-start;
+  align-items: center;
+  height: auto;
+  width: 100%;
 }
 .cover {
   width: 175px;
@@ -212,6 +208,10 @@ h1 {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  width: 100%;
+  max-width: 175px;
+  padding: 8px 0;
+  font-size: 14px;
 }
 .trending-row::-webkit-scrollbar,
 .ranking-row::-webkit-scrollbar {
@@ -234,8 +234,10 @@ h1 {
   justify-content: center;
   align-items: center;
   width: 100%;
+  min-height: 200px;
   padding: 20px;
   color: #666;
+  grid-column: 1 / -1; // 占满整行
 }
 .loading-spinner {
   display: flex;

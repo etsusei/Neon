@@ -167,7 +167,9 @@ export default {
   flex-direction: row;
   justify-content:flex-end;
   margin-right: 10px;
-  width:100%;
+  margin-left: auto;
+  width: auto;
+  cursor: pointer;
 }
 .album-download-icon {
   margin: auto 0;
