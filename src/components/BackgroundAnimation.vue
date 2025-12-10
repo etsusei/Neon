@@ -1,10 +1,16 @@
 <template>
-  <canvas ref="canvas" id="canvas"></canvas>
+  <canvas ref="canvas" id="canvas" :class="{ 'no-blur': noBlur }"></canvas>
 </template>
 
 <script>
 export default {
   name: 'BackgroundAnimation',
+  props: {
+    noBlur: {
+      type: Boolean,
+      default: false
+    }
+  },
   data() {
     return {
       canvas: {
@@ -261,5 +267,9 @@ export default {
   top: 0px;
   width: 100%;
   height: 100%;
+}
+#canvas.no-blur {
+  -webkit-filter: none;
+  filter: none;
 }
 </style>
