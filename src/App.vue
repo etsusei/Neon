@@ -91,7 +91,7 @@
             </router-link>
             <div class="back-warpper">
             <div class="back-warpper">
-              <liquid-card class="liquid-back" @click="$router.back(-1)" :hover-effect="true">
+              <liquid-card class="liquid-back" @click="safeGoBack" :hover-effect="true">
                 <div class="liquid-back-content">
                   <i class="fa fa-angle-left"></i>
                 </div>
@@ -232,6 +232,27 @@ export default {
     },
     exitImmersiveMode() {
       this.$store.commit('ToggleImmersiveMode');
+    },
+    safeGoBack() {
+      // 检查浏览器历史记录长度
+      // history.length > 1 通常意味着有上一页
+      // 但在某些单页应用重载场景下也不一定准确，所以结合当前路由判断
+      
+      const currentRoute = this.$route.name;
+      
+      // 如果已经在首页，可以不做操作或者提示
+      if (currentRoute === 'Home') {
+        return;
+      }
+      
+      // 如果没有历史记录（直接打开的新标签页或者强制刷新），回退可能会退出
+      // 这里的 1 是个经验值，新标签页打开通常为 1 或 2，取决于浏览器实现
+      if (window.history.length <= 1) {
+        this.$router.push({ name: 'Home' });
+      } else {
+        // 尝试回退
+        this.$router.back();
+      }
     }
   },
   created() {},
