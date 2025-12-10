@@ -8,13 +8,16 @@
     <!-- 主界面：仅登录后显示 -->
     <template v-else>
       <!-- 静态背景 - 始终渲染，通过opacity控制显示 -->
-      <background-animation 
-        ref="backgroundAnimation"
-        :style="{ 
-          opacity: isPlaying ? 0 : 1,
-          transition: 'opacity 0.8s ease-in-out'
-        }" 
-      />
+      <div style="position: fixed; inset: 0; overflow: hidden; z-index: -2;">
+        <background-animation 
+          ref="backgroundAnimation"
+          :no-blur="false"
+          :style="{ 
+            opacity: isPlaying ? 0 : 1,
+            transition: 'opacity 0.8s ease-in-out'
+          }" 
+        />
+      </div>
       <!-- 动态背景 - 始终渲染，通过opacity控制显示 -->
       <dynamic-background 
         ref="dynamicBackground"
@@ -32,35 +35,39 @@
         </div>
       </transition>
       <div class="app-container" :class="{ 'immersive-mode': isImmersiveMode }">
-        <div class="app-header" :style="{ opacity: isImmersiveMode ? 0 : 1, pointerEvents: isImmersiveMode ? 'none' : 'auto' }">
+        <div class="app-header" :style="{ opacity: isImmersiveMode ? 0 : 1, transition: 'opacity 0.5s ease', pointerEvents: isImmersiveMode ? 'none' : 'auto' }">
           <div class="app-header-left">
             <i class="fa fa-music" style="font-size: 24px"></i>
             <p class="app-name">Neon</p>
             <div class="search-wrapper">
-              <input
-                class="search-input"
-                v-model="search"
-                type="text"
-                placeholder="Search"
-                @keyup.enter="searchClick"
-              />
-              <svg
-                @click="searchClick"
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                fill="none"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                class="feather feather-search"
-                viewBox="0 0 24 24"
-              >
-                <defs></defs>
-                <circle cx="11" cy="11" r="8"></circle>
-                <path d="M21 21l-4.35-4.35"></path>
-              </svg>
+              <liquid-card border-radius="20px">
+                <div class="search-inner">
+                  <input
+                    class="search-input"
+                    v-model="search"
+                    type="text"
+                    placeholder="Search"
+                    @keyup.enter="searchClick"
+                  />
+                  <svg
+                    @click="searchClick"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    class="feather feather-search"
+                    viewBox="0 0 24 24"
+                  >
+                    <defs></defs>
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="M21 21l-4.35-4.35"></path>
+                  </svg>
+                </div>
+              </liquid-card>
             </div>
           </div>
           <div class="app-header-right">
@@ -72,7 +79,7 @@
             </router-link>
           </div>
         </div>
-        <div class="app-content" :style="{ opacity: isImmersiveMode ? 0 : 1, pointerEvents: isImmersiveMode ? 'none' : 'auto' }">
+        <div class="app-content" :style="{ opacity: isImmersiveMode ? 0 : 1, transition: 'opacity 0.5s ease', pointerEvents: isImmersiveMode ? 'none' : 'auto' }">
           <div class="app-sidebar">
             <router-link :to="{ name: 'Home' }">
               <p class="app-sidebar-link">
@@ -83,29 +90,41 @@
               <i class="fa fa-heart" style="font-size: 24px"></i>
             </router-link>
             <div class="back-warpper">
-              <div class="back" @click="$router.back(-1)">
-                <i class="fa fa-angle-left"></i>
-              </div>
+            <div class="back-warpper">
+              <liquid-card class="liquid-back" @click="$router.back(-1)" :hover-effect="true">
+                <div class="liquid-back-content">
+                  <i class="fa fa-angle-left"></i>
+                </div>
+              </liquid-card>
+            </div>
             </div>
           </div>
           <div class="projects-section">
-            <div class="projects-section-header">
-              <p>{{ this.$route.name }}</p>
-              <p class="time">{{ this.dateToday }}</p>
-            </div>
-            <div class="projects-section-pages">
-              <transition name="fade">
-                <router-view></router-view>
-              </transition>
-            </div>
+            <liquid-card border-radius="32px">
+              <div class="projects-section-content">
+                <div class="projects-section-header">
+                  <p>{{ this.$route.name }}</p>
+                  <p class="time">{{ this.dateToday }}</p>
+                </div>
+                <div class="projects-section-pages">
+                  <transition name="fade">
+                    <router-view></router-view>
+                  </transition>
+                </div>
+              </div>
+            </liquid-card>
           </div>
           <div class="messages-section">
-            <div class="projects-section-header">
-              <p>Lyrics</p>
-            </div>
-            <div class="messages">
-              <lyric-display />
-            </div>
+            <liquid-card border-radius="30px">
+              <div class="messages-section-content">
+                <div class="projects-section-header">
+                  <p>Lyrics</p>
+                </div>
+                <div class="messages">
+                  <lyric-display />
+                </div>
+              </div>
+            </liquid-card>
           </div>
         </div>
         <music-player />
@@ -120,6 +139,7 @@ import MusicPlayer from "../src/components/MusicPlayer.vue";
 import BackgroundAnimation from "../src/components/BackgroundAnimation.vue";
 import DynamicBackground from "../src/components/DynamicBackground.vue";
 import LyricDisplay from "../src/components/LyricDisplay.vue";
+import LiquidCard from "../src/components/LiquidCard.vue";
 import { mapGetters, mapState } from 'vuex';
 
 export default {
@@ -127,7 +147,8 @@ export default {
     MusicPlayer,
     BackgroundAnimation,
     DynamicBackground,
-    LyricDisplay
+    LyricDisplay,
+    LiquidCard
   },
   data() {
     return {
@@ -271,7 +292,7 @@ a {
 }
 
 :root {
-  --app-container: #fcfcfc00;
+  --app-container: transparent; /* transparent for liquid glass */
   --main-color: #1f1c2e;
   --secondary-color: #4a4a4a;
   --link-color: #1f1c2e;
@@ -394,7 +415,9 @@ body {
     flex-direction: column;
     height: 100%;
     background-color: var(--app-container);
-    transition: 0.2s;
+    background: none !important; /* Force transparent */
+    background: none !important; /* Force transparent */
+    /* transition: 0.2s; Stacking context fix */
     max-width: 1800px;
     margin: auto;
     button,
@@ -409,11 +432,13 @@ body {
   &-content {
     display: flex;
     height: 100%;
-    overflow: hidden;
+    /* overflow: hidden; Removed for debug */
     padding: 16px 24px 24px 0;
-    transition: opacity 0.8s ease-in-out;
+    padding: 16px 24px 24px 0;
+    /* transition: opacity 0.8s ease-in-out; Stacking context fix */
     position: relative;
-    z-index: 2; // 确保在动态背景之上
+    position: relative;
+    /* z-index: 2; Removed for debug */
   }
 
   &-header {
@@ -479,18 +504,21 @@ body {
 
 .search-wrapper {
   border-radius: 20px;
-  background-color: rgba(255, 255, 255, 0.6);
-  padding-right: 12px;
-  height: 40px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   width: 100%;
   max-width: 480px;
   color: var(--light-font);
-  box-shadow: 0 2px 6px 0 rgba(136, 148, 171, 0.2),
-    0 24px 20px -24px rgba(71, 82, 107, 0.1);
-  overflow: hidden;
+  /* box-shadow removed for liquid effect */
+  overflow: visible; /* Allow liquid card to handle overflow if needed, or keep hidden */
+  height: 40px; /* Restore fixed height */
+
+  .search-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding-right: 12px;
+  }
 
   .dark & {
     box-shadow: none;
@@ -539,6 +567,8 @@ body {
 }
 
 .app-sidebar {
+  background: none !important; /* Force transparent */
+  /* backdrop-filter: blur(10px); Removed debug */
   padding: 40px 16px;
   display: flex;
   flex-direction: column;
@@ -581,36 +611,32 @@ a.router-link-active.router-link-exact-active {
   flex-direction: column;
   justify-content: center;
 }
-.back {
-  width: 100%;
-  height: 50vh;
-  min-height: 40px;
-  cursor: pointer;
-  border-radius: 32px;
-  background: rgba(255, 255, 255, 0.7);
-  font-size: 50px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  opacity: 0.3;
-  transition: all 0.3s ease-in-out;
-}
-.back:hover {
-  opacity: 1;
-}
+
+/* Liquid Glass Back 按钮 - 样式已移动到文件末尾的纯 CSS 块 */
 .projects-section {
   flex: 2;
-  //background-color: var(--projects-section);
-  background-color: rgba(255, 255, 255, 0.7);
+  /* background-color: var(--projects-section); */
+  /* background-color: rgba(255, 255, 255, 0.7); Removed for liquid effect */
   border-radius: 32px;
-  padding: 32px 32px 0 32px;
+  /* padding: 32px 32px 0 32px; Moved to content wrapper */
   overflow: hidden;
-  height: calc(100vh - 180px); // 为header和播放器留出空间
+  overflow: hidden;
+  height: calc(100vh - 200px); // Lifted bottom edge slightly (was 180px)
+  display: flex;
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow: auto;
+  /* overflow: auto; Moved to content wrapper */
   transition: all 300ms cubic-bezier(0.19, 1, 0.56, 1);
+  
+  .projects-section-content {
+    padding: 32px 32px 0 32px;
+    height: 100%;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
   &-line {
     display: flex;
     justify-content: space-between;
@@ -649,41 +675,52 @@ a.router-link-active.router-link-exact-active {
     //margin: 325px 750px;
   }
 }
-.projects-section::-webkit-scrollbar {
+.projects-section-content::-webkit-scrollbar {
   width: 8px;
   border-radius: 10px;
-  //background:rgba(190, 190, 190, 0.6)
+  background: transparent;
 }
-.projects-section::-webkit-scrollbar-thumb {
+.projects-section-content::-webkit-scrollbar-thumb {
   border-radius: 10px;
-  //-webkit-box-shadow:inset 0 0 5px rgba(0,0,0,0.2);
   background: rgba(121, 121, 121, 0.3);
   cursor: pointer;
 }
-.projects-section::-webkit-scrollbar-track {
+.projects-section-content::-webkit-scrollbar-track {
   border-radius: 10px;
   cursor: pointer;
-  //background: rgba(190, 190, 190, 0.6);
+  background: transparent;
 }
 
 .messages-section {
   flex-shrink: 0;
-  padding-bottom: 32px;
-  //background-color: var(--projects-section);
-  background-color: rgba(255, 255, 255, 0.7);
+  flex-shrink: 0;
+  /* padding-bottom: 32px; Removed to align with projects-section */
+  /* background-color: var(--projects-section); */
+  /* background-color: rgba(255, 255, 255, 0.7); Removed for liquid effect */
   margin-left: 24px;
   max-width: 200px;
   //flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  justify-content: flex-start;
   width: 100%;
-  height: calc(100vh - 180px); // 为header和播放器留出空间
+  height: calc(100vh - 200px); // Lifted bottom edge slightly (was 180px)
+  //height:400px;
   //height:400px;
   border-radius: 30px;
+  border-radius: 30px;
   position: relative;
-  overflow: auto;
+  /* overflow: auto; Moved to content wrapper */
   transition: all 300ms cubic-bezier(0.19, 1, 0.56, 1);
+
+  .messages-section-content {
+    height: 100%;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 16px; /* Added internal padding */
+  }
 
   .projects-section-header {
     position: sticky;
@@ -714,19 +751,18 @@ a.router-link-active.router-link-exact-active {
   overflow-x: hidden;
   overflow-y: auto;
 }
-.messages::-webkit-scrollbar {
+.messages-section-content::-webkit-scrollbar {
   width: 8px;
   border-radius: 10px;
-  //background:rgba(190, 190, 190, 0.6)
+  background: transparent;
 }
-.messages::-webkit-scrollbar-thumb {
+.messages-section-content::-webkit-scrollbar-thumb {
   border-radius: 10px;
-  //-webkit-box-shadow:inset 0 0 5px rgba(0,0,0,0.2);
   background: rgba(121, 121, 121, 0.3);
 }
-.messages::-webkit-scrollbar-track {
+.messages-section-content::-webkit-scrollbar-track {
   border-radius: 10px;
-  //background: rgba(190, 190, 190, 0.6);
+  background: transparent;
 }
 
 // iPad 横屏 (宽度 > 高度 且 触摸设备)
@@ -902,3 +938,78 @@ a.router-link-active.router-link-exact-active {
   }
 }
 </style>
+
+<!-- Liquid Glass 样式 - 独立的 CSS 块 -->
+<style>
+:root {
+  /* Global Glass Opacity Control */
+  --glass-opacity: 0.25; 
+}
+
+/* Liquid Glass Back 按钮 */
+.liquid-back {
+  position: relative;
+  width: 100%;
+  height: 50vh;
+  min-height: 40px;
+  cursor: pointer;
+  border-radius: 32px;
+  cursor: pointer;
+  border-radius: 32px;
+  /* overflow: hidden; Re-enabled for border-radius */
+  overflow: hidden;
+  /* opacity: 0.7; Removed to avoid stacking context issues */
+  /* transition: all 0.3s ease-in-out; Removed to avoid stacking context issues */
+  /* Ensure z-index is handled carefully, local stacking context here is fine as long as parents are clean */
+  isolation: isolate; /* Create local stacking context to contain children */
+}
+
+.liquid-back:hover {
+  /* transform: scale(1.02); Handled by LiquidCard prop */
+}
+
+.liquid-back-effect {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  backdrop-filter: url(#glass-distortion);
+  -webkit-backdrop-filter: url(#glass-distortion);
+  backdrop-filter: url(#glass-distortion);
+  -webkit-backdrop-filter: url(#glass-distortion);
+  border-radius: inherit; /* inherit from parent */
+}
+
+.liquid-back-tint {
+  z-index: 1;
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.liquid-back-shine {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  border-radius: inherit;
+  box-shadow: 
+    inset 2px 2px 1px 0 rgba(255, 255, 255, 0.5),
+    inset -1px -1px 1px 1px rgba(255, 255, 255, 0.5);
+}
+
+.liquid-back-content {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 50px;
+  font-size: 50px;
+  color: rgba(0, 0, 0, 0.6);
+}
+</style>
+

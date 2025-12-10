@@ -259,14 +259,18 @@ export default {
 
 <style scoped>
 #canvas {
-  -webkit-filter: blur(30px);
-  filter: blur(30px);
+  -webkit-filter: blur(15px);
+  filter: blur(15px);
   z-index: -2;
   position: absolute;
-  left: 0px;
-  top: 0px;
-  width: 100%;
-  height: 100%;
+  left: -5%;
+  top: -5%;
+  width: 110%;
+  height: 110%;
+}
+#canvas.no-blur {
+  -webkit-filter: none;
+  filter: none;
 }
 #canvas.no-blur {
   -webkit-filter: none;

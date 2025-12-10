@@ -1,42 +1,50 @@
 <template>
   <div class="settings-page">
     <!-- 用户卡片 -->
-    <div class="user-card">
-      <div class="avatar-wrapper">
-        <div class="avatar">
-          <i class="fa fa-user"></i>
+    <div class="user-card-wrapper">
+      <liquid-card custom-class="user-card-glass" :hover-effect="true">
+        <div class="user-card-content">
+          <div class="avatar-wrapper">
+            <div class="avatar">
+              <i class="fa fa-user"></i>
+            </div>
+            <div class="avatar-glow"></div>
+          </div>
+          <h2 class="user-name">{{ userInfo.username }}</h2>
+          <p class="user-id">ID: {{ userInfo.id }}</p>
         </div>
-        <div class="avatar-glow"></div>
-      </div>
-      <h2 class="user-name">{{ userInfo.username }}</h2>
-      <p class="user-id">ID: {{ userInfo.id }}</p>
+      </liquid-card>
     </div>
 
     <!-- 设置卡片 -->
-    <div class="settings-card">
-      <form @submit.prevent="handleUpdate">
-        <div class="form-row">
-          <label>新用户名</label>
-          <input v-model="newUsername" type="text" placeholder="留空则保持不变" />
+    <div class="settings-card-wrapper">
+      <liquid-card custom-class="settings-card-glass">
+        <div class="settings-form-content">
+          <form @submit.prevent="handleUpdate">
+            <div class="form-row">
+              <label>新用户名</label>
+              <input v-model="newUsername" type="text" placeholder="留空则保持不变" />
+            </div>
+            
+            <div class="form-row">
+              <label>当前密码 <span class="required">*</span></label>
+              <input v-model="currentPassword" type="password" placeholder="验证身份" required />
+            </div>
+            
+            <div class="form-row">
+              <label>新密码</label>
+              <input v-model="newPassword" type="password" placeholder="留空则保持不变" />
+            </div>
+            
+            <p v-if="error" class="msg error">{{ error }}</p>
+            <p v-if="success" class="msg success">{{ success }}</p>
+            
+            <button type="submit" class="btn-save" :disabled="loading">
+              {{ loading ? '保存中...' : '保存修改' }}
+            </button>
+          </form>
         </div>
-        
-        <div class="form-row">
-          <label>当前密码 <span class="required">*</span></label>
-          <input v-model="currentPassword" type="password" placeholder="验证身份" required />
-        </div>
-        
-        <div class="form-row">
-          <label>新密码</label>
-          <input v-model="newPassword" type="password" placeholder="留空则保持不变" />
-        </div>
-        
-        <p v-if="error" class="msg error">{{ error }}</p>
-        <p v-if="success" class="msg success">{{ success }}</p>
-        
-        <button type="submit" class="btn-save" :disabled="loading">
-          {{ loading ? '保存中...' : '保存修改' }}
-        </button>
-      </form>
+      </liquid-card>
     </div>
 
     <!-- 退出登录 -->
@@ -47,6 +55,7 @@
 </template>
 
 <script>
+import LiquidCard from '../components/LiquidCard.vue'
 import { updateProfile } from '../api/userApi'
 import { ElMessage } from 'element-plus'
 
@@ -62,6 +71,9 @@ export default {
       error: '',
       success: ''
     }
+  },
+  components: {
+    LiquidCard
   },
   methods: {
     async handleUpdate() {
@@ -144,19 +156,24 @@ export default {
   flex-direction: column;
   align-items: center;
   padding: 30px 20px;
-  max-width: 400px;
+  max-width: 500px; /* Slightly wider */
   margin: 0 auto;
   gap: 20px;
 }
 
-// 用户卡片
-.user-card {
+// Wrapper to hold LiquidCard
+.user-card-wrapper, .settings-card-wrapper {
   width: 100%;
-  text-align: center;
-  padding: 30px 20px;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-  border-radius: 20px;
   position: relative;
+  /* Make sure liquid card can determine its size */
+}
+
+.user-card-content {
+  padding: 30px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* background: rgba(255, 255, 255, 0.1); No opaque bg */
 }
 
 .avatar-wrapper {
@@ -175,6 +192,7 @@ export default {
   justify-content: center;
   position: relative;
   z-index: 1;
+  box-shadow: 0 0 15px rgba(118, 75, 162, 0.5); /* Neon glow */
   
   i {
     font-size: 40px;
@@ -191,44 +209,42 @@ export default {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 50%;
   filter: blur(15px);
-  opacity: 0.4;
+  opacity: 0.6; /* Boosted */
   z-index: 0;
 }
 
 .user-name {
   margin: 0;
-  font-size: 22px;
-  font-weight: 600;
-  color: #333;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--main-color); /* Use app theme color */
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
 .user-id {
   margin: 8px 0 0;
   font-size: 14px;
-  color: #888;
+  color: var(--light-font);
+  opacity: 0.8;
 }
 
-// 设置卡片
-.settings-card {
-  width: 100%;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 16px;
+// Settings Form
+.settings-form-content {
   padding: 25px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
 .form-row {
-  margin-bottom: 18px;
+  margin-bottom: 20px;
   
   label {
     display: block;
     margin-bottom: 8px;
     font-size: 14px;
-    font-weight: 500;
-    color: #555;
+    font-weight: 600;
+    color: var(--main-color);
     
     .required {
-      color: #f5222d;
+      color: #ff4d4f;
       margin-left: 2px;
     }
   }
@@ -236,22 +252,26 @@ export default {
   input {
     width: 100%;
     padding: 14px 16px;
-    border: 2px solid #eee;
+    border: 1px solid rgba(255,255,255,0.3);
     border-radius: 12px;
     font-size: 15px;
     box-sizing: border-box;
-    transition: all 0.2s;
-    background: #fafafa;
+    transition: all 0.3s;
+    background: rgba(255, 255, 255, 0.1); /* Glassy input */
+    color: var(--main-color);
     
     &:focus {
       outline: none;
-      border-color: #667eea;
-      background: white;
-      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+      border-color: #764ba2;
+      background: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 0 10px rgba(118, 75, 162, 0.3);
     }
     
     &::placeholder {
-      color: #ccc;
+      color: rgba(0,0,0,0.4); /* Darker placeholder for glass */
+      .dark & {
+         color: rgba(255,255,255,0.4);
+      }
     }
   }
 }
@@ -263,13 +283,15 @@ export default {
   font-size: 14px;
   
   &.error {
-    color: #f5222d;
-    background: #fff2f0;
+    color: #ff4d4f;
+    background: rgba(255, 77, 79, 0.1);
+    border: 1px solid rgba(255, 77, 79, 0.2);
   }
   
   &.success {
     color: #52c41a;
-    background: #f6ffed;
+    background: rgba(82, 196, 26, 0.1);
+    border: 1px solid rgba(82, 196, 26, 0.2);
   }
 }
 
@@ -281,13 +303,14 @@ export default {
   border: none;
   border-radius: 12px;
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3);
   
   &:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 8px 25px rgba(118, 75, 162, 0.5);
   }
   
   &:disabled {
@@ -296,13 +319,13 @@ export default {
   }
 }
 
-// 退出登录按钮
+// Logout button
 .btn-logout {
   width: 100%;
   padding: 14px;
-  background: transparent;
-  color: #999;
-  border: 2px solid #eee;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--light-font);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
   font-size: 15px;
   cursor: pointer;
@@ -310,12 +333,14 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: all 0.2s;
+  transition: all 0.3s;
+  backdrop-filter: blur(5px);
   
   &:hover {
-    background: #ff4d4f;
+    background: rgba(255, 77, 79, 0.8);
     border-color: #ff4d4f;
     color: white;
+    box-shadow: 0 0 15px rgba(255, 77, 79, 0.4);
   }
 }
 </style>

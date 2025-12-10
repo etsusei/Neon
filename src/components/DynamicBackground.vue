@@ -441,7 +441,7 @@ export default {
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 0;
+  z-index: 0; /* Lowered to sit behind content */
   pointer-events: none;
   transition: opacity 0.8s ease-in-out;
 }

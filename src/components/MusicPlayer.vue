@@ -1,85 +1,89 @@
 <template>
   <div class="playerwarper">
     <div class="musicplayer">
-      <div class="musicplayer-left">
-        <div class="album-info">
-          <div 
-            class="player-cover__item"
-            @click="toggleImmersiveMode"
-            :style="{ 
-              backgroundImage: `url(${currentTrack.cover})`,
-              transform: `scale(${albumScale})`,
-              transition: 'transform 0.1s ease-out'
-            }"
-          >
-            <!-- 覆盖层 -->
-            <div class="cover-overlay">
-              <i class="fa fa-eye"></i>
+      <liquid-card border-radius="32px 32px 0 0" custom-class="player-liquid-glass" :overflow-visible="true">
+        <div class="musicplayer-content">
+          <div class="musicplayer-left">
+            <div class="album-info">
+              <div 
+                class="player-cover__item"
+                @click="toggleImmersiveMode"
+                :style="{ 
+                  backgroundImage: `url(${currentTrack.cover})`,
+                  transform: `scale(${albumScale})`,
+                  transition: 'transform 0.1s ease-out'
+                }"
+              >
+                <!-- 覆盖层 -->
+                <div class="cover-overlay">
+                  <i class="fa fa-eye"></i>
+                </div>
+              </div>
+              <div class="album-right">
+                <div class="album-right_name">{{ currentTrack.name }}</div>
+                <div class="album-right_info">
+                  {{ currentTrack.album }}-----{{ currentTrack.artist }}
+                </div>
+              </div>
             </div>
           </div>
-          <div class="album-right">
-            <div class="album-right_name">{{ currentTrack.name }}</div>
-            <div class="album-right_info">
-              {{ currentTrack.album }}-----{{ currentTrack.artist }}
+          <div class="musicplayer-middle">
+            <div class="player-controls">
+              <div class="track-control">
+                <div class="track-control_row">
+                  <div class="track-control_icon">
+                    <i class="fa fa-heart"></i>
+                  </div>
+                  <div class="track-control_icon" @click="prevTrack">
+                    <i class="fa fa-backward"></i>
+                  </div>
+                  <div class="track-control_iconPlay" @click="play">
+                    <i class="fa fa-pause-circle-o" v-if="isTimerPlaying"></i>
+                    <i class="fa fa-play-circle-o" v-else></i>
+                  </div>
+                  <div class="track-control_icon" @click="nextTrack">
+                    <i class="fa fa-forward"></i>
+                  </div>
+                  <div class="track-control_icon" @click="togglePlayMode" :title="playModeTitle">
+                    <i class="fa fa-repeat" v-if="playMode === 'sequence'"></i>
+                    <i class="fa fa-random" v-else-if="playMode === 'shuffle'"></i>
+                    <i class="fa fa-repeat" style="color: #f6002e;" v-else></i>
+                  </div>
+                </div>
+              </div>
+              <div class="progress" ref="progress">
+                <div class="progress_bar" @click="clickProgress">
+                  <div class="progress_current" :style="{ width: barWidth }"></div>
+                </div>
+                <div class="time">
+                  <div class="progress_time">{{ currentTime }}</div>
+                  <div class="progress_duration">{{ duration }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="musicplayer-right" ref="right">
+            <div class="volume-control">
+              <div class="volume-control_row">
+                <div class="volume-control_speaker">
+                  <i class="fa fa-volume-up"></i>
+                </div>
+                <div class="volume-control_bar">
+                  <div class="bar" @click="clickVolume" ref="volume">
+                    <div
+                      class="current-volume"
+                      :style="{ width: volumeWidth }"
+                    ></div>
+                  </div>
+                </div>
+                <div class="playlist-btn" @click="showPlaylist = true">
+                  <i class="fa fa-list"></i>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <div class="musicplayer-middle">
-        <div class="player-controls">
-          <div class="track-control">
-            <div class="track-control_row">
-              <div class="track-control_icon">
-                <i class="fa fa-heart"></i>
-              </div>
-              <div class="track-control_icon" @click="prevTrack">
-                <i class="fa fa-backward"></i>
-              </div>
-              <div class="track-control_iconPlay" @click="play">
-                <i class="fa fa-pause-circle-o" v-if="isTimerPlaying"></i>
-                <i class="fa fa-play-circle-o" v-else></i>
-              </div>
-              <div class="track-control_icon" @click="nextTrack">
-                <i class="fa fa-forward"></i>
-              </div>
-              <div class="track-control_icon" @click="togglePlayMode" :title="playModeTitle">
-                <i class="fa fa-repeat" v-if="playMode === 'sequence'"></i>
-                <i class="fa fa-random" v-else-if="playMode === 'shuffle'"></i>
-                <i class="fa fa-repeat" style="color: #f6002e;" v-else></i>
-              </div>
-            </div>
-          </div>
-          <div class="progress" ref="progress">
-            <div class="progress_bar" @click="clickProgress">
-              <div class="progress_current" :style="{ width: barWidth }"></div>
-            </div>
-            <div class="time">
-              <div class="progress_time">{{ currentTime }}</div>
-              <div class="progress_duration">{{ duration }}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="musicplayer-right" ref="right">
-        <div class="volume-control">
-          <div class="volume-control_row">
-            <div class="volume-control_speaker">
-              <i class="fa fa-volume-up"></i>
-            </div>
-            <div class="volume-control_bar">
-              <div class="bar" @click="clickVolume" ref="volume">
-                <div
-                  class="current-volume"
-                  :style="{ width: volumeWidth }"
-                ></div>
-              </div>
-            </div>
-            <div class="playlist-btn" @click="showPlaylist = true">
-              <i class="fa fa-list"></i>
-            </div>
-          </div>
-        </div>
-      </div>
+      </liquid-card>
     </div>
     <playlist-popup :show="showPlaylist" @close="showPlaylist = false" />
   </div>
@@ -91,9 +95,11 @@ import { mapMutations } from "vuex";
 import { getSongUrl } from "../api/neteaseApi";
 import { ElMessage } from "element-plus";
 import PlaylistPopup from "./PlaylistPopup.vue";
+import LiquidCard from "./LiquidCard.vue";
 export default {
   components: {
-    PlaylistPopup
+    PlaylistPopup,
+    LiquidCard
   },
   data() {
     return {
@@ -760,7 +766,7 @@ export default {
   bottom: 0px;
   position: fixed;
   display: flex;
-  z-index: 5;
+  z-index: 10; /* Increased to ensure it's top-most */
   zoom: 1;
   bottom: 0;
   left: 0;
@@ -780,10 +786,20 @@ export default {
   height: 0;
   width: 100%;
   height: 65px;
-  background-color: rgba(255, 255, 255, 0.6);
+  width: 100%;
+  height: 65px;
+  /* background-color: rgba(255, 255, 255, 0.6); Removed for liquid effect */
   border-top-left-radius: 32px;
   border-top-right-radius: 32px;
   min-width: 0; // 允许响应式收缩
+}
+.musicplayer-content {
+  display: flex;
+  justify-content: center; /* Restore centering */
+  width: 100%;
+  height: 100%;
+  position: relative;
+  z-index: 5;
 }
 .musicplayer-left {
   display: flex;
