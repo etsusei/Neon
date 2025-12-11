@@ -1,90 +1,92 @@
 <template>
-  <transition name="fade">
-    <div v-if="show" class="import-overlay" @click.self="close">
-      <div class="import-popup">
-        <div class="popup-header">
-          <span class="popup-title">从网易云导入</span>
-          <div class="popup-close" @click="close">
-            <i class="fa fa-times"></i>
-          </div>
-        </div>
-        
-        <!-- 搜索区域 -->
-        <div class="search-section">
-          <input 
-            v-model="userId" 
-            placeholder="输入网易云用户ID"
-            @keyup.enter="searchPlaylists"
-          />
-          <button @click="searchPlaylists" :disabled="!userId.trim() || searching">
-            <i class="fa" :class="searching ? 'fa-spinner fa-spin' : 'fa-search'"></i>
-            {{ searching ? '查询中...' : '查询' }}
-          </button>
-        </div>
-        
-        <div class="hint">
-          <i class="fa fa-info-circle"></i>
-          在网易云音乐中打开用户主页，URL中的数字就是用户ID
-        </div>
-        
-        <!-- 歌单列表 -->
-        <div class="playlists-section" v-if="playlists.length > 0">
-          <div class="select-bar">
-            <label class="checkbox-label">
-              <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll" />
-              全选 ({{ selectedIds.length }}/{{ playlists.length }})
-            </label>
+  <teleport to="body">
+    <transition name="fade">
+      <div v-if="show" class="import-overlay" @click.self="close">
+        <div class="import-popup">
+          <div class="popup-header">
+            <span class="popup-title">从网易云导入</span>
+            <div class="popup-close" @click="close">
+              <i class="fa fa-times"></i>
+            </div>
           </div>
           
-          <div class="playlists-list">
-            <div 
-              v-for="playlist in playlists" 
-              :key="playlist.id" 
-              class="playlist-item"
-              :class="{ selected: selectedIds.includes(playlist.id) }"
-              @click="toggleSelect(playlist.id)"
-            >
-              <input 
-                type="checkbox" 
-                :checked="selectedIds.includes(playlist.id)"
-                @click.stop
-                @change="toggleSelect(playlist.id)"
-              />
-              <div class="playlist-cover" :style="{ backgroundImage: `url(${playlist.coverImgUrl})` }"></div>
-              <div class="playlist-info">
-                <div class="playlist-name">{{ playlist.name }}</div>
-                <div class="playlist-meta">{{ playlist.trackCount }} 首</div>
+          <!-- 搜索区域 -->
+          <div class="search-section">
+            <input 
+              v-model="userId" 
+              placeholder="输入网易云用户ID"
+              @keyup.enter="searchPlaylists"
+            />
+            <button @click="searchPlaylists" :disabled="!userId.trim() || searching">
+              <i class="fa" :class="searching ? 'fa-spinner fa-spin' : 'fa-search'"></i>
+              {{ searching ? '查询中...' : '查询' }}
+            </button>
+          </div>
+          
+          <div class="hint">
+            <i class="fa fa-info-circle"></i>
+            在网易云音乐中打开用户主页，URL中的数字就是用户ID
+          </div>
+          
+          <!-- 歌单列表 -->
+          <div class="playlists-section" v-if="playlists.length > 0">
+            <div class="select-bar">
+              <label class="checkbox-label">
+                <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll" />
+                全选 ({{ selectedIds.length }}/{{ playlists.length }})
+              </label>
+            </div>
+            
+            <div class="playlists-list">
+              <div 
+                v-for="playlist in playlists" 
+                :key="playlist.id" 
+                class="playlist-item"
+                :class="{ selected: selectedIds.includes(playlist.id) }"
+                @click="toggleSelect(playlist.id)"
+              >
+                <input 
+                  type="checkbox" 
+                  :checked="selectedIds.includes(playlist.id)"
+                  @click.stop
+                  @change="toggleSelect(playlist.id)"
+                />
+                <div class="playlist-cover" :style="{ backgroundImage: `url(${playlist.coverImgUrl})` }"></div>
+                <div class="playlist-info">
+                  <div class="playlist-name">{{ playlist.name }}</div>
+                  <div class="playlist-meta">{{ playlist.trackCount }} 首</div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        
-        <div class="empty-state" v-else-if="searched && !searching">
-          <p>未找到歌单或该用户没有公开歌单</p>
-        </div>
-        
-        <!-- 导入按钮 -->
-        <div class="action-bar" v-if="playlists.length > 0">
-          <div class="progress-info" v-if="importing">
-            <div class="progress-text">
-              正在导入: {{ currentPlaylistName }}
-            </div>
-            <div class="progress-detail">
-              歌单 {{ importProgress + 1 }}/{{ selectedIds.length }} · 歌曲 {{ songProgress }}/{{ songTotal }}
-            </div>
+          
+          <div class="empty-state" v-else-if="searched && !searching">
+            <p>未找到歌单或该用户没有公开歌单</p>
           </div>
-          <button 
-            class="import-btn" 
-            @click="importSelected" 
-            :disabled="selectedIds.length === 0 || importing"
-          >
-            <i class="fa" :class="importing ? 'fa-spinner fa-spin' : 'fa-download'"></i>
-            {{ importing ? '导入中...' : `导入选中 (${selectedIds.length})` }}
-          </button>
+          
+          <!-- 导入按钮 -->
+          <div class="action-bar" v-if="playlists.length > 0">
+            <div class="progress-info" v-if="importing">
+              <div class="progress-text">
+                正在导入: {{ currentPlaylistName }}
+              </div>
+              <div class="progress-detail">
+                歌单 {{ importProgress + 1 }}/{{ selectedIds.length }} · 歌曲 {{ songProgress }}/{{ songTotal }}
+              </div>
+            </div>
+            <button 
+              class="import-btn" 
+              @click="importSelected" 
+              :disabled="selectedIds.length === 0 || importing"
+            >
+              <i class="fa" :class="importing ? 'fa-spinner fa-spin' : 'fa-download'"></i>
+              {{ importing ? '导入中...' : `导入选中 (${selectedIds.length})` }}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  </transition>
+    </transition>
+  </teleport>
 </template>
 
 <script>
