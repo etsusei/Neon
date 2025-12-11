@@ -444,6 +444,30 @@ body.dark-mode-active {
   .no-lyric, .loading i {
     color: rgba(255, 255, 255, 0.5) !important;
   }
+  
+  /* Music Player Overrides */
+  .musicplayer .track-control {
+    background-color: #171717 !important;
+    transition: background-color 0.5s ease;
+  }
+  
+  .musicplayer .album-right_name,
+  .musicplayer .album-right_info,
+  .musicplayer .track-control_icon,
+  .musicplayer .track-control_icon i,
+  .musicplayer .track-control_iconPlay i,
+  .musicplayer .progress_time,
+  .musicplayer .progress_duration,
+  .musicplayer .volume-control_speaker i,
+  .musicplayer .playlist-btn i {
+    color: var(--text-primary) !important;
+    transition: color 0.5s ease;
+  }
+  
+  /* Volume Bar bg */
+  .musicplayer .volume-control_bar .bar {
+    background: rgba(255,255,255,0.2) !important;
+  }
 }
 
 /* 沉浸式模式歌词 */
