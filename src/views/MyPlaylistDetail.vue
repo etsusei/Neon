@@ -129,7 +129,22 @@ export default {
     async downloadSong(song) {
       const filename = `${song.song_name} - ${song.artist}.mp3`;
       
-      // 方法1: 尝试原接口
+      // 方法1: 优先使用 VIP 接口（后端统一接口）
+      try {
+        const response = await fetch(`https://neon.zeabur.app/api/music/url?id=${song.song_id}`);
+        const data = await response.json();
+        
+        if (data.code === 200 && data.data && data.data.url) {
+          console.log(`[下载] VIP接口成功 (${data.data.source}): ${filename}`);
+          await this.downloadFile(data.data.url, filename);
+          return;
+        }
+      } catch (e) {
+        console.warn('[下载] VIP接口失败:', e);
+      }
+      
+      // 方法2: 备用第三方接口
+      console.log('[下载] VIP接口失败，尝试第三方接口...');
       const qualities = ['exhigh', 'standard'];
       const apiTemplate = (id, level) => 
         `https://api.kxzjoker.cn/api/163_music?url=https://y.music.163.com/m/song?id=${id}&userid=8719916627&dlt=0846&level=${level}&type=json`;
@@ -140,26 +155,13 @@ export default {
           const data = await response.json();
           
           if (data.status === 200 && data.url) {
-            console.log(`[下载] 成功: ${filename}`);
+            console.log(`[下载] 第三方接口成功: ${filename}`);
             await this.downloadFile(data.url, filename);
             return;
           }
         } catch (e) {
-          console.warn(`[下载] ${quality} 失败`);
+          console.warn(`[下载] 第三方接口 ${quality} 失败`);
         }
-      }
-      
-      // 方法2: 使用代理接口
-      try {
-        const proxyResponse = await fetch(`https://neon.zeabur.app/proxy?id=${song.song_id}`);
-        const proxyData = await proxyResponse.json();
-        
-        if (proxyData.code === 200 && proxyData.url) {
-          await this.downloadFile(proxyData.url, filename);
-          return;
-        }
-      } catch (e) {
-        console.error('[下载] 代理接口失败:', e);
       }
       
       ElMessage.error('获取下载链接失败');
