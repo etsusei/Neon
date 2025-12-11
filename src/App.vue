@@ -479,6 +479,33 @@ body.dark-mode-active {
   .musicplayer .volume-control_bar .bar {
     background: rgba(255,255,255,0.2) !important;
   }
+  
+  /* Element Tabs Overrides for Dark Mode */
+  .el-tabs__nav-scroll {
+    background-color: transparent !important;
+  }
+  .el-tabs__header {
+    border-bottom: none !important;
+    background-color: transparent !important;
+  }
+  .el-tabs--border-card {
+    background: transparent !important;
+    border: none !important;
+  }
+  .el-tabs__item {
+    color: var(--text-primary) !important;
+    transition: color 0.3s ease;
+  }
+  .el-tabs__item.is-active {
+    color: #fff !important;
+    font-weight: bold;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-right-color: transparent !important;
+    border-left-color: transparent !important;
+  }
+  .el-tabs__nav-wrap::after {
+    background-color: transparent !important;
+  }
 }
 
 /* 沉浸式模式歌词 */
