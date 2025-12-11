@@ -75,6 +75,10 @@ const mutations = {
     [types.SetShuffledIndices](state, indices) {
         state.shuffledIndices = indices;
         console.log('[mutations] SetShuffledIndices:', indices.length, 'items');
+    },
+    [types.ToggleDarkMode](state) {
+        state.isDarkMode = !state.isDarkMode;
+        console.log('[mutations] ToggleDarkMode:', state.isDarkMode);
     }
 }
 export default mutations;

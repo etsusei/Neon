@@ -102,6 +102,7 @@ export default {
   inset: 0;
   pointer-events: none;
   background-color: rgba(255, 255, 255, var(--glass-opacity));
+  transition: background-color 0.5s ease; /* Smooth tint color transition */
 }
 
 /* Shine Layer (Highlight Borders) */

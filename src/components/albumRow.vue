@@ -115,6 +115,7 @@ export default {
 }
 .album-content {
   margin: auto;
+  color: var(--text-primary);
 }
 .album-plus-icon {
   margin: auto 0;

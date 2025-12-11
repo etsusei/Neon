@@ -1,57 +1,63 @@
 <template>
   <div class="home-warpper">
     <h1>Trending List</h1>
-    <div class="trending-row" ref="trendingContainer" @scroll="handleTrendingScroll">
-      <div class="cover-warpper" v-for="(track, $index) in displayedTrendList" :key="'trend-'+$index">
-        <router-link :to="{name:'List',params:{listId:`${track.id}`}}">
-          <div class="cover">
-            <skeleton-image :src="track.coverImgUrl" alt="cover" />
+    <liquid-card class="list-card" border-radius="32px">
+      <div class="trending-row" ref="trendingContainer" @scroll="handleTrendingScroll">
+        <div class="cover-warpper" v-for="(track, $index) in displayedTrendList" :key="'trend-'+$index">
+          <router-link :to="{name:'List',params:{listId:`${track.id}`}}">
+            <div class="cover">
+              <skeleton-image :src="track.coverImgUrl" alt="cover" />
+            </div>
+          </router-link>
+          <div class="name">{{ track.name }}</div>
+        </div>
+        <div class="load-more-section" v-if="trendingHasMore">
+          <div v-if="trendingLoading" class="loading-spinner">
+            <i class="fa fa-spinner fa-spin"></i>
+            <span>加载中...</span>
           </div>
-        </router-link>
-        <div class="name">{{ track.name }}</div>
-      </div>
-      <div class="load-more-section" v-if="trendingHasMore">
-        <div v-if="trendingLoading" class="loading-spinner">
-          <i class="fa fa-spinner fa-spin"></i>
-          <span>加载中...</span>
+        </div>
+        <div v-if="!trendingHasMore && displayedTrendList.length > 0" class="no-more">
+          <span>没有更多了</span>
         </div>
       </div>
-      <div v-if="!trendingHasMore && displayedTrendList.length > 0" class="no-more">
-        <span>没有更多了</span>
-      </div>
-    </div>
+    </liquid-card>
     <h1>Ranking</h1>
-    <div class="ranking-row" ref="rankingContainer" @scroll="handleRankingScroll">
-      <div class="cover-warpper" v-for="(track, $index) in displayedRankList" :key="'rank-'+$index">
-        <router-link :to="{name:'List',params:{listId:`${track.id}`}}">
-          <div class="cover">
-            <skeleton-image :src="track.coverImgUrl" alt="cover" />
+    <liquid-card class="list-card" border-radius="32px">
+      <div class="ranking-row" ref="rankingContainer" @scroll="handleRankingScroll">
+        <div class="cover-warpper" v-for="(track, $index) in displayedRankList" :key="'rank-'+$index">
+          <router-link :to="{name:'List',params:{listId:`${track.id}`}}">
+            <div class="cover">
+              <skeleton-image :src="track.coverImgUrl" alt="cover" />
+            </div>
+          </router-link>
+          <div class="name">{{ track.name }}</div>
+        </div>
+        <div class="load-more-section" v-if="rankingHasMore">
+          <div v-if="rankingLoading" class="loading-spinner">
+            <i class="fa fa-spinner fa-spin"></i>
+            <span>加载中...</span>
           </div>
-        </router-link>
-        <div class="name">{{ track.name }}</div>
-      </div>
-      <div class="load-more-section" v-if="rankingHasMore">
-        <div v-if="rankingLoading" class="loading-spinner">
-          <i class="fa fa-spinner fa-spin"></i>
-          <span>加载中...</span>
+        </div>
+        <div v-if="!rankingHasMore && displayedRankList.length > 0" class="no-more">
+          <span>没有更多了</span>
         </div>
       </div>
-      <div v-if="!rankingHasMore && displayedRankList.length > 0" class="no-more">
-        <span>没有更多了</span>
-      </div>
-    </div>
+    </liquid-card>
   </div>
 </template>
 
 <script>
 import {getTrendList,getRank} from "../api/neteaseApi"
 import SkeletonImage from "../components/SkeletonImage.vue"
+import LiquidCard from "../components/LiquidCard.vue"
 
 const PAGE_SIZE = 8;
 
 export default {
   components: {
-    SkeletonImage
+    SkeletonImage,
+    LiquidCard
   },
   data(){
     return{
@@ -162,6 +168,11 @@ h1 {
   display: flex;
   flex-direction: column;
 }
+.list-card {
+  margin: auto 0;
+  min-height: 300px;
+  max-height: 530px;
+}
 .trending-row,
 .ranking-row {
   display: grid;
@@ -170,12 +181,13 @@ h1 {
   align-content: start;
   gap: 20px;
   padding: 20px;
-  margin: auto 0;
-  min-height: 300px;
-  max-height: 530px;
+  /* margin: auto 0; Moved to .list-card */
+  /* min-height: 300px; Moved to .list-card */
+  /* max-height: 530px; Moved to .list-card */
+  height: 100%; /* Fill the card */
   overflow: hidden auto;
-  border-radius: 32px;
-  background-color: rgba(196, 196, 196, 0.3);
+  /* border-radius: 32px; Handled by card */
+  /* background-color: rgba(196, 196, 196, 0.3); Removed */
 }
 .cover-warpper {
   display: flex;
@@ -294,11 +306,18 @@ h1 {
     padding: 0;
   }
   
+  .list-card {
+    display: block;
+    margin: 10px 0;
+    max-height: 400px;
+    /* Reset height to allow content to flow if needed, but here we likely want fixed height scroll */
+    height: auto; 
+  }
+
   .trending-row,
   .ranking-row {
-    height: auto;
-    max-height: 400px;
-    margin: 10px 0;
+    height: 100%;
+    /* margin: 10px 0; Moved to list-card */
   }
   
   h1 {
@@ -341,8 +360,7 @@ h1 {
     padding: 8px 0;
   }
   
-  .trending-row,
-  .ranking-row {
+  .list-card {
     max-height: 300px;
     border-radius: 16px;
   }

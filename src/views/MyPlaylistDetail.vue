@@ -202,11 +202,12 @@ export default {
   h1 {
     margin: 0;
     font-size: 22px;
+    color: var(--text-primary);
   }
   
   p {
     margin: 6px 0 0;
-    color: #666;
+    color: var(--text-secondary);
   }
 }
 
@@ -269,11 +270,12 @@ export default {
 .song-name {
   font-size: 15px;
   font-weight: 500;
+  color: var(--text-primary);
 }
 
 .song-artist {
   font-size: 13px;
-  color: #666;
+  color: var(--text-secondary);
   margin-top: 3px;
 }
 

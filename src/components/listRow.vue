@@ -172,6 +172,7 @@ export default {
 }
 .list-content {
   margin: auto;
+  color: var(--text-primary);
 }
 .plus-icon {
   margin: auto 0;
@@ -199,7 +200,7 @@ export default {
   transform: scale(1.1);
 }
 .link {
-  color: black;
+  color: var(--text-primary);
 }
 .link:hover {
   text-decoration: underline;

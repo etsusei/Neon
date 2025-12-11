@@ -12,6 +12,7 @@
         <background-animation 
           ref="backgroundAnimation"
           :no-blur="false"
+          v-show="!isDarkMode"
           :style="{ 
             opacity: isPlaying ? 0 : 1,
             transition: 'opacity 0.8s ease-in-out'
@@ -21,6 +22,7 @@
       <!-- 动态背景 - 始终渲染，通过opacity控制显示 -->
       <dynamic-background 
         ref="dynamicBackground"
+        v-show="!isDarkMode"
         :visible="isPlaying" 
         :coverImage="currentCover"
         :style="{ 
@@ -34,7 +36,7 @@
           <lyric-display :immersive="true" />
         </div>
       </transition>
-      <div class="app-container" :class="{ 'immersive-mode': isImmersiveMode }">
+      <div class="app-container" :class="{ 'immersive-mode': isImmersiveMode, 'dark-mode': isDarkMode }">
         <div class="app-header" :style="{ opacity: isImmersiveMode ? 0 : 1, transition: 'opacity 0.5s ease', pointerEvents: isImmersiveMode ? 'none' : 'auto' }">
           <div class="app-header-left">
             <i class="fa fa-music" style="font-size: 24px"></i>
@@ -71,6 +73,9 @@
             </div>
           </div>
           <div class="app-header-right">
+            <button class="dark-mode-toggle" @click="toggleDarkMode" title="切换深色模式">
+              <i class="fa" :class="isDarkMode ? 'fa-sun-o' : 'fa-moon-o'"></i>
+            </button>
             <router-link :to="{ name: 'Settings' }" class="profile-btn">
               <img
                 src="https://img0.baidu.com/it/u=3522288622,363838562&fm=253&fmt=auto&app=138&f=JPEG?w=537&h=269"
@@ -161,7 +166,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["tracks", "index", "nowPlay", "isPlaying", "currentTrackCover", "isImmersiveMode"]),
+    ...mapState(["tracks", "index", "nowPlay", "isPlaying", "currentTrackCover", "isImmersiveMode", "isDarkMode"]),
     ...mapGetters([]),
     // 判断当前是否为登录页面
     isLoginPage() {
@@ -205,6 +210,9 @@ export default {
       console.log('[App.vue] isPlaying changed from Vuex:', newVal);
       console.log('[App.vue] Current cover:', this.currentCover);
       
+      // 如果在暗色模式下，不进行任何渲染切换，保持暂停
+      if (this.isDarkMode) return;
+
       // 清除之前的延迟器
       if (this.renderSwitchTimer) {
         clearTimeout(this.renderSwitchTimer);
@@ -224,9 +232,34 @@ export default {
           this.$refs.backgroundAnimation?.resumeRendering();
         }
       }, 1000);
+    },
+    isDarkMode(newVal) {
+      if (newVal) {
+        // 进入暗色模式：暂停所有背景渲染
+        console.log('[App.vue] Dark Mode ON - pausing all backgrounds');
+        this.$refs.backgroundAnimation?.pauseRendering();
+        this.$refs.dynamicBackground?.pauseRendering();
+        // Body background transition handled by CSS class toggle in methods
+      } else {
+        // 退出暗色模式：根据播放状态恢复
+        console.log('[App.vue] Dark Mode OFF - resuming appropriate background');
+        if (this.isPlaying) {
+          this.$refs.dynamicBackground?.resumeRendering();
+        } else {
+          this.$refs.backgroundAnimation?.resumeRendering();
+        }
+      }
     }
   },
   methods: {
+    toggleDarkMode() {
+      this.$store.commit('ToggleDarkMode');
+      if (this.isDarkMode) {
+        document.body.classList.add('dark-mode-active');
+      } else {
+        document.body.classList.remove('dark-mode-active');
+      }
+    },
     searchClick() {
       this.$router.push({ name: "Search", params: { keyword: this.search } });
     },
@@ -330,6 +363,87 @@ a {
   --search-area-bg: #fff;
   --star: #1ff1c2e;
   --message-btn: #fff;
+  
+  /* Text Colors Variables */
+  --text-primary: #2c3e50;
+  --text-secondary: #666;
+}
+
+/* Dark Mode Overrides */
+body.dark-mode-active {
+  background-color: #000000 !important;
+}
+.app-container.dark-mode {
+  background-color: transparent !important;
+  --main-color: #e0e0e0; /* Softer white */
+  --secondary-color: #a0a0a0;
+  --link-color: #e0e0e0;
+  --link-color-active: #171717;
+  --link-color-active-bg: #e0e0e0;
+  
+  /* Update Text Variables for Dark Mode */
+  --text-primary: #e0e0e0;   /* Softer white instead of pure white */
+  --text-secondary: #a0a0a0; /* Dimmer gray for secondary text */
+  
+  /* Override text color globally inside dark mode */
+  color: var(--text-primary);
+
+  .projects-section-header p,
+  .message-header .name,
+  .app-name,
+  .profile-btn span,
+  .app-sidebar-link:not(:hover),
+  .app-sidebar-link i,
+  .liquid-back-content,
+  .liquid-back-content i,
+  .search-input {
+    color: var(--text-primary) !important;
+    transition: color 0.5s ease;
+  }
+  
+  
+  /* Make sure links handle hover in dark mode */
+  .app-sidebar-link:hover {
+    color: #fff; /* White on hover for better visibility on dark card */
+  }
+  
+  /* Ensure active link icon is dark (contrast against white background) */
+  .app-sidebar-link.router-link-active i,
+  a.router-link-active .app-sidebar-link i {
+    color: #171717 !important;
+  }
+  
+  /* Change Liquid Cards to #171717 in dark mode */
+  .liquid-card-tint {
+    background-color: #171717 !important;
+  }
+  
+  /* Optionally reduce the shine/border effect if it's too bright */
+  .liquid-card-shine {
+    box-shadow: inset 2px 2px 1px 0 rgba(255, 255, 255, 0.1),
+                inset -1px -1px 1px 1px rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  /* Lyrics Overrides */
+  .lyric-line {
+    color: rgba(255, 255, 255, 0.35) !important;
+  }
+  .lyric-line:hover {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+  .lyric-line.active {
+    color: rgba(255, 255, 255, 1) !important;
+  }
+  .lyric-line.near {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+  .lyric-line.far {
+    color: rgba(255, 255, 255, 0.35) !important;
+  }
+  
+  .no-lyric, .loading i {
+    color: rgba(255, 255, 255, 0.5) !important;
+  }
 }
 
 /* 沉浸式模式歌词 */
@@ -427,6 +541,7 @@ body {
   justify-content: center;
   background-color: #000;
   background-repeat: no-repeat;
+  transition: background-color 0.5s ease; /* Smooth background transition */
 }
 
 .app {
@@ -437,8 +552,8 @@ body {
     height: 100%;
     background-color: var(--app-container);
     background: none !important; /* Force transparent */
-    background: none !important; /* Force transparent */
     /* transition: 0.2s; Stacking context fix */
+    transition: background-color 0.5s ease, color 0.5s ease; /* Smooth transition */
     max-width: 1800px;
     margin: auto;
     button,
@@ -584,6 +699,31 @@ body {
     font-size: 16px;
     line-height: 24px;
     font-weight: 700;
+  }
+}
+
+.dark-mode-toggle {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  color: var(--main-color);
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  
+  &:hover {
+    background: rgba(0,0,0,0.1);
+  }
+  
+  .dark-mode & {
+    color: white;
+    &:hover {
+      background: rgba(255,255,255,0.1);
+    }
   }
 }
 

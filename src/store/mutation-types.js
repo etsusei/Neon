@@ -13,3 +13,4 @@ export const SetLyricDarkMode = "SetLyricDarkMode"; // 歌词深色模式（背�
 export const SetPlayMode = "SetPlayMode";
 export const SetSinglePlay = "SetSinglePlay";
 export const SetShuffledIndices = "SetShuffledIndices";
+export const ToggleDarkMode = "ToggleDarkMode";
