@@ -749,18 +749,23 @@ export default {
           this.nextTrack();
         });
         
-        // 快进/快退
-        navigator.mediaSession.setActionHandler('seekbackward', (details) => {
-          const skipTime = details.seekOffset || 10;
-          this.audio.currentTime = Math.max(this.audio.currentTime - skipTime, 0);
-        });
+        // 只在非 iOS/iPadOS 设备上注册快进/快退控制
+        // 在 iOS/iPadOS Safari 上，如果同时注册了 seek 和 track 控制，
+        // 系统会优先显示快进/快退按钮，隐藏上一首/下一首按钮
+        // 所以 iOS 上只保留 previoustrack/nexttrack，让锁屏和控制中心显示切歌按钮
+        if (!this.isIOS) {
+          navigator.mediaSession.setActionHandler('seekbackward', (details) => {
+            const skipTime = details.seekOffset || 10;
+            this.audio.currentTime = Math.max(this.audio.currentTime - skipTime, 0);
+          });
+          
+          navigator.mediaSession.setActionHandler('seekforward', (details) => {
+            const skipTime = details.seekOffset || 10;
+            this.audio.currentTime = Math.min(this.audio.currentTime + skipTime, this.audio.duration || 0);
+          });
+        }
         
-        navigator.mediaSession.setActionHandler('seekforward', (details) => {
-          const skipTime = details.seekOffset || 10;
-          this.audio.currentTime = Math.min(this.audio.currentTime + skipTime, this.audio.duration || 0);
-        });
-        
-        console.log('[MusicPlayer] Media Session API initialized');
+        console.log('[MusicPlayer] Media Session API initialized', this.isIOS ? '(iOS - track controls only)' : '(full controls)');
       }
     },
     
