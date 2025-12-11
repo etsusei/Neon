@@ -470,7 +470,9 @@ body.dark-mode-active {
   .project-box-header span,
   .project-box-content-header p,
   .box-content-header,
-  .box-content-subheader {
+  .box-content-subheader,
+  .playlist-name,
+  .playlist-count {
     color: var(--text-primary) !important;
     transition: color 0.5s ease;
   }

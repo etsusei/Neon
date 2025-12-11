@@ -65,30 +65,33 @@
     </div>
 
     <div class="playlists-list" v-if="playlists.length > 0">
-      <div 
+      <liquid-card 
         v-for="playlist in playlists" 
         :key="playlist.id" 
         class="playlist-item"
         :class="{ 'selected': selectedIds.includes(playlist.id) }"
         @click="selectMode ? toggleSelect(playlist.id) : goToPlaylist(playlist.id)"
+        border-radius="12px"
       >
-        <!-- 选择模式下显示勾选框 -->
-        <div class="checkbox-wrapper" v-if="selectMode" @click.stop>
-          <input 
-            type="checkbox" 
-            :checked="selectedIds.includes(playlist.id)"
-            @change="toggleSelect(playlist.id)"
-          />
+        <div class="playlist-content-wrapper">
+          <!-- 选择模式下显示勾选框 -->
+          <div class="checkbox-wrapper" v-if="selectMode" @click.stop>
+            <input 
+              type="checkbox" 
+              :checked="selectedIds.includes(playlist.id)"
+              @change="toggleSelect(playlist.id)"
+            />
+          </div>
+          <div class="playlist-cover" :style="{ backgroundImage: `url(${playlist.cover || defaultCover})` }"></div>
+          <div class="playlist-info">
+            <div class="playlist-name">{{ playlist.name }}</div>
+            <div class="playlist-count">{{ playlist.song_count }} 首</div>
+          </div>
+          <div class="playlist-actions" @click.stop v-if="!selectMode">
+            <i class="fa fa-trash" @click="confirmDelete(playlist)"></i>
+          </div>
         </div>
-        <div class="playlist-cover" :style="{ backgroundImage: `url(${playlist.cover || defaultCover})` }"></div>
-        <div class="playlist-info">
-          <div class="playlist-name">{{ playlist.name }}</div>
-          <div class="playlist-count">{{ playlist.song_count }} 首</div>
-        </div>
-        <div class="playlist-actions" @click.stop v-if="!selectMode">
-          <i class="fa fa-trash" @click="confirmDelete(playlist)"></i>
-        </div>
-      </div>
+      </liquid-card>
     </div>
 
     <div class="empty-state" v-else>
@@ -102,11 +105,14 @@
 import { getMyPlaylists, createPlaylist, deletePlaylist, exportPlaylists, importPlaylists } from '../api/userApi'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import ImportFromNetEasePopup from '../components/ImportFromNetEasePopup.vue'
+import LiquidCard from '../components/LiquidCard.vue'
 
 export default {
   name: 'MyPlaylists',
+  // Trigger rebuild for styles
   components: {
-    ImportFromNetEasePopup
+    ImportFromNetEasePopup,
+    LiquidCard
   },
   data() {
     return {
@@ -442,32 +448,36 @@ export default {
 }
 
 .playlist-item {
-  display: flex;
-  align-items: center;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 12px;
+  padding: 0;
+  background: transparent !important; /* Ensure no background interferes */
+  margin-bottom: 12px; /* Restore spacing that might have been lost */
   cursor: pointer;
   transition: all 0.2s;
   
   &:hover {
-    background: rgba(255, 255, 255, 1);
     transform: translateX(5px);
   }
   
   &.selected {
-    background: rgba(102, 126, 234, 0.15);
-    border: 2px solid rgba(102, 126, 234, 0.5);
+    filter: brightness(0.95);
   }
+}
+
+.playlist-content-wrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 12px; /* Move padding here */
+}
+
+.playlist-item .checkbox-wrapper {
+  margin-right: 12px;
   
-  .checkbox-wrapper {
-    margin-right: 12px;
-    
-    input[type="checkbox"] {
-      width: 20px;
-      height: 20px;
-      cursor: pointer;
-    }
+  input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
   }
 }
 
