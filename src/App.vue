@@ -459,7 +459,18 @@ body.dark-mode-active {
   .musicplayer .progress_time,
   .musicplayer .progress_duration,
   .musicplayer .volume-control_speaker i,
-  .musicplayer .playlist-btn i {
+  .musicplayer .playlist-btn i,
+  /* Add global icon overrides */
+  .fa-plus,
+  .fa-download,
+  .fa-file-audio-o,
+  .fa-share-alt,
+  .fa-heart,
+  .fa-trash,
+  .project-box-header span,
+  .project-box-content-header p,
+  .box-content-header,
+  .box-content-subheader {
     color: var(--text-primary) !important;
     transition: color 0.5s ease;
   }
