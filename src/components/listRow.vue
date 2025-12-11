@@ -92,64 +92,23 @@ export default {
     },
     async download(track) {
       const artistName = track.ar && track.ar[0] ? track.ar[0].name : 'Unknown';
-      const filename = `${track.name} - ${artistName}.mp3`;
+      const filename = `${track.name} - ${artistName}`;
       
-      // 方法1: 优先使用 VIP 接口（后端统一接口）
-      try {
-        const response = await fetch(`https://neon.zeabur.app/api/music/url?id=${track.id}`);
-        const data = await response.json();
-        
-        if (data.code === 200 && data.data && data.data.url) {
-          console.log(`[下载] VIP接口成功 (${data.data.source}): ${filename}`);
-          await this.downloadFile(data.data.url, filename);
-          return;
-        }
-      } catch (e) {
-        console.warn('[下载] VIP接口失败:', e);
-      }
+      // 使用后端代理下载接口，直接触发浏览器下载
+      const downloadUrl = `https://neon.zeabur.app/api/music/download?id=${track.id}&name=${encodeURIComponent(filename)}`;
       
-      // 方法2: 备用第三方接口
-      console.log('[下载] VIP接口失败，尝试第三方接口...');
-      const qualities = ['exhigh', 'standard'];
-      const apiTemplate = (id, level) => 
-        `https://api.kxzjoker.cn/api/163_music?url=https://y.music.163.com/m/song?id=${id}&userid=8719916627&dlt=0846&level=${level}&type=json`;
+      console.log(`[下载] 开始: ${filename}`);
       
-      for (const quality of qualities) {
-        try {
-          const response = await fetch(apiTemplate(track.id, quality));
-          const data = await response.json();
-          
-          if (data.status === 200 && data.url) {
-            console.log(`[下载] 第三方接口成功: ${filename}`);
-            await this.downloadFile(data.url, filename);
-            return;
-          }
-        } catch (e) {
-          console.warn(`[下载] 第三方接口 ${quality} 失败`);
-        }
-      }
+      // 创建隐藏的 iframe 触发下载，避免页面跳转
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = downloadUrl;
+      document.body.appendChild(iframe);
       
-      alert('获取下载链接失败，请稍后重试');
-    },
-    async downloadFile(url, filename) {
-      try {
-        const response = await fetch(url);
-        const blob = await response.blob();
-        const blobUrl = URL.createObjectURL(blob);
-        
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-        console.log(`[下载] 完成: ${filename}`);
-      } catch (e) {
-        console.warn('[下载] Blob下载失败，尝试直接打开');
-        window.open(url, '_blank');
-      }
+      // 5秒后移除 iframe
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+      }, 5000);
     }
   }
 };
