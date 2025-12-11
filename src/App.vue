@@ -254,6 +254,8 @@ export default {
   methods: {
     toggleDarkMode() {
       this.$store.commit('ToggleDarkMode');
+      // Persist to localStorage
+      localStorage.setItem('neon_dark_mode', this.isDarkMode ? '1' : '0');
       if (this.isDarkMode) {
         document.body.classList.add('dark-mode-active');
       } else {
@@ -295,6 +297,14 @@ export default {
     
     console.log('[App.vue] mounted - using Vuex isPlaying state');
     
+    // Load saved dark mode preference from localStorage
+    const savedDarkMode = localStorage.getItem('neon_dark_mode');
+    if (savedDarkMode === '1') {
+      // Apply dark mode on load
+      this.$store.commit('ToggleDarkMode'); // Set to true (assuming default is false)
+      document.body.classList.add('dark-mode-active');
+    }
+    
     // Page Visibility API - 页面不可见时暂停背景渲染
     this.handleVisibilityChange = () => {
       if (document.hidden) {
@@ -303,6 +313,8 @@ export default {
         this.$refs.dynamicBackground?.pauseRendering();
       } else {
         console.log('[App.vue] Page visible - resuming appropriate background');
+        // 如果在暗色模式下，不恢复背景渲染
+        if (this.isDarkMode) return;
         // 根据当前播放状态恢复相应的背景
         if (this.isPlaying) {
           this.$refs.dynamicBackground?.resumeRendering();

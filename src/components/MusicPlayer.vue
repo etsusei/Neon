@@ -69,7 +69,12 @@
                   <i class="fa fa-volume-up"></i>
                 </div>
                 <div class="volume-control_bar">
-                  <div class="bar" @click="clickVolume" ref="volume">
+                  <div 
+                    class="bar" 
+                    ref="volume"
+                    @mousedown="startVolumeDrag"
+                    @click="clickVolume"
+                  >
                     <div
                       class="current-volume"
                       :style="{ width: volumeWidth }"
@@ -133,7 +138,9 @@ export default {
       decayRate: 0.92, // How fast the value decays after onset (0.9-0.95 recommended)
       showPlaylist: false, // 播放列表弹窗
       // iOS 后台播放支持
-      isIOS: false
+      isIOS: false,
+      // Volume drag state
+      isDraggingVolume: false
     };
   },
   computed: {
@@ -261,7 +268,9 @@ export default {
       this.updateBar(e.pageX);
     },
     generateVolume() {
-      let width = 100 * this.audio.volume;
+      // Convert audio volume back to slider percentage (inverse of logarithmic curve)
+      // audio.volume = (percentage/100)^2, so percentage = sqrt(audio.volume) * 100
+      let width = Math.sqrt(this.audio.volume) * 100;
       this.volumeWidth = width + "%";
       this.volumeLeft = width + "%";
     },
@@ -278,10 +287,36 @@ export default {
       }
       this.volumeWidth = percentage + "%";
       this.volumeLeft = percentage + "%";
-      this.audio.volume = (1 * percentage) / 100;
+      // Logarithmic curve for natural audio perception
+      // Squaring the percentage gives a more natural feel
+      this.audio.volume = Math.pow(percentage / 100, 2);
+      // Persist to localStorage
+      localStorage.setItem('neon_volume', percentage.toString());
     },
     clickVolume(e) {
+      // Ignore click if we just finished dragging to prevent double-trigger
+      if (!this.isDraggingVolume) {
+        this.updateVolume(e.pageX);
+      }
+    },
+    startVolumeDrag(e) {
+      e.preventDefault();
+      this.isDraggingVolume = true;
       this.updateVolume(e.pageX);
+      
+      // Add global event listeners for drag
+      document.addEventListener('mousemove', this.handleVolumeDrag);
+      document.addEventListener('mouseup', this.stopVolumeDrag);
+    },
+    handleVolumeDrag(e) {
+      if (this.isDraggingVolume) {
+        this.updateVolume(e.pageX);
+      }
+    },
+    stopVolumeDrag() {
+      this.isDraggingVolume = false;
+      document.removeEventListener('mousemove', this.handleVolumeDrag);
+      document.removeEventListener('mouseup', this.stopVolumeDrag);
     },
     jumpToClick() {
       this.currentTrackIndex = this.index;
@@ -531,6 +566,15 @@ export default {
       });
       
       this.audio.load();
+      
+      // Load saved volume from localStorage
+      const savedVolume = localStorage.getItem('neon_volume');
+      if (savedVolume !== null) {
+        const percentage = parseFloat(savedVolume);
+        this.volumeWidth = percentage + "%";
+        this.volumeLeft = percentage + "%";
+        this.audio.volume = Math.pow(percentage / 100, 2);
+      }
 
       // 检测 iOS/iPadOS 设备
       // iPadOS 13+ Safari 默认伪装成 Mac，需要额外检测触摸能力
