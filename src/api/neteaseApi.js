@@ -21,38 +21,22 @@ export const getArtistAlbum = (id) => {
     return axios.get(`${baseUrl}artist/album?id=${id}`)
 }
 
-// 获取歌曲播放URL - 带备用接口
+// 获取歌曲播放URL - 调用后端统一接口（后端处理 VIP Cookie 和 fallback）
 export const getSongUrl = async (id) => {
-    // 首先尝试原接口
     try {
-        const response = await axios.get(`${musicUrl}?url=https://y.music.163.com/m/song?id=${id}&level=standard&type=json`)
-        // 检查是否成功获取到 URL
-        if (response.data && response.data.url) {
-            return response
-        }
-        // 如果 url 为 null，尝试备用接口
-        console.log('[API] 原接口无法获取，尝试备用接口...')
-    } catch (e) {
-        console.log('[API] 原接口请求失败，尝试备用接口...')
-    }
-
-    // 备用接口：使用代理
-    try {
-        const proxyResponse = await axios.get(`${baseUrl}proxy?id=${id}`)
-        if (proxyResponse.data && proxyResponse.data.url) {
-            // 转换格式与原接口保持一致
+        const response = await axios.get(`${baseUrl}api/music/url?id=${id}`)
+        if (response.data && response.data.code === 200 && response.data.data?.url) {
             return {
                 data: {
-                    url: proxyResponse.data.url,
-                    id: id
+                    url: response.data.data.url,
+                    id: id,
+                    source: response.data.data.source
                 }
             }
         }
     } catch (e) {
-        console.error('[API] 备用接口也失败了:', e)
+        console.error('[API] 获取歌曲URL失败:', e)
     }
-
-    // 都失败了
     return { data: { url: null, msg: '无法获取歌曲链接' } }
 }
 
