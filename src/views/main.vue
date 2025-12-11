@@ -1,7 +1,7 @@
 <template>
   <div class="home-warpper">
     <h1>Trending List</h1>
-    <liquid-card class="list-card" border-radius="32px">
+    <liquid-card class="list-card" border-radius="32px" :no-distortion="true">
       <div class="trending-row" ref="trendingContainer" @scroll="handleTrendingScroll">
         <div class="cover-warpper" v-for="(track, $index) in displayedTrendList" :key="'trend-'+$index">
           <router-link :to="{name:'List',params:{listId:`${track.id}`}}">
@@ -23,7 +23,7 @@
       </div>
     </liquid-card>
     <h1>Ranking</h1>
-    <liquid-card class="list-card" border-radius="32px">
+    <liquid-card class="list-card" border-radius="32px" :no-distortion="true">
       <div class="ranking-row" ref="rankingContainer" @scroll="handleRankingScroll">
         <div class="cover-warpper" v-for="(track, $index) in displayedRankList" :key="'rank-'+$index">
           <router-link :to="{name:'List',params:{listId:`${track.id}`}}">
@@ -172,6 +172,8 @@ h1 {
   margin: auto 0;
   min-height: 300px;
   max-height: 530px;
+  /* Fixed height is required for child height:100% and overflow:auto to work correctly */
+  height: 530px;
 }
 .trending-row,
 .ranking-row {
@@ -310,8 +312,8 @@ h1 {
     display: block;
     margin: 10px 0;
     max-height: 400px;
-    /* Reset height to allow content to flow if needed, but here we likely want fixed height scroll */
-    height: auto; 
+    /* Fixed height is required for child height:100% and overflow:auto to work correctly */
+    height: 400px; 
   }
 
   .trending-row,

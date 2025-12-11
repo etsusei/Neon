@@ -33,6 +33,11 @@ export default {
       type: Boolean,
       default: false
     },
+    // Disable distortion effect
+    noDistortion: {
+      type: Boolean,
+      default: false
+    },
     // Allow content to overflow (e.g. for popping out images)
     overflowVisible: {
       type: Boolean,
@@ -47,8 +52,15 @@ export default {
       };
     },
     effectStyle() {
+      if (this.noDistortion) {
+        return {
+          borderRadius: this.borderRadius
+        };
+      }
       return {
-        borderRadius: this.borderRadius
+        borderRadius: this.borderRadius,
+        backdropFilter: 'url(#glass-distortion)',
+        WebkitBackdropFilter: 'url(#glass-distortion)'
       };
     },
     tintStyle() {
@@ -90,8 +102,8 @@ export default {
   position: absolute;
   z-index: 0;
   inset: 0;
-  backdrop-filter: url(#glass-distortion);
-  -webkit-backdrop-filter: url(#glass-distortion);
+  /* backdrop-filter: url(#glass-distortion); Moved to inline style via prop */
+  /* -webkit-backdrop-filter: url(#glass-distortion); Moved to inline style via prop */
   pointer-events: none;
 }
 
