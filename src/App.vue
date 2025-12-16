@@ -133,6 +133,8 @@
           </div>
         </div>
         <music-player />
+        <!-- 移动端底部导航 -->
+        <bottom-nav class="mobile-bottom-nav" />
       </div>
     </template>
   </div>
@@ -145,6 +147,7 @@ import BackgroundAnimation from "../src/components/BackgroundAnimation.vue";
 import DynamicBackground from "../src/components/DynamicBackground.vue";
 import LyricDisplay from "../src/components/LyricDisplay.vue";
 import LiquidCard from "../src/components/LiquidCard.vue";
+import BottomNav from "../src/components/BottomNav.vue";
 import { mapGetters, mapState } from 'vuex';
 
 export default {
@@ -153,7 +156,8 @@ export default {
     BackgroundAnimation,
     DynamicBackground,
     LyricDisplay,
-    LiquidCard
+    LiquidCard,
+    BottomNav
   },
   data() {
     return {
@@ -349,12 +353,24 @@ html,
 body {
   height: 100%;
   margin: 0;
+  /* Reverted global lock to prevent layout shift */
 }
 a {
   text-decoration: none;
 }
 * {
   box-sizing: border-box;
+}
+
+/* Restore touch action for scrollable areas */
+.projects-section-content,
+.messages,
+.page-search-wrapper, 
+.app-sidebar,
+.lyric-container {
+  touch-action: pan-y !important;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 :root {
@@ -712,6 +728,11 @@ body {
     font-weight: 700;
     margin: 0 32px;
   }
+}
+
+/* Hide Bottom Nav on desktop/tablet by default */
+.mobile-bottom-nav {
+  display: none;
 }
 
 .search-wrapper {
@@ -1090,6 +1111,15 @@ a.router-link-active.router-link-exact-active {
     justify-content: space-between;
   }
   
+  .app-header-left {
+    width: 100%;
+    justify-content: space-between;
+    
+    .fa-music {
+      display: none; /* Hide music icon on mobile */
+    }
+  }
+
   .app-header-right {
     width: 100%;
     justify-content: flex-end;
@@ -1097,7 +1127,31 @@ a.router-link-active.router-link-exact-active {
   }
   
   .app-name {
-    display: none; // 在小屏幕隐藏应用名称以节省空间
+    display: none;
+  }
+
+  .search-wrapper {
+    display: none; /* Hide search bar on mobile */
+  }
+
+  /* Show Mobile Bottom Nav */
+  .mobile-bottom-nav {
+    display: flex;
+  }
+  
+  /* Mobile Layout - Flexbox Approach */
+  /* Removed .app-container fixed rule to fix black bar/layout shift */
+
+  /* Adjust layout for Bottom Nav & Mini Player Stack */
+  .app-content {
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Use 100vh to fill viewport */
+    padding-bottom: calc(130px + env(safe-area-inset-bottom)) !important;
+    overflow: hidden; 
+    touch-action: none; /* Prevent scroll on gaps */
+    padding-left: 0;
+    padding-right: 0;
   }
   
   .profile-btn {
@@ -1108,14 +1162,15 @@ a.router-link-active.router-link-exact-active {
     }
   }
   
-  .search-wrapper {
-    max-width: calc(100% - 80px); // 为图标留空间
-  }
-  
   .projects-section {
-    padding: 16px 12px;
-    border-radius: 20px;
-    height: calc(100vh - 200px);
+    padding: 16px 8px;
+    border-radius: 24px;
+    flex: 1; /* Fill remaining space naturally */
+    height: auto !important; /* Override fixed height */
+    margin: 0;
+    width: 100%;
+    overflow: hidden; /* Fix container */
+    touch-action: none; 
   }
   
   .projects-section-header {

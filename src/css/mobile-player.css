@@ -1,139 +1,381 @@
 /* Mobile Responsive Styles for MusicPlayer */
 
-/* 平板设备及以下 (768px) */
 @media screen and (max-width: 768px) {
-  .musicplayer {
-    min-width: unset !important;
-    width: 100% !important;
-    padding: 0 12px !important;
-  }
-  
-  .album-info {
-    padding: 0 0 0 12px !important;
-  }
-  
-  .volume-control {
-    padding: 0 12px 0 0 !important;
-  }
-}
+  /* 
+   * MOBILE PLAYER STYLES (Refined Apple Music Style)
+   */
 
-/* 手机设备 (520px及以下) */  
-@media screen and (max-width: 520px) {
+  /* === RESET & LAYOUT CLEANUP === */
+  .player-controls,
+  .track-control,
+  .track-control_row,
+  .musicplayer-middle {
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
   .playerwarper {
-    height: 90px !important;
+    width: 100%;
+    /* 
+     * Mini Player Position:
+     * Sits directly above the Tab Bar.
+     * Tab Bar Height ~= 50px + safe-area
+     * We give 8px spacing or 0px depending on preference. Image shows slight gap (floating).
+     */
+    position: fixed;
+    bottom: calc(52px + env(safe-area-inset-bottom));
+    left: 0;
+    right: 0;
+    z-index: 950;
+    /* Above BottomNav */
+    padding: 0 10px;
+    /* Side padding for floating look */
+    height: 56px;
+    /* Compact height */
+    transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1);
   }
-  
+
+  /* EXPANDED STATE overrides */
+  .playerwarper.is-expanded {
+    bottom: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    padding: 0;
+    z-index: 2000;
+  }
+
+  /* Liquid Card Container */
   .musicplayer {
-    height: 60px !important;
-    border-top-left-radius: 20px !important;
-    border-top-right-radius: 20px !important;
+    width: 100%;
+    height: 100%;
   }
-  
+
+  :deep(.player-liquid-glass) {
+    height: 100%;
+    /* Mini: Rounded Rectangle */
+    border-radius: 12px !important;
+    /* Unified Look: Light Glass for Black Text */
+    backdrop-filter: blur(40px) saturate(180%) !important;
+    background-color: rgba(255, 255, 255, 0.4) !important;
+    /* LOWER opacity (More transparent) */
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+    /* Softer shadow */
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.4s ease;
+  }
+
+  /* Expanded Card Style */
+  .playerwarper.is-expanded :deep(.player-liquid-glass) {
+    border-radius: 0 !important;
+    background-color: var(--main-color) !important;
+    /* Proper full screen background */
+    border: none;
+  }
+
+  /* Mini Content Layout */
+  .musicplayer-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between !important;
+    height: 100%;
+    padding: 0 16px;
+    width: 100%;
+    position: relative;
+  }
+
+  /* EXPANDED LAYOUT overrides */
+  .playerwarper.is-expanded .musicplayer-content {
+    flex-direction: column;
+    justify-content: flex-start !important;
+    padding: 0 24px 40px;
+    padding-top: calc(60px + env(safe-area-inset-top));
+  }
+
+
+  /* === LEFT SECTION: Cover + Name === */
   .musicplayer-left {
-    position: relative !important;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    margin-right: 12px;
+    position: relative;
+    left: auto;
+    top: auto;
   }
-  
+
+  .playerwarper.is-expanded .musicplayer-left {
+    flex-direction: column;
+    width: 100%;
+    flex: 0 0 auto;
+    margin-right: 0;
+    margin-bottom: 40px;
+    overflow: visible;
+  }
+
   .album-info {
-    padding: 0 0 0 8px !important;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    overflow: hidden;
+    padding: 0 !important;
   }
-  
+
+  .playerwarper.is-expanded .album-info {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    overflow: visible;
+  }
+
+  /* Cover Image */
   .player-cover__item {
-    width: 60px !important;
-    height: 60px !important;
-    margin-top: -20px !important;
+    /* Mini: Compact Icon */
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 8px !important;
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+    margin-right: 12px;
+    margin-top: 0 !important;
+    /* Ensure no white border/background */
+    border: none !important;
+    background-color: transparent !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    /* Fix clipping by container rounded corners if padding is tight */
+    margin-left: 4px;
   }
-  
-  .player-cover__item:before,
-  .player-cover__item:after {
-    width: 60px !important;
-    height: 60px !important;
+
+  /* Kill pseudo-elements that might be creating white blocks */
+  .player-cover__item::before,
+  .player-cover__item::after {
+    display: none !important;
   }
-  
-  .cover-overlay {
-    width: 60px !important;
-    height: 60px !important;
+
+  .playerwarper.is-expanded .player-cover__item {
+    /* Full: Big Cover */
+    width: 260px !important;
+    height: 260px !important;
+    border-radius: 16px !important;
+    margin-right: 0;
+    margin-bottom: 30px;
+    margin-left: 0;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
+    display: block !important;
   }
-  
-  .cover-overlay i {
-    font-size: 24px !important;
-  }
-  
+
+  /* Text Info */
   .album-right {
-    padding: 0 8px !important;
-    max-width: 120px !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+    min-width: 0;
+    /* Enable truncation */
+    padding: 0 !important;
+    margin: 0 !important;
+    text-align: left !important;
   }
-  
-  .album-right_name,
+
+  .playerwarper.is-expanded .album-right {
+    width: 100%;
+    align-items: center;
+    text-align: center !important;
+  }
+
+  .album-right_name {
+    font-size: 15px !important;
+    font-weight: 600;
+    color: #000;
+    /* Black Text for Mini */
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    width: 100%;
+  }
+
+  .playerwarper.is-expanded .album-right_name {
+    font-size: 24px !important;
+    font-weight: 700;
+    color: #fff;
+    /* White Text for Expanded */
+    margin-bottom: 6px;
+    white-space: normal !important;
+    /* Allow wrapping in full screen */
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  /* Hide Artist in Mini Mode */
   .album-right_info {
-    font-size: 12px !important;
+    display: none !important;
+  }
+
+  .playerwarper.is-expanded .album-right_info {
+    display: block !important;
+    font-size: 16px !important;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 4px;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
   }
-  
-  .player-controls {
-    margin-top: -20px !important;
-  }
-  
-  .track-control {
-    height: 52px !important;
-    width: 240px !important;
-  }
-  
-  .track-control_row {
-    width: 80% !important;
-  }
-  
-  .track-control_icon {
-    font-size: 18px !important;
-  }
-  
-  .track-control_iconPlay,
-  .track-control_iconPlay:hover {
-    font-size: 40px !important;
-  }
-  
-  .progress_bar {
-    height: 4px !important;
-  }
-  
-  .volume-control {
-    padding: 0 8px 0 0 !important;
-  }
-  
-  .volume-control_row {
-    flex-direction: column !important;
-  }
-  
-  .bar {
-    width: 60px !important;
-    height: 4px !important;
-    transform: rotate(90deg) !important;
-    margin-top: 30px !important;
-  }
-  
-  .volume-control_speaker {
-    padding: 0 !important;
-    font-size: 14px !important;
-  }
-}
 
-/* 超小屏幕设备 (375px及以下) */
-@media screen and (max-width: 375px) {
-  .album-right {
-    display: none !important;
+
+  /* === CONTROLS SECTION (Right Side) === */
+  .musicplayer-middle {
+    flex: 0 0 auto;
+    /* Don't grow */
+    width: auto !important;
+    height: 100% !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
   }
-  
+
+  .playerwarper.is-expanded .musicplayer-middle {
+    width: 100% !important;
+    margin-top: auto !important;
+    margin-bottom: 40px !important;
+    height: auto !important;
+  }
+
+  .player-controls {
+    display: flex;
+    align-items: center;
+    margin: 0 !important;
+    width: auto !important;
+    height: 100% !important;
+  }
+
+  .playerwarper.is-expanded .player-controls {
+    flex-direction: column-reverse;
+    width: 100% !important;
+    gap: 20px;
+  }
+
   .track-control {
-    width: 200px !important;
+    width: auto !important;
+    height: 100% !important;
+    display: flex;
+    align-items: center;
   }
-  
+
+  .playerwarper.is-expanded .track-control {
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  .track-control_row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    /* Nice spacing */
+    width: auto !important;
+    padding: 0 !important;
+  }
+
+  .playerwarper.is-expanded .track-control_row {
+    width: 100% !important;
+    justify-content: space-around;
+    padding: 0 20px !important;
+  }
+
+  /* Icons Styling */
   .track-control_icon {
-    font-size: 16px !important;
+    font-size: 24px !important;
+    color: #000;
+    /* Black for Mini */
+    cursor: pointer;
+    display: none;
+    /* Hide default icons in mini */
+    opacity: 1 !important;
+    /* Ensure visibility */
   }
-  
-  .track-control_iconPlay,
-  .track-control_iconPlay:hover {
-    font-size: 36px !important;
+
+  /* Play Button */
+  .track-control_iconPlay {
+    font-size: 30px !important;
+    color: #000;
+    /* Black for Mini */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: auto !important;
+    /* Allow auto width */
+    height: auto !important;
+    cursor: pointer;
+  }
+
+  .playerwarper.is-expanded .track-control_iconPlay {
+    font-size: 64px !important;
+    color: #fff;
+    /* White for Expanded */
+    width: 80px;
+    height: 80px;
+  }
+
+  /* Show Prev/Next Buttons */
+  .track-control_icon.btn-prev,
+  .track-control_icon.btn-next {
+    display: block !important;
+    font-size: 24px !important;
+  }
+
+  /* Show All Icons in Expanded */
+  .playerwarper.is-expanded .track-control_icon {
+    display: block;
+    color: #fff;
+    /* White for Expanded */
+    font-size: 32px !important;
+  }
+
+
+  /* Progress Bar (Expanded Only) */
+  .progress {
+    display: none;
+  }
+
+  .playerwarper.is-expanded .progress {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  /* Volume & Extra (Expanded Only) */
+  .musicplayer-right {
+    display: none;
+  }
+
+  .playerwarper.is-expanded .musicplayer-right {
+    display: flex;
+    width: 100%;
+    margin-top: 20px;
+  }
+
+  /* Collapse Handle (Pseudo-element if simple, or we use the div we added) */
+  .collapse-btn {
+    position: absolute;
+    top: calc(env(safe-area-inset-top) + 10px);
+    left: 0;
+    right: 0;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2001;
+  }
+
+  .collapse-indicator {
+    width: 40px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
   }
 }

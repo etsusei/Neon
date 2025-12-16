@@ -1,13 +1,18 @@
 <template>
-  <div class="playerwarper">
-    <div class="musicplayer">
+  <div class="playerwarper" :class="{ 'is-expanded': isExpanded }">
+    <!-- Collapse Button (Visible only when expanded) -->
+    <div v-if="isExpanded" class="collapse-btn" @click.stop="collapsePlayer">
+      <div class="collapse-indicator"></div>
+    </div>
+
+    <div class="musicplayer" @click="togglePlayer">
       <liquid-card border-radius="32px 32px 0 0" custom-class="player-liquid-glass" :overflow-visible="true">
         <div class="musicplayer-content">
           <div class="musicplayer-left">
             <div class="album-info">
               <div 
                 class="player-cover__item"
-                @click="toggleImmersiveMode"
+                @click.stop="toggleImmersiveMode"
                 :style="{ 
                   backgroundImage: `url(${currentTrack.cover})`,
                   transform: `scale(${albumScale})`,
@@ -22,7 +27,7 @@
               <div class="album-right">
                 <div class="album-right_name">{{ currentTrack.name }}</div>
                 <div class="album-right_info">
-                  {{ currentTrack.album }}-----{{ currentTrack.artist }}
+                  {{ currentTrack.album }} - {{ currentTrack.artist }}
                 </div>
               </div>
             </div>
@@ -31,20 +36,21 @@
             <div class="player-controls">
               <div class="track-control">
                 <div class="track-control_row">
-                  <div class="track-control_icon">
+                  <div class="track-control_icon" @click.stop>
                     <i class="fa fa-heart"></i>
                   </div>
-                  <div class="track-control_icon" @click="prevTrack">
+
+                  <div class="track-control_icon btn-prev" @click.stop.prevent="prevTrack">
                     <i class="fa fa-backward"></i>
                   </div>
-                  <div class="track-control_iconPlay" @click="play">
+                  <div class="track-control_iconPlay" @click.stop.prevent="play">
                     <i class="fa fa-pause-circle-o" v-if="isTimerPlaying"></i>
                     <i class="fa fa-play-circle-o" v-else></i>
                   </div>
-                  <div class="track-control_icon" @click="nextTrack">
+                  <div class="track-control_icon btn-next" @click.stop.prevent="nextTrack">
                     <i class="fa fa-forward"></i>
                   </div>
-                  <div class="track-control_icon" @click="togglePlayMode" :title="playModeTitle">
+                  <div class="track-control_icon" @click.stop="togglePlayMode" :title="playModeTitle">
                     <i class="fa fa-repeat" v-if="playMode === 'sequence'"></i>
                     <i class="fa fa-random" v-else-if="playMode === 'shuffle'"></i>
                     <i class="fa fa-repeat" style="color: #f6002e;" v-else></i>
@@ -52,7 +58,7 @@
                 </div>
               </div>
               <div class="progress" ref="progress">
-                <div class="progress_bar" @click="clickProgress">
+                <div class="progress_bar" @click.stop="clickProgress">
                   <div class="progress_current" :style="{ width: barWidth }"></div>
                 </div>
                 <div class="time">
@@ -72,8 +78,8 @@
                   <div 
                     class="bar" 
                     ref="volume"
-                    @mousedown="startVolumeDrag"
-                    @click="clickVolume"
+                    @mousedown.stop="startVolumeDrag"
+                    @click.stop="clickVolume"
                   >
                     <div
                       class="current-volume"
@@ -81,9 +87,11 @@
                     ></div>
                   </div>
                 </div>
-                <div class="playlist-btn" @click="showPlaylist = true">
+                <div class="playlist-btn" @click.stop="showPlaylist = true">
                   <i class="fa fa-list"></i>
                 </div>
+                <!-- Lyrics Button (Apple Music style) -->
+
               </div>
             </div>
           </div>
@@ -140,7 +148,9 @@ export default {
       // iOS 后台播放支持
       isIOS: false,
       // Volume drag state
-      isDraggingVolume: false
+      isDraggingVolume: false,
+      // Player expansion state (Apple Music style)
+      isExpanded: false
     };
   },
   computed: {
@@ -795,6 +805,15 @@ export default {
           this.startVisualization();
         }
       }
+    },
+    togglePlayer() {
+      // Only toggle on mobile
+      if (window.innerWidth <= 520) {
+        this.isExpanded = !this.isExpanded;
+      }
+    },
+    collapsePlayer() {
+      this.isExpanded = false;
     }
   },
   created() {
@@ -1097,8 +1116,8 @@ export default {
   color: rgba(0, 0, 0, 0.6);
 }
 
-// 移动端和平板隐藏音量条
-@media screen and (max-width: 1366px) {
+// 移动端隐藏音量条 (由 mobile-player.css 接管，此处仅作为兜底)
+@media screen and (max-width: 768px) {
   .volume-control_speaker,
   .volume-control_bar {
     display: none;

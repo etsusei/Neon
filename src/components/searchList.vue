@@ -160,35 +160,39 @@ export default {
 }
 
 // 移动端响应式样式 - 使用行列表显示
+/* Mobile Optimization - Grid Layout */
 @media screen and (max-width: 768px) {
   .list-search-container {
-    display: flex;
-    flex-direction: column;
-    flex-wrap: nowrap;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 16px 12px;
+    overflow-x: hidden;
   }
   
   .cover-warpper {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    height: 60px;
+    height: auto;
     width: 100%;
-    margin: 5px 0;
-    padding: 5px 10px;
-    border-radius: 10px;
-    transition: all 0.3s ease-in-out;
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+    background-color: transparent !important;
   }
   
   .cover-warpper:hover {
-    background-color: rgba(210, 210, 210, 0.4);
+    background-color: transparent;
   }
   
   .cover {
-    width: 50px;
-    height: 50px;
-    border-radius: 8px;
-    margin: 0;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: 12px; /* Smoother corner */
+    margin: 0 0 8px 0;
     flex-shrink: 0;
   }
   
@@ -197,11 +201,14 @@ export default {
   }
   
   .name {
-    flex: 1;
-    padding-left: 12px;
+    flex: initial;
+    padding-left: 0;
     font-size: 14px;
-    text-align: left;
-    max-width: none;
+    text-align: left; /* Center or Left? MyPlaylists was left */
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    line-height: 1.3;
   }
 }
 </style>

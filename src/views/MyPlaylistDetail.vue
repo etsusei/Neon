@@ -1,9 +1,7 @@
 <template>
   <div class="playlist-detail-container">
     <div class="header">
-      <div class="back-btn" @click="$router.back()">
-        <i class="fa fa-arrow-left"></i>
-      </div>
+
       <div class="playlist-header-info">
         <div class="playlist-cover" :style="{ backgroundImage: `url(${playlist.cover || defaultCover})` }"></div>
         <div class="playlist-meta">
@@ -11,9 +9,7 @@
           <p>{{ songs.length }} 首歌曲</p>
         </div>
       </div>
-      <button class="play-all-btn" @click="playAll" v-if="songs.length > 0">
-        <i class="fa fa-play"></i> 播放全部
-      </button>
+
     </div>
 
     <div class="songs-list" v-if="songs.length > 0">
@@ -80,21 +76,7 @@ export default {
         console.error('Load playlist error:', err)
       }
     },
-    playAll() {
-      if (this.songs.length === 0) return
-      
-      // 转换格式
-      const tracks = this.songs.map(s => ({
-        id: s.song_id,
-        name: s.song_name,
-        ar: [{ name: s.artist }],
-        al: { name: s.album, picUrl: s.cover }
-      }))
-      
-      this.pushToPlayer(tracks)
-      this.toPlay(0)
-      this.$store.commit('SetSinglePlay', false)
-    },
+
     playSong(index) {
       const tracks = this.songs.map(s => ({
         id: s.song_id,
@@ -166,21 +148,7 @@ export default {
   margin-bottom: 30px;
 }
 
-.back-btn {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-  transition: all 0.2s;
-  
-  &:hover {
-    background: rgba(0, 0, 0, 0.2);
-  }
-}
+
 
 .playlist-header-info {
   display: flex;
@@ -211,23 +179,7 @@ export default {
   }
 }
 
-.play-all-btn {
-  padding: 12px 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  border-radius: 25px;
-  font-size: 15px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s;
-  
-  &:hover {
-    transform: scale(1.05);
-  }
-}
+
 
 .songs-list {
   display: flex;
@@ -309,4 +261,82 @@ export default {
     margin-bottom: 16px;
   }
 }
+  /* Mobile Optimization */
+  @media screen and (max-width: 520px) {
+    .playlist-detail-container {
+      padding: 0 12px 100px 12px; /* Top padding handled by header spacing */
+      position: relative;
+      width: 100%;
+      box-sizing: border-box;
+      overflow-x: hidden; /* Prevent horizontal spill */
+    }
+
+    .header {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-top: 20px;
+      margin-bottom: 30px;
+      width: 100%; /* constrain header */
+    }
+
+
+    .playlist-header-info {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 100%; /* Double safety */
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .playlist-cover {
+      width: 220px;
+      height: 220px;
+      margin: 0 auto 20px auto; /* Force horizontal centering */
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+
+    .playlist-meta {
+      margin-left: 0;
+      margin-bottom: 24px;
+      width: 100%;
+    }
+
+    .playlist-meta h1 {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+
+
+    /* Song List Mobile */
+    .song-index {
+      display: none;
+    }
+
+    .song-item {
+      padding: 12px 0;
+      border-bottom: 0.5px solid rgba(0,0,0,0.05);
+    }
+
+    .song-cover {
+      width: 50px;
+      height: 50px;
+      border-radius: 8px;
+      margin-right: 14px;
+    }
+
+    .song-info {
+      overflow: hidden;
+    }
+
+    .song-name {
+      font-size: 16px;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+  }
 </style>

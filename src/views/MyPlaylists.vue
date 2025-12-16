@@ -529,8 +529,80 @@ export default {
     margin-bottom: 16px;
   }
   
+
   p {
     font-size: 16px;
+  }
+}
+
+/* Mobile Optimization */
+@media screen and (max-width: 520px) {
+  .my-playlists-container {
+    padding: 16px 12px;
+    padding-bottom: 80px; /* Extra space for bottom nav */
+  }
+
+  .playlists-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  /* Grid Card Style */
+  .playlist-item {
+    margin-bottom: 0; /* Reset margin */
+    /* Liquid card handles background */
+  }
+
+  .playlist-content-wrapper {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px;
+    height: auto;
+  }
+
+  .playlist-cover {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1; /* Square cover */
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  .playlist-info {
+    margin-left: 0;
+    width: 100%;
+    text-align: left;
+  }
+
+  .playlist-name {
+    font-size: 14px;
+    line-height: 1.3;
+    margin-bottom: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .playlist-count {
+    font-size: 12px;
+    color: #888;
+  }
+  
+  .header h1 {
+    font-size: 20px;
+  }
+  
+  .header-actions button {
+     padding: 6px 12px;
+     font-size: 12px;
+  }
+  
+  /* Hide delete action on grid for cleaner look */
+  .playlist-actions {
+    display: none; 
   }
 }
 </style>

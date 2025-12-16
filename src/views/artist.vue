@@ -151,11 +151,41 @@ div#pane-1 {
   margin: 0;
   border-radius: 0 0 10px 10px;
 }
-.el-tabs--border-card > .el-tabs__header .el-tabs__item.is-active {
-  color: none;
-  background-color: #00000012;
-  border-radius: 0 0 10px 10px;
-  border-right-color: none;
-  border-left-color: none;
+
+
+/* Mobile Optimization */
+@media screen and (max-width: 520px) {
+  .artist-wrapper {
+    width: 100%;
+    padding: 0 12px 100px 12px;
+    height: auto;
+    border-radius: 0;
+  }
+
+  .artist-section {
+    height: auto;
+    padding: 20px 0;
+  }
+
+  .artist-imgTop {
+    width: 200px;
+    height: 200px;
+    margin: 20px auto 20px auto;
+    border-radius: 50%;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
+
+  .artist-name {
+    font-size: 24px;
+    text-align: center;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .el-tabs--border-card > .el-tabs__header {
+    margin-top: 0;
+    background: transparent;
+    border-radius: 0;
+  }
 }
 </style>

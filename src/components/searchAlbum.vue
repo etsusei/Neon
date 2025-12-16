@@ -152,4 +152,36 @@ export default {
   color: #999;
   grid-column: 1 / -1;
 }
+
+/* Mobile Optimization */
+@media screen and (max-width: 520px) {
+  .album-search-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 16px 12px;
+  }
+
+  .cover-warpper {
+    width: 100%;
+    height: auto;
+    margin: 0;
+    padding: 0;
+  }
+
+  .cover {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+
+  .name {
+    font-size: 14px;
+    text-align: left;
+    padding: 0;
+    max-width: 100%;
+  }
+}
 </style>

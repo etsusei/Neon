@@ -153,13 +153,37 @@ export default {
   font-size: 12px;
   color: #999;
 }
-.no-more {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  padding: 15px;
-  font-size: 12px;
-  color: #999;
-  grid-column: 1 / -1;
+
+
+/* Mobile Optimization */
+@media screen and (max-width: 520px) {
+  .cover-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 16px 12px;
+  }
+
+  .cover-warpper {
+    width: 100%;
+    height: auto;
+    margin: 0;
+    padding: 0;
+  }
+
+  .cover {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: 12px;
+    margin-bottom: 8px;
+  }
+
+  .name {
+    font-size: 14px;
+    text-align: left;
+    padding: 0;
+    max-width: 100%;
+  }
 }
 </style>
