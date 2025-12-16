@@ -1,12 +1,17 @@
 <template>
-  <div class="playerwarper" :class="{ 'is-expanded': isExpanded }">
+  <div class="playerwarper" :class="{ 'is-expanded': isPlayerExpanded }">
     <!-- Collapse Button (Visible only when expanded) -->
-    <div v-if="isExpanded" class="collapse-btn" @click.stop="collapsePlayer">
+    <div v-if="isPlayerExpanded" class="collapse-btn" @click.stop="collapsePlayer">
       <div class="collapse-indicator"></div>
     </div>
 
     <div class="musicplayer" @click="togglePlayer">
-      <liquid-card border-radius="32px 32px 0 0" custom-class="player-liquid-glass" :overflow-visible="true">
+      <liquid-card 
+        border-radius="32px 32px 0 0" 
+        custom-class="player-liquid-glass" 
+        :overflow-visible="true"
+        :no-distortion="isPlayerExpanded"
+      >
         <div class="musicplayer-content">
           <div class="musicplayer-left">
             <div class="album-info">
@@ -36,21 +41,29 @@
             <div class="player-controls">
               <div class="track-control">
                 <div class="track-control_row">
-                  <div class="track-control_icon" @click.stop>
-                    <i class="fa fa-heart"></i>
+                  <!-- Playlist Button -->
+                  <div class="track-control_icon btn-playlist" @click.stop="showPlaylist = true">
+                    <i class="fa fa-list"></i>
                   </div>
 
+                  <!-- Previous Track -->
                   <div class="track-control_icon btn-prev" @click.stop.prevent="prevTrack">
                     <i class="fa fa-backward"></i>
                   </div>
+
+                  <!-- Play/Pause (Larger) -->
                   <div class="track-control_iconPlay" @click.stop.prevent="play">
                     <i class="fa fa-pause-circle-o" v-if="isTimerPlaying"></i>
                     <i class="fa fa-play-circle-o" v-else></i>
                   </div>
+
+                  <!-- Next Track -->
                   <div class="track-control_icon btn-next" @click.stop.prevent="nextTrack">
                     <i class="fa fa-forward"></i>
                   </div>
-                  <div class="track-control_icon" @click.stop="togglePlayMode" :title="playModeTitle">
+
+                  <!-- Play Mode -->
+                  <div class="track-control_icon btn-mode" @click.stop="togglePlayMode" :title="playModeTitle">
                     <i class="fa fa-repeat" v-if="playMode === 'sequence'"></i>
                     <i class="fa fa-random" v-else-if="playMode === 'shuffle'"></i>
                     <i class="fa fa-repeat" style="color: #f6002e;" v-else></i>
@@ -103,8 +116,7 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
-import { mapMutations } from "vuex";
+import { mapGetters, mapState, mapMutations } from "vuex";
 import { getSongUrl } from "../api/neteaseApi";
 import { ElMessage } from "element-plus";
 import PlaylistPopup from "./PlaylistPopup.vue";
@@ -148,21 +160,14 @@ export default {
       // iOS 后台播放支持
       isIOS: false,
       // Volume drag state
-      isDraggingVolume: false,
-      // Player expansion state (Apple Music style)
-      isExpanded: false
+      isDraggingVolume: false
     };
   },
   computed: {
-    ...mapGetters(["tracks", "index"]),
+    ...mapState(["tracks", "index", "isPlaying", "currentTrackCover", "audioIntensity", "currentTime", "playMode", "isSinglePlay", "isDarkMode", "isPlayerExpanded"]),
+    ...mapGetters(["currentTrack"]),
     seekTime() {
       return this.$store.state.seekTime;
-    },
-    playMode() {
-      return this.$store.state.playMode;
-    },
-    isSinglePlay() {
-      return this.$store.state.isSinglePlay;
     },
     shuffledIndices() {
       return this.$store.state.shuffledIndices;
@@ -809,11 +814,11 @@ export default {
     togglePlayer() {
       // Only toggle on mobile
       if (window.innerWidth <= 520) {
-        this.isExpanded = !this.isExpanded;
+        this.$store.commit('SetIsPlayerExpanded', !this.isPlayerExpanded);
       }
     },
     collapsePlayer() {
-      this.isExpanded = false;
+      this.$store.commit('SetIsPlayerExpanded', false);
     }
   },
   created() {
@@ -1129,6 +1134,12 @@ export default {
   
   .musicplayer {
     min-width: 0;
+  }
+}
+
+@media screen and (max-width: 520px) {
+  .cover-overlay {
+    display: none !important;
   }
 }
 </style>

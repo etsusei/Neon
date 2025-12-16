@@ -79,6 +79,9 @@ const mutations = {
     [types.ToggleDarkMode](state) {
         state.isDarkMode = !state.isDarkMode;
         console.log('[mutations] ToggleDarkMode:', state.isDarkMode);
+    },
+    [types.SetIsPlayerExpanded](state, isExpanded) {
+        state.isPlayerExpanded = isExpanded;
     }
 }
 export default mutations;

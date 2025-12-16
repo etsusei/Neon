@@ -84,7 +84,7 @@
             </router-link>
           </div>
         </div>
-        <div class="app-content" :style="{ opacity: isImmersiveMode ? 0 : 1, transition: 'opacity 0.5s ease', pointerEvents: isImmersiveMode ? 'none' : 'auto' }">
+        <div class="app-content" :style="{ opacity: (isImmersiveMode || isPlayerExpanded) ? 0 : 1, transition: 'opacity 0.5s ease', pointerEvents: (isImmersiveMode || isPlayerExpanded) ? 'none' : 'auto' }">
           <div class="app-sidebar">
             <router-link :to="{ name: 'Home' }">
               <p class="app-sidebar-link">
@@ -170,7 +170,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["tracks", "index", "nowPlay", "isPlaying", "currentTrackCover", "isImmersiveMode", "isDarkMode"]),
+    ...mapState(["tracks", "index", "nowPlay", "isPlaying", "currentTrackCover", "isImmersiveMode", "isDarkMode", "isPlayerExpanded"]),
     ...mapGetters([]),
     // 判断当前是否为登录页面
     isLoginPage() {
@@ -353,7 +353,7 @@ html,
 body {
   height: 100%;
   margin: 0;
-  /* Reverted global lock to prevent layout shift */
+  overflow: hidden; /* Lock global scrollbar to prevent background scrolling */
 }
 a {
   text-decoration: none;
@@ -667,6 +667,12 @@ body {
     position: relative;
     position: relative;
     /* z-index: 2; Removed for debug */
+    transition: opacity 0.5s ease;
+  }
+
+  .app-content.content-hidden {
+    opacity: 0 !important;
+    pointer-events: none !important;
   }
 
   &-header {

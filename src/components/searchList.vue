@@ -161,25 +161,27 @@ export default {
 
 // 移动端响应式样式 - 使用行列表显示
 /* Mobile Optimization - Grid Layout */
-@media screen and (max-width: 768px) {
+/* Mobile Optimization - List Layout */
+@media screen and (max-width: 520px) {
   .list-search-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    padding: 16px 12px;
+    display: flex; /* Switch to flex column */
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
     overflow-x: hidden;
   }
   
   .cover-warpper {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    height: auto;
+    display: grid;
+    grid-template-columns: 50px 1fr;
+    grid-template-rows: auto;
+    gap: 0 12px;
+    padding: 8px 12px;
     width: 100%;
+    height: auto;
+    align-items: center;
+    border-bottom: 0.5px solid rgba(0,0,0,0.05);
     margin: 0;
-    padding: 0;
-    border-radius: 0;
     background-color: transparent !important;
   }
   
@@ -187,12 +189,20 @@ export default {
     background-color: transparent;
   }
   
+  /* Router link wrapping the cover */
+  .cover-warpper > a {
+    display: block;
+    width: 50px;
+    height: 50px;
+    grid-column: 1;
+  }
+
   .cover {
-    width: 100%;
-    height: auto;
+    width: 100% !important;
+    height: 100% !important;
     aspect-ratio: 1;
-    border-radius: 12px; /* Smoother corner */
-    margin: 0 0 8px 0;
+    border-radius: 8px; /* Standardize radius */
+    margin: 0;
     flex-shrink: 0;
   }
   
@@ -201,14 +211,19 @@ export default {
   }
   
   .name {
-    flex: initial;
-    padding-left: 0;
-    font-size: 14px;
-    text-align: left; /* Center or Left? MyPlaylists was left */
+    grid-column: 2;
+    text-align: left;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0;
+    margin: 0;
     width: 100%;
     max-width: 100%;
-    margin: 0;
-    line-height: 1.3;
+    line-height: normal;
   }
 }
 </style>

@@ -156,31 +156,61 @@ export default {
 /* Mobile Optimization */
 @media screen and (max-width: 520px) {
   .album-search-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    padding: 16px 12px;
+    display: flex; /* Switch to flex column */
+    flex-direction: column;
+    gap: 0; /* Remove gap, handle with padding/border in items */
+    padding: 0;
+    overflow-x: hidden; /* Prevent horizontal scroll */
   }
 
   .cover-warpper {
+    display: grid;
+    grid-template-columns: 50px 1fr;
+    grid-template-rows: auto;
+    gap: 0 12px; /* Gap between image and text */
+    padding: 8px 12px; /* Padding for list item */
     width: 100%;
     height: auto;
-    margin: 0;
-    padding: 0;
+    align-items: center;
+    border-bottom: 0.5px solid rgba(0,0,0,0.05); /* Divider */
+    margin: 0; /* Reset margins */
   }
 
   .cover {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 1;
+    width: 50px;
+    height: 50px;
     border-radius: 8px;
-    margin-bottom: 8px;
+    margin: 0; /* Reset margins */
+    grid-column: 1;
+  }
+
+  /* Make sure the router-link wrapping the cover allows it to be sized correctly */
+  .cover-warpper > a {
+    display: block;
+    width: 50px;
+    height: 50px;
+    grid-column: 1;
+  }
+  
+  /* Select the cover inside the link */
+  .cover-warpper > a > .cover {
+     width: 100%;
+     height: 100%;
+     margin: 0;
   }
 
   .name {
-    font-size: 14px;
+    grid-column: 2;
     text-align: left;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     padding: 0;
+    margin: 0;
+    width: 100%;
     max-width: 100%;
   }
 }

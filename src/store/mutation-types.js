@@ -14,3 +14,4 @@ export const SetPlayMode = "SetPlayMode";
 export const SetSinglePlay = "SetSinglePlay";
 export const SetShuffledIndices = "SetShuffledIndices";
 export const ToggleDarkMode = "ToggleDarkMode";
+export const SetIsPlayerExpanded = "SetIsPlayerExpanded";

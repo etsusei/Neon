@@ -39,12 +39,31 @@
 
   /* EXPANDED STATE overrides */
   .playerwarper.is-expanded {
-    bottom: 0;
-    top: 0;
-    height: 100%;
-    width: 100%;
+    bottom: 0 !important;
+    top: calc(env(safe-area-inset-top) + 48px) !important;
+    /* Align with projects-section top */
+    height: auto !important;
+    width: 100% !important;
     padding: 0;
     z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    overflow: visible !important;
+    /* Ensure content isn't clipped */
+  }
+
+  /* Liquid Card Container */
+  .playerwarper.is-expanded .musicplayer {
+    height: 100% !important;
+    min-height: 100% !important;
+    display: flex;
+    flex-direction: column;
+    background: transparent !important;
+    overflow: visible !important;
+  }
+
+  .playerwarper.is-expanded .track-control {
+    display: flex !important;
   }
 
   /* Liquid Card Container */
@@ -89,9 +108,17 @@
   /* EXPANDED LAYOUT overrides */
   .playerwarper.is-expanded .musicplayer-content {
     flex-direction: column;
-    justify-content: flex-start !important;
-    padding: 0 24px 40px;
-    padding-top: calc(60px + env(safe-area-inset-top));
+    justify-content: flex-end;
+    /* Push content from bottom up? No, space-between with shrink */
+    justify-content: space-between !important;
+    align-items: center;
+    padding: 0 24px calc(100px + env(safe-area-inset-bottom));
+    /* Lift content up significantly */
+    padding-top: 20px;
+    /* Reduced top padding inside constraint */
+    height: 100%;
+    overflow: hidden;
+    /* Prevent scroll, rely on shrink */
   }
 
 
@@ -111,10 +138,16 @@
   .playerwarper.is-expanded .musicplayer-left {
     flex-direction: column;
     width: 100%;
-    flex: 0 0 auto;
+    flex: 1 1 auto;
+    /* Allow shrink and grow */
+    min-height: 0;
+    /* Crucial for flex shrink */
     margin-right: 0;
-    margin-bottom: 40px;
+    margin-bottom: 10px;
+    /* Reduced margin */
     overflow: visible;
+    justify-content: center;
+    /* Center album in available space */
   }
 
   .album-info {
@@ -123,6 +156,7 @@
     width: 100%;
     overflow: hidden;
     padding: 0 !important;
+    border-radius: 0 !important;
   }
 
   .playerwarper.is-expanded .album-info {
@@ -130,11 +164,13 @@
     align-items: center;
     text-align: center;
     overflow: visible;
+    flex: 1 1 auto;
+    /* Allow shrink */
+    justify-content: center;
   }
 
   /* Cover Image */
   .player-cover__item {
-    /* Mini: Compact Icon */
     width: 42px !important;
     height: 42px !important;
     border-radius: 8px !important;
@@ -143,30 +179,32 @@
     flex-shrink: 0;
     margin-right: 12px;
     margin-top: 0 !important;
-    /* Ensure no white border/background */
     border: none !important;
     background-color: transparent !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-    /* Fix clipping by container rounded corners if padding is tight */
     margin-left: 4px;
   }
 
-  /* Kill pseudo-elements that might be creating white blocks */
   .player-cover__item::before,
   .player-cover__item::after {
     display: none !important;
   }
 
   .playerwarper.is-expanded .player-cover__item {
-    /* Full: Big Cover */
-    width: 260px !important;
-    height: 260px !important;
+    /* Responsive Big Cover */
+    width: 70vw !important;
+    max-width: 280px !important;
+    height: auto !important;
+    aspect-ratio: 1 / 1;
     border-radius: 16px !important;
     margin-right: 0;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
+    /* Reduced margin */
     margin-left: 0;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
     display: block !important;
+    flex-shrink: 1;
+    /* Allow album to shrink if needed */
   }
 
   /* Text Info */
@@ -176,7 +214,6 @@
     justify-content: center;
     flex: 1;
     min-width: 0;
-    /* Enable truncation */
     padding: 0 !important;
     margin: 0 !important;
     text-align: left !important;
@@ -186,13 +223,14 @@
     width: 100%;
     align-items: center;
     text-align: center !important;
+    flex: 0 0 auto;
+    /* Keep text size fixed */
   }
 
   .album-right_name {
     font-size: 15px !important;
     font-weight: 600;
     color: #000;
-    /* Black Text for Mini */
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
@@ -200,15 +238,14 @@
   }
 
   .playerwarper.is-expanded .album-right_name {
-    font-size: 24px !important;
+    font-size: 22px !important;
+    /* Slightly smaller */
     font-weight: 700;
     color: #fff;
-    /* White Text for Expanded */
     margin-bottom: 6px;
-    white-space: normal !important;
-    /* Allow wrapping in full screen */
-    overflow: visible !important;
-    text-overflow: clip !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
   }
 
   /* Hide Artist in Mini Mode */
@@ -218,7 +255,7 @@
 
   .playerwarper.is-expanded .album-right_info {
     display: block !important;
-    font-size: 16px !important;
+    font-size: 15px !important;
     color: rgba(255, 255, 255, 0.7);
     margin-top: 4px;
     white-space: nowrap !important;
@@ -230,7 +267,6 @@
   /* === CONTROLS SECTION (Right Side) === */
   .musicplayer-middle {
     flex: 0 0 auto;
-    /* Don't grow */
     width: auto !important;
     height: 100% !important;
     margin: 0 !important;
@@ -240,9 +276,13 @@
 
   .playerwarper.is-expanded .musicplayer-middle {
     width: 100% !important;
-    margin-top: auto !important;
-    margin-bottom: 40px !important;
     height: auto !important;
+    flex-direction: column;
+    flex: 0 0 auto;
+    /* Don't stretch middle, let left take space */
+    justify-content: flex-end;
+    margin: 0 !important;
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   .player-controls {
@@ -255,8 +295,10 @@
 
   .playerwarper.is-expanded .player-controls {
     flex-direction: column-reverse;
+    /* Put Progress Bar (last in DOM) ABOVE controls */
     width: 100% !important;
     gap: 20px;
+    /* Reduced gap */
   }
 
   .track-control {
@@ -282,8 +324,8 @@
 
   .playerwarper.is-expanded .track-control_row {
     width: 100% !important;
-    justify-content: space-around;
-    padding: 0 20px !important;
+    justify-content: space-between;
+    padding: 0 10px !important;
   }
 
   /* Icons Styling */
@@ -313,7 +355,7 @@
   }
 
   .playerwarper.is-expanded .track-control_iconPlay {
-    font-size: 64px !important;
+    font-size: 72px !important;
     color: #fff;
     /* White for Expanded */
     width: 80px;
@@ -329,12 +371,15 @@
 
   /* Show All Icons in Expanded */
   .playerwarper.is-expanded .track-control_icon {
-    display: block;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
     color: #fff;
     /* White for Expanded */
-    font-size: 32px !important;
+    font-size: 28px !important;
+    width: 50px;
+    height: 50px;
   }
-
 
   /* Progress Bar (Expanded Only) */
   .progress {
@@ -345,24 +390,68 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
+    padding: 0 4px;
   }
 
-  /* Volume & Extra (Expanded Only) */
+  .playerwarper.is-expanded .progress_bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .playerwarper.is-expanded .progress_current {
+    height: 100%;
+    background: #fff;
+    border-radius: 3px;
+    position: relative;
+  }
+
+  /* Drag Handle */
+  .playerwarper.is-expanded .progress_current::after {
+    content: '';
+    position: absolute;
+    right: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  }
+
+  .playerwarper.is-expanded .time {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .playerwarper.is-expanded .progress_time,
+  .playerwarper.is-expanded .progress_duration {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 500;
+  }
+
+  /* Volume & Extra (Expanded Only) - Hide */
   .musicplayer-right {
     display: none;
   }
 
   .playerwarper.is-expanded .musicplayer-right {
-    display: flex;
-    width: 100%;
-    margin-top: 20px;
+    display: none;
+    /* Hidden on expanded too */
   }
 
   /* Collapse Handle (Pseudo-element if simple, or we use the div we added) */
   .collapse-btn {
     position: absolute;
-    top: calc(env(safe-area-inset-top) + 10px);
+    top: 10px;
     left: 0;
     right: 0;
     height: 20px;
@@ -375,7 +464,7 @@
   .collapse-indicator {
     width: 40px;
     height: 4px;
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.3);
     border-radius: 2px;
   }
 }

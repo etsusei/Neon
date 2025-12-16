@@ -19,7 +19,8 @@ const state = {
     playMode: 'sequence',  // 'sequence' 顺序循环 | 'shuffle' 随机播放 | 'repeat-one' 单曲循环
     isSinglePlay: false,   // 搜索单曲时为 true，只播放一次
     shuffledIndices: [],    // 随机播放时的打乱索引
-    isDarkMode: false       // 深色模式 (UI)
+    isDarkMode: false,      // 深色模式 (UI)
+    isPlayerExpanded: false // 移动端播放器是否展开
 }
 
 export default state;
