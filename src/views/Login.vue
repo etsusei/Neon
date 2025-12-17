@@ -117,11 +117,15 @@ export default {
 
 <style lang="scss" scoped>
 .login-container {
-  min-height: 100vh;
+  /* Use fixed positioning to cover entire screen including safe areas */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
   overflow: hidden;
   background: transparent;
   z-index: 0;

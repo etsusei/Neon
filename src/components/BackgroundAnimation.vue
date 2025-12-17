@@ -262,9 +262,12 @@ export default {
   -webkit-filter: blur(15px);
   filter: blur(15px);
   z-index: -2;
-  position: absolute;
-  left: -5%;
+  /* Use fixed positioning to cover entire screen including iOS safe areas */
+  position: fixed;
   top: -5%;
+  left: -5%;
+  right: -5%;
+  bottom: -5%;
   width: 110%;
   height: 110%;
 }

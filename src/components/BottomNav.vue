@@ -69,17 +69,23 @@ export default {
   right: 0;
   z-index: 900;
   width: 100%;
-  pointer-events: none;
+  /* Apply all visual styling directly to the fixed container */
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(50px) saturate(180%);
+  -webkit-backdrop-filter: blur(50px) saturate(180%);
+  border-top: 0.5px solid rgba(255, 255, 255, 0.3);
+  /* Safe area padding - cascade fallbacks */
+  padding-bottom: 20px;
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
+  /* Force hardware layer */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 .nav-content-wrapper {
   pointer-events: auto;
   width: 100%;
-  background: rgba(255, 255, 255, 0.85); /* Lighter background to fix black bar look */
-  backdrop-filter: blur(50px) saturate(180%);
-  -webkit-backdrop-filter: blur(50px) saturate(180%);
-  padding-bottom: env(safe-area-inset-bottom);
-  border-top: 0.5px solid rgba(255, 255, 255, 0.3);
 }
 
 .nav-content {

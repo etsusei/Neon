@@ -132,10 +132,10 @@
             </liquid-card>
           </div>
         </div>
-        <music-player />
-        <!-- 移动端底部导航 -->
-        <bottom-nav class="mobile-bottom-nav" />
       </div>
+      <music-player />
+      <!-- 移动端底部导航 -->
+      <bottom-nav class="mobile-bottom-nav" />
     </template>
   </div>
 </template>
@@ -348,12 +348,19 @@ export default {
   text-align: center;
   color: #2c3e50;
   width: 100%;
+  height: 100%;
+  height: 100vh; /* Fallback */
+  height: 100dvh; /* Dynamic Viewport Height for mobile */
 }
 html,
 body {
   height: 100%;
+  width: 100%;
   margin: 0;
+  padding: 0;
   overflow: hidden; /* Lock global scrollbar to prevent background scrolling */
+  /* Ensure background covers safe area */
+  background-color: #000;
 }
 a {
   text-decoration: none;
