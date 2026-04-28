@@ -1,8 +1,6 @@
 import axios from "axios"
 
-// 如果没配环境变量，process.env.VUE_APP_API_BASE_URL 会是 undefined
-// 我们需要给它一个空字符串 '' 或者 '/' 作为兜底，否则会拼成 'undefinedapi/...'
-const baseUrl = process.env.VUE_APP_API_BASE_URL
+const baseUrl = process.env.VUE_APP_API_BASE_URL || 'https://neon.zeabur.app/'
 
 // 获取存储的 token
 const getToken = () => localStorage.getItem('auth_token')
