@@ -23,6 +23,9 @@ export default {
   },
   data() {
     return {
+      downscale: 16, // 降采样比例，用于大幅提升渲染性能
+      fpsInterval: 1000 / 30, // 限制最大帧率为 30fps
+      lastRenderTime: 0,
       scene: null,
       camera: null,
       renderer: null,
@@ -43,7 +46,7 @@ export default {
         uAnchor3: { value: new THREE.Vector2(0.085, 0.0) },
         uAnchor4: { value: new THREE.Vector2(0.122, 0.0) },
         uNoiseParams: { value: new THREE.Vector2(1.41, 0.2) }, // Scale, Speed (preset)
-        uMixParams: { value: new THREE.Vector2(0.2, 0.096) }, // Threshold, Smooth (preset) - threshold will be modulated by audio
+        uMixParams: { value: new THREE.Vector2(0.2, 0.1) }, // Threshold, Smooth (preset) - threshold will be modulated by audio
         uAudioIntensity: { value: 0.0 } // Audio intensity for saturation modulation
       },
       
@@ -127,8 +130,17 @@ export default {
       // Scene Setup - use markRaw to prevent Vue proxy issues with Three.js
       this.scene = markRaw(new THREE.Scene());
       this.camera = markRaw(new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1));
-      this.renderer = markRaw(new THREE.WebGLRenderer({ antialias: true, alpha: true }));
-      this.renderer.setSize(window.innerWidth, window.innerHeight);
+      // 关闭抗锯齿并应用降采样
+      this.renderer = markRaw(new THREE.WebGLRenderer({ antialias: false, alpha: true }));
+      
+      const rw = Math.floor(window.innerWidth / this.downscale);
+      const rh = Math.floor(window.innerHeight / this.downscale);
+      this.renderer.setSize(rw, rh, false);
+      
+      // 强制设置 canvas 样式撑满容器
+      this.renderer.domElement.style.width = '100%';
+      this.renderer.domElement.style.height = '100%';
+      
       this.$refs.container.appendChild(this.renderer.domElement);
       
       // Shader Material
@@ -242,10 +254,6 @@ export default {
             
             // Final Blend
             vec3 color = mix(colorLeft, colorRight, splitMix);
-            
-            // Add Grain
-            float grain = fract(sin(dot(uv.xy, vec2(12.9898,78.233))) * 43758.5453);
-            color += (grain - 0.5) * 0.04;
 
             gl_FragColor = vec4(color, 1.0);
           }
@@ -262,14 +270,21 @@ export default {
     },
     
     animate() {
-      // 如果暂停，停止渲染
-      if (this.isPaused) {
-        return;
-      }
+      if (this.isPaused) return;
       
+      // 把 requestAnimationFrame 放在前面，确保循环持续运行
       this.animationId = requestAnimationFrame(this.animate);
       
-      // Update time uniform
+      const now = Date.now();
+      const elapsed = now - (this.lastRenderTime || 0);
+      
+      // 如果还没达到设定的帧间隔时间，直接跳过渲染
+      if (elapsed < this.fpsInterval) return;
+      
+      // 记录这次渲染的时间，减去余数避免细微误差累积
+      this.lastRenderTime = now - (elapsed % this.fpsInterval);
+      
+      // Update time uniform (Three.js Clock 自动处理真实时间)
       this.uniforms.uTime.value = this.clock.getElapsedTime();
       
       // Smoothly transition colors
@@ -402,7 +417,9 @@ export default {
     },
     
     onWindowResize() {
-      this.renderer.setSize(window.innerWidth, window.innerHeight);
+      const rw = Math.floor(window.innerWidth / this.downscale);
+      const rh = Math.floor(window.innerHeight / this.downscale);
+      this.renderer.setSize(rw, rh, false);
       this.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
       
       // 即使在暂停状态下，也要渲染一帧以更新画面，避免黑屏
@@ -444,11 +461,13 @@ export default {
   z-index: 0; /* Lowered to sit behind content */
   pointer-events: none;
   transition: opacity 0.8s ease-in-out;
+  transform: scale(1.1); /* 防止降采样造成的边缘白边 */
+  transform-origin: center center;
 }
 
-.dynamic-background canvas {
+.dynamic-background :deep(canvas) {
   display: block;
-  width: 100%;
-  height: 100%;
+  width: 100% !important;
+  height: 100% !important;
 }
 </style>

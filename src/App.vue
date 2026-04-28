@@ -147,13 +147,14 @@ import LyricDisplay from "../src/components/LyricDisplay.vue";
 import LiquidCard from "../src/components/LiquidCard.vue";
 import { mapGetters, mapState } from 'vuex';
 
+
 export default {
   components: {
     MusicPlayer,
     BackgroundAnimation,
     DynamicBackground,
     LyricDisplay,
-    LiquidCard
+    LiquidCard,
   },
   data() {
     return {
