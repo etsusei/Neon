@@ -35,6 +35,8 @@ export default {
       lastFrame: null,
       thisFrame: null,
       isPaused: false,
+      fpsInterval: 1000 / 30, // 限制最大帧率为 30fps
+      lastRenderTime: 0,
     };
   },
   methods: {
@@ -48,7 +50,7 @@ export default {
       this.fragmentSource = `
       precision highp float;
 
-      #define AA
+      // #define AA // 关闭9x超采样抗锯齿，大幅提升性能
 
       uniform float width;
       uniform float height;
@@ -144,22 +146,30 @@ export default {
       return attributeLocation;
     },
     draw() {
-      // 如果暂停，停止渲染
-      if (this.isPaused) {
-        return;
-      }
+      if (this.isPaused) return;
       
-      //Update time
-      this.thisFrame = Date.now();
+      // 把 requestAnimationFrame 放在前面，确保循环持续运行
+      requestAnimationFrame(this.draw);
+      
+      const now = Date.now();
+      const elapsed = now - (this.lastRenderTime || 0);
+      
+      // 如果还没达到 30fps 的时间间隔（约 33.3ms），直接跳过渲染
+      if (elapsed < this.fpsInterval) return;
+      
+      // 记录这次渲染的时间，减去余数是为了避免丢帧产生的细微误差累积
+      this.lastRenderTime = now - (elapsed % this.fpsInterval);
+
+      // 计算动画流逝的时间
+      this.thisFrame = now;
       this.time += (this.thisFrame - this.lastFrame) / 5000;
       this.lastFrame = this.thisFrame;
 
-      //Send uniforms to program
+      // 发送 uniform 到着色器
       this.gl.uniform1f(this.timeHandle, this.time);
 
-      //Draw a triangle strip connecting vertices 0-4
+      // 执行绘制
       this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
-      requestAnimationFrame(this.draw);
     },
     pauseRendering() {
       console.log('[BackgroundAnimation] Rendering paused');

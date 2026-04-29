@@ -1,6 +1,6 @@
 import axios from "axios"
 
-const baseUrl = 'https://neon.zeabur.app/'
+const baseUrl = process.env.VUE_APP_API_BASE_URL || 'https://neon.zeabur.app/'
 
 // 获取存储的 token
 const getToken = () => localStorage.getItem('auth_token')

@@ -150,6 +150,7 @@ import LiquidCard from "../src/components/LiquidCard.vue";
 import BottomNav from "../src/components/BottomNav.vue";
 import { mapGetters, mapState } from 'vuex';
 
+
 export default {
   components: {
     MusicPlayer,
