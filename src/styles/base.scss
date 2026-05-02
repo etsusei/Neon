@@ -1,0 +1,43 @@
+﻿#app {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+  width: 100%;
+}
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+a {
+  text-decoration: none;
+}
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --app-container: transparent; /* transparent for liquid glass */
+  --main-color: #1f1c2e;
+  --secondary-color: #4a4a4a;
+  --link-color: #1f1c2e;
+  --link-color-hover: #c3cff4;
+  --link-color-active: #fff;
+  --link-color-active-bg: #1f1c2e;
+  --projects-section: #fff;
+  --message-box-hover: #fafcff;
+  --message-box-border: #e9ebf0;
+  --more-list-bg: #fff;
+  --more-list-bg-hover: #f6fbff;
+  --more-list-shadow: rgba(209, 209, 209, 0.4);
+  --button-bg: #1f1c24;
+  --search-area-bg: #fff;
+  --star: #1ff1c2e;
+  --message-btn: #fff;
+  
+  /* Text Colors Variables */
+  --text-primary: #2c3e50;
+  --text-secondary: #666;
+}

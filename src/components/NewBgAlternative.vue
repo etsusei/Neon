@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="new-bg-alternative" ref="container" :style="{ opacity: visible ? 1 : 0 }"></div>
 </template>
 
@@ -6,6 +6,7 @@
 import * as THREE from 'three';
 import { markRaw } from 'vue';
 import { mapState } from 'vuex';
+import { extractPaletteFromImage, getAverageLuminance } from '../utils/extractPaletteFromImage';
 
 const DEFAULT_COLORS = [
   '#f15a22',
@@ -27,17 +28,17 @@ function colorFromHex(hex, fallback) {
 export default {
   name: 'NewBgAlternative',
   props: {
-    // 控制背景是否可见（用于播放/暂停时的渐变切换）
+    // Controls fade visibility while play/pause switches backgrounds.
     visible: {
       type: Boolean,
       default: false
     },
-    // 专辑封面图片URL，用于提取颜色
+    // Album cover URL used for palette extraction.
     coverImage: {
       type: String,
       default: ''
     },
-    // 以下 props 保留给 tester 模式使用，正常集成时不需要传
+    // Tester-only overrides. Normal app usage gets colors from coverImage.
     colors: {
       type: Array,
       default: () => null
@@ -65,8 +66,8 @@ export default {
   },
   data() {
     return {
-      downscale: 4, // 降采样比例，用于大幅提升渲染性能
-      fpsInterval: 1000 / 30, // 限制最大帧率为 30fps
+      downscale: 4,
+      fpsInterval: 1000 / 30,
       lastRenderTime: 0,
       scene: null,
       camera: null,
@@ -77,7 +78,7 @@ export default {
       animationId: null,
       isPaused: false,
 
-      // 目标颜色（用于平滑过渡）
+      // Target colors are lerped into uniforms for smooth track changes.
       targetColors: {
         color1: new THREE.Color(DEFAULT_COLORS[0]),
         color2: new THREE.Color(DEFAULT_COLORS[1]),
@@ -87,7 +88,6 @@ export default {
         color6: new THREE.Color(DEFAULT_COLORS[5])
       },
 
-      // 颜色过渡速度
       colorTransitionSpeed: 0.05,
 
       uniforms: {
@@ -111,7 +111,7 @@ export default {
     ...mapState(['audioIntensity'])
   },
   watch: {
-    // Tester 模式：直接通过 props 设置颜色
+    // Tester mode: direct color props override cover-derived colors.
     colors: {
       handler(newColors) {
         if (newColors) {
@@ -138,15 +138,14 @@ export default {
     mixSmooth(value) {
       this.uniforms.uMixSmooth.value = value;
     },
-    // 音频响应：modulate softness for breathing effect (色块在 beat 时轻微扩散，而非亮度闪烁)
+    // Audio response: slightly soften the field on beats instead of flashing brightness.
     audioIntensity(newIntensity) {
       if (this.uniforms && this.uniforms.uMixSmooth) {
-        const baseSoftness = this.mixSmooth; // prop 值作为基准
-        const breathAmount = 0.04; // 微小的 softness 增量
+        const baseSoftness = this.mixSmooth;
+        const breathAmount = 0.04;
         this.uniforms.uMixSmooth.value = baseSoftness + newIntensity * breathAmount;
       }
     },
-    // 封面变化时提取颜色
     coverImage(newCover, oldCover) {
       console.log('[NewBgAlternative] coverImage changed:', oldCover, '->', newCover);
       if (newCover && newCover !== oldCover) {
@@ -202,7 +201,7 @@ export default {
       const rh = Math.floor(window.innerHeight / this.downscale);
       this.renderer.setSize(rw, rh, false);
 
-      // 强制设置 canvas 样式撑满容器
+      // Render at low resolution, then stretch the canvas for a soft background.
       this.renderer.domElement.style.width = '100%';
       this.renderer.domElement.style.height = '100%';
 
@@ -295,7 +294,7 @@ export default {
             float noiseVal2 = snoise(uv * 1.4 + noiseTime + 100.0);
             vec2 distortedUv = uv + vec2(noiseVal1, noiseVal2) * 0.04;
 
-            // 6 animated anchor points — one per palette color
+            // 6 animated anchor points, one per palette color.
             vec2 center1 = vec2(
               0.5 + sin(time * uSpeed * 0.40) * 0.40,
               0.5 + cos(time * uSpeed * 0.50) * 0.40
@@ -369,14 +368,14 @@ export default {
             color.g += cos(timeShift * 1.4) * 0.015;
             color.b += sin(timeShift * 1.2) * 0.015;
 
-            // Cinematic vignette — subtle edge darkening
+            // Cinematic vignette: subtle edge darkening.
             float vignette = 1.0 - smoothstep(0.3, 1.2, length(uv - 0.5));
             color *= mix(0.6, 1.0, vignette);
 
-            // Brightness ceiling — prevent eye-straining bright spots
+            // Brightness ceiling: prevent eye-straining bright spots.
             color = min(color, vec3(0.8));
 
-            // Dithering — break color banding (±0.5/255 triangular noise per channel)
+            // Dithering: break color banding with tiny triangular noise.
             vec3 dither = vec3(
               fract(sin(dot(uv * uResolution + uTime, vec2(12.9898, 78.233))) * 43758.5453),
               fract(sin(dot(uv * uResolution + uTime, vec2(93.9898, 67.345))) * 24634.6345),
@@ -399,7 +398,7 @@ export default {
     },
 
     applySettings() {
-      // 如果有 colors prop（tester 模式），直接设置目标颜色
+      // Tester mode can provide colors directly.
       if (this.colors) {
         const parsed = DEFAULT_COLORS.map((fallback, index) => colorFromHex(this.colors[index], fallback));
         parsed.forEach((color, index) => {
@@ -422,44 +421,43 @@ export default {
       const now = Date.now();
       const elapsed = now - (this.lastRenderTime || 0);
 
-      // 帧率限制
+      // Frame-rate limit.
       if (elapsed < this.fpsInterval) return;
 
       this.lastRenderTime = now - (elapsed % this.fpsInterval);
 
       this.uniforms.uTime.value = this.clock.getElapsedTime();
 
-      // 平滑过渡颜色
+      // Smoothly transition colors.
       this.updateColorTransition();
 
       this.renderer.render(this.scene, this.camera);
     },
 
-    // 平滑过渡到目标颜色（和 DynamicBackground 一样）
+    // Lerp uniforms toward the target palette.
     updateColorTransition() {
       for (let i = 1; i <= 6; i++) {
         this.uniforms[`uColor${i}`].value.lerp(this.targetColors[`color${i}`], this.colorTransitionSpeed);
       }
     },
 
-    // ========= 封面取色 =========
+    // Cover color extraction.
     extractAndApplyColors(imageUrl) {
       console.log('[NewBgAlternative] extractAndApplyColors called with:', imageUrl);
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
         console.log('[NewBgAlternative] Image loaded successfully');
-        const colors = this.extractColors(img);
+        const colors = extractPaletteFromImage(img);
         console.log('[NewBgAlternative] Extracted colors:', colors.map(c => '#' + c.getHexString()));
 
-        // 设置目标颜色，让 lerp 过渡动画自动完成
+        // Let the render loop animate into the new palette.
         colors.forEach((color, index) => {
           this.targetColors[`color${index + 1}`] = color;
         });
 
-        // 计算平均亮度决定歌词颜色模式
-        const luminances = colors.map(c => 0.299 * c.r + 0.587 * c.g + 0.114 * c.b);
-        const avgLuminance = luminances.reduce((a, b) => a + b, 0) / luminances.length;
+        // Estimate lyric contrast mode from the extracted palette.
+        const avgLuminance = getAverageLuminance(colors);
         const isDarkBackground = avgLuminance < 0.4;
         console.log('[NewBgAlternative] Avg luminance:', avgLuminance.toFixed(3), 'isDark:', isDarkBackground);
         this.$store.commit('SetLyricDarkMode', isDarkBackground);
@@ -470,105 +468,7 @@ export default {
       img.src = imageUrl;
     },
 
-    extractColors(image) {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = 64;
-      canvas.height = 64;
-      ctx.drawImage(image, 0, 0, 64, 64);
-
-      const imageData = ctx.getImageData(0, 0, 64, 64).data;
-      const colorCounts = {};
-      const quantization = 32;
-      let totalValidPixels = 0;
-
-      for (let i = 0; i < imageData.length; i += 4) {
-        const r = Math.floor(imageData[i] / quantization) * quantization;
-        const g = Math.floor(imageData[i + 1] / quantization) * quantization;
-        const b = Math.floor(imageData[i + 2] / quantization) * quantization;
-
-        // 过滤纯黑和纯白
-        if ((r + g + b) < 15 || (r + g + b) > 720) continue;
-
-        totalValidPixels++;
-        const key = `${r},${g},${b}`;
-        colorCounts[key] = (colorCounts[key] || 0) + 1;
-      }
-
-      console.log('[NewBgAlternative] Color counts:', Object.entries(colorCounts).length, 'unique colors,', totalValidPixels, 'valid pixels');
-
-      // 按频率排序
-      const sortedColors = Object.entries(colorCounts).sort((a, b) => b[1] - a[1]);
-
-      // 最小像素占比：一个颜色至少占 3% 的有效像素才有资格入选
-      const minPixelRatio = 0.03;
-      const minPixelCount = Math.max(totalValidPixels * minPixelRatio, 1);
-
-      // 取 top 6 个足够不同的颜色
-      const palette = [];
-      const minDistance = 0.15;
-
-      for (let [key, count] of sortedColors) {
-        if (palette.length >= 6) break;
-
-        // 像素占比不够，跳过（可能是边框、小文字等干扰）
-        if (count < minPixelCount) {
-          continue;
-        }
-
-        const [r, g, b] = key.split(',').map(Number);
-        const color = new THREE.Color(`rgb(${r}, ${g}, ${b})`);
-        const luminance = 0.299 * color.r + 0.587 * color.g + 0.114 * color.b;
-
-        // 亮度离群检测：如果已有 palette 的平均亮度和这个颜色差距过大，跳过
-        if (palette.length >= 2) {
-          const paletteLuminances = palette.map(c => 0.299 * c.r + 0.587 * c.g + 0.114 * c.b);
-          const avgLum = paletteLuminances.reduce((a, b) => a + b, 0) / paletteLuminances.length;
-          const lumDiff = Math.abs(luminance - avgLum);
-          // 如果亮度差超过 0.45（比如 palette 平均 0.6 的浅色，来了个 0.1 的黑色），跳过
-          if (lumDiff > 0.45) {
-            console.log('[NewBgAlternative] Skipping luminance outlier:', '#' + color.getHexString(),
-              'lum:', luminance.toFixed(2), 'avgPalette:', avgLum.toFixed(2));
-            continue;
-          }
-        }
-
-        // 颜色差异检查
-        let isDistinct = true;
-        for (let existing of palette) {
-          const dr = existing.r - color.r;
-          const dg = existing.g - color.g;
-          const db = existing.b - color.b;
-          if (Math.sqrt(dr * dr + dg * dg + db * db) < minDistance) {
-            isDistinct = false;
-            break;
-          }
-        }
-
-        if (isDistinct) {
-          palette.push(color);
-        }
-      }
-
-      console.log('[NewBgAlternative] Palette before fill:', palette.length, 'colors');
-
-      // 如果凑不齐 6 个，循环复用已有颜色（微调明度，不偏移色相）
-      while (palette.length < 6) {
-        if (palette.length > 0) {
-          const sourceIndex = (palette.length) % palette.length;
-          // 只调整明度（±0.05），不改变色相，避免出现不相关的颜色
-          const lightnessShift = (palette.length % 2 === 0) ? 0.05 : -0.05;
-          palette.push(palette[sourceIndex].clone().offsetHSL(0, 0, lightnessShift));
-        } else {
-          palette.push(new THREE.Color(0x333333));
-        }
-      }
-
-      console.log('[NewBgAlternative] Final palette:', palette.map(c => '#' + c.getHexString()));
-      return palette;
-    },
-
-    // ========= 渲染控制 =========
+    // Render controls.
     pauseRendering() {
       console.log('[NewBgAlternative] Rendering paused');
       this.isPaused = true;
@@ -595,7 +495,7 @@ export default {
       this.renderer.setSize(rw, rh, false);
       this.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
 
-      // 即使在暂停状态下，也要渲染一帧以更新画面
+      // Even while paused, render once so resize updates the frame.
       if (this.isPaused && this.renderer && this.scene && this.camera) {
         this.renderer.render(this.scene, this.camera);
       }
@@ -614,7 +514,7 @@ export default {
   z-index: 0;
   pointer-events: none;
   transition: opacity 0.8s ease-in-out;
-  transform: scale(1.1); /* 防止降采样造成的边缘白边 */
+  transform: scale(1.1);
   transform-origin: center center;
 }
 

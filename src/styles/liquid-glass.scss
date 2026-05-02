@@ -1,0 +1,70 @@
+﻿:root {
+  /* Global Glass Opacity Control */
+  --glass-opacity: 0.25; 
+}
+
+/* Liquid glass back button */
+.liquid-back {
+  position: relative;
+  width: 100%;
+  height: 50vh;
+  min-height: 40px;
+  cursor: pointer;
+  border-radius: 32px;
+  cursor: pointer;
+  border-radius: 32px;
+  /* overflow: hidden; Re-enabled for border-radius */
+  overflow: hidden;
+  /* opacity: 0.7; Removed to avoid stacking context issues */
+  /* transition: all 0.3s ease-in-out; Removed to avoid stacking context issues */
+  /* Ensure z-index is handled carefully, local stacking context here is fine as long as parents are clean */
+  isolation: isolate; /* Create local stacking context to contain children */
+}
+
+/* .liquid-back:hover {
+  transform: scale(1.02); Handled by LiquidCard prop
+} */
+
+.liquid-back-effect {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  backdrop-filter: url(#glass-distortion);
+  -webkit-backdrop-filter: url(#glass-distortion);
+  backdrop-filter: url(#glass-distortion);
+  -webkit-backdrop-filter: url(#glass-distortion);
+  border-radius: inherit; /* inherit from parent */
+}
+
+.liquid-back-tint {
+  z-index: 1;
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.liquid-back-shine {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  border-radius: inherit;
+  box-shadow: 
+    inset 2px 2px 1px 0 rgba(255, 255, 255, 0.5),
+    inset -1px -1px 1px 1px rgba(255, 255, 255, 0.5);
+}
+
+.liquid-back-content {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 50px;
+  font-size: 50px;
+  color: rgba(0, 0, 0, 0.6);
+}

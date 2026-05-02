@@ -1,0 +1,140 @@
+﻿/* Dark Mode Overrides */
+body.dark-mode-active {
+  background-color: #000000 !important;
+}
+.app-container.dark-mode {
+  background-color: transparent !important;
+  --main-color: #e0e0e0; /* Softer white */
+  --secondary-color: #a0a0a0;
+  --link-color: #e0e0e0;
+  --link-color-active: #171717;
+  --link-color-active-bg: #e0e0e0;
+  
+  /* Update Text Variables for Dark Mode */
+  --text-primary: #e0e0e0;   /* Softer white instead of pure white */
+  --text-secondary: #a0a0a0; /* Dimmer gray for secondary text */
+  
+  /* Override text color globally inside dark mode */
+  color: var(--text-primary);
+
+  .projects-section-header p,
+  .message-header .name,
+  .app-name,
+  .profile-btn span,
+  .app-sidebar-link:not(:hover),
+  .app-sidebar-link i,
+  .liquid-back-content,
+  .liquid-back-content i,
+  .search-input {
+    color: var(--text-primary) !important;
+    transition: color 0.5s ease;
+  }
+  
+  
+  /* Make sure links handle hover in dark mode */
+  .app-sidebar-link:hover {
+    color: #fff; /* White on hover for better visibility on dark card */
+  }
+  
+  /* Ensure active link icon is dark (contrast against white background) */
+  .app-sidebar-link.router-link-active i,
+  a.router-link-active .app-sidebar-link i {
+    color: #171717 !important;
+  }
+  
+  /* Change Liquid Cards to #171717 in dark mode */
+  .liquid-card-tint {
+    background-color: #171717 !important;
+  }
+  
+  /* Optionally reduce the shine/border effect if it's too bright */
+  .liquid-card-shine {
+    box-shadow: inset 2px 2px 1px 0 rgba(255, 255, 255, 0.1),
+                inset -1px -1px 1px 1px rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  /* Lyrics Overrides */
+  .lyric-line {
+    color: rgba(255, 255, 255, 0.35) !important;
+  }
+  .lyric-line:hover {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+  .lyric-line.active {
+    color: rgba(255, 255, 255, 1) !important;
+  }
+  .lyric-line.near {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+  .lyric-line.far {
+    color: rgba(255, 255, 255, 0.35) !important;
+  }
+  
+  .no-lyric, .loading i {
+    color: rgba(255, 255, 255, 0.5) !important;
+  }
+  
+  /* Music Player Overrides */
+  .musicplayer .track-control {
+    background-color: #171717 !important;
+    transition: background-color 0.5s ease;
+  }
+  
+  .musicplayer .album-right_name,
+  .musicplayer .album-right_info,
+  .musicplayer .track-control_icon,
+  .musicplayer .track-control_icon i,
+  .musicplayer .track-control_iconPlay i,
+  .musicplayer .progress_time,
+  .musicplayer .progress_duration,
+  .musicplayer .volume-control_speaker i,
+  .musicplayer .playlist-btn i,
+  /* Add global icon overrides */
+  .fa-plus,
+  .fa-download,
+  .fa-file-audio-o,
+  .fa-share-alt,
+  .fa-heart,
+  .fa-trash,
+  .project-box-header span,
+  .project-box-content-header p,
+  .box-content-header,
+  .box-content-subheader,
+  .playlist-name,
+  .playlist-count {
+    color: var(--text-primary) !important;
+    transition: color 0.5s ease;
+  }
+  
+  /* Volume Bar bg */
+  .musicplayer .volume-control_bar .bar {
+    background: rgba(255,255,255,0.2) !important;
+  }
+  
+  /* Element Tabs Overrides for Dark Mode */
+  .el-tabs__nav-scroll {
+    background-color: transparent !important;
+  }
+  .el-tabs__header {
+    border-bottom: none !important;
+    background-color: transparent !important;
+  }
+  .el-tabs--border-card {
+    background: transparent !important;
+    border: none !important;
+  }
+  .el-tabs__item {
+    color: var(--text-primary) !important;
+    transition: color 0.3s ease;
+  }
+  .el-tabs__item.is-active {
+    color: #fff !important;
+    font-weight: bold;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-right-color: transparent !important;
+    border-left-color: transparent !important;
+  }
+  .el-tabs__nav-wrap::after {
+    background-color: transparent !important;
+  }
+}
