@@ -113,7 +113,6 @@ export default {
         // Reload the active song when the playlist content changes.
         // JSON comparison keeps this tied to actual content changes.
         if (oldtrack && newtrack && JSON.stringify(newtrack) !== JSON.stringify(oldtrack)) {
-          console.log('[MusicPlayer] Tracks changed, refreshing player');
           // Wait for the store index update before jumping.
           this.$nextTick(() => {
             this.jumpToClick();
@@ -341,7 +340,6 @@ export default {
     autoSkipFailed() {
       this.skipFailedCount++;
       if (this.skipFailedCount < this.tracks.length) {
-        console.log(`Skipping failed track, attempt ${this.skipFailedCount}/${this.tracks.length}`);
         this.isTimerPlaying = true;
         setTimeout(() => {
           this.nextTrack();
@@ -381,7 +379,6 @@ export default {
         [indices[i], indices[j]] = [indices[j], indices[i]];
       }
       this.$store.commit('SetShuffledPlaybackOrder', indices);
-      console.log('[MusicPlayer] Generated shuffled indices:', indices);
     },
     refreshPlayer() {
       this.handlePlayerLogic();
@@ -456,10 +453,8 @@ export default {
       
       // Add event listener to set isPlaying and update cover when audio starts playing
       this.audio.addEventListener('playing', () => {
-        console.log('[MusicPlayer] Initial audio playing - setting isPlaying to true');
         this.$store.commit('SetPlaybackActive', true);
         // Update cover when initial audio starts playing
-        console.log('[MusicPlayer] Initial audio playing - updating playback cover:', this.currentTrack.cover);
         this.$store.commit('SetPlaybackCover', this.currentTrack.cover);
         // Start visualization
         this.startVisualization();
@@ -482,12 +477,6 @@ export default {
                      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
       this.isIOS = isIPhone || isIPad;
       
-      console.log('[MusicPlayer] Device detection:', {
-        platform: navigator.platform,
-        maxTouchPoints: navigator.maxTouchPoints,
-        isIOS: this.isIOS
-      });
-      
       // Avoid AudioContext on iOS so background playback is not interrupted.
       // createMediaElementSource binds the audio element to the context, which
       // can be suspended when Safari moves to the background.
@@ -498,9 +487,6 @@ export default {
         this.audioSource = this.audioContext.createMediaElementSource(this.audio);
         this.audioSource.connect(this.analyser);
         this.analyser.connect(this.audioContext.destination);
-        console.log('[MusicPlayer] AudioContext initialized for audio visualization');
-      } else if (this.isIOS) {
-        console.log('[MusicPlayer] iOS/iPadOS detected - AudioContext disabled for background playback support');
       }
       
       // Initialize Media Session API.
@@ -592,7 +578,6 @@ export default {
           });
         }
         
-        console.log('[MusicPlayer] Media Session API initialized', this.isIOS ? '(iOS - track controls only)' : '(full controls)');
       }
     },
     
@@ -609,7 +594,6 @@ export default {
             { src: this.currentTrack.cover, sizes: '512x512', type: 'image/jpeg' }
           ] : []
         });
-        console.log('[MusicPlayer] Media Session metadata updated:', this.currentTrack.name);
       }
     },
     seekToTime(time) {

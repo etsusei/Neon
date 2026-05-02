@@ -132,7 +132,6 @@ export default {
       // 使用后端代理下载接口
       const downloadUrl = `https://neon.zeabur.app/api/music/download?id=${song.song_id}&name=${encodeURIComponent(filename)}`;
       
-      console.log(`[下载] 开始: ${filename}`);
       
       const iframe = document.createElement('iframe');
       iframe.style.display = 'none';

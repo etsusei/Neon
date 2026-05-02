@@ -172,12 +172,10 @@ export default {
       this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
     },
     pauseRendering() {
-      console.log('[BackgroundAnimation] Rendering paused');
       this.isPaused = true;
     },
     resumeRendering() {
       if (!this.isPaused) return;
-      console.log('[BackgroundAnimation] Rendering resumed');
       this.isPaused = false;
       this.lastFrame = Date.now(); // 重置时间，避免时间跳跃
       this.draw();

@@ -40,7 +40,6 @@ export default {
   },
   created() {
     this.getRoutes();
-    console.log(this.$route.matched[0].children);
   },
   methods: {
     getRoutes() {

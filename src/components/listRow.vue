@@ -96,7 +96,6 @@ export default {
       // 使用后端代理下载接口，直接触发浏览器下载
       const downloadUrl = `https://neon.zeabur.app/api/music/download?id=${track.id}&name=${encodeURIComponent(filename)}`;
       
-      console.log(`[下载] 开始: ${filename}`);
       
       // 创建隐藏的 iframe 触发下载，避免页面跳转
       const iframe = document.createElement('iframe');

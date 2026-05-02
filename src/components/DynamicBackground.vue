@@ -69,9 +69,6 @@ export default {
     ...mapState(['audioIntensity'])
   },
   watch: {
-    visible(newVal) {
-      console.log('[DynamicBackground] visible changed:', newVal);
-    },
     audioIntensity(newIntensity) {
       // Update mixThreshold based on audio intensity
       if (this.uniforms && this.uniforms.uMixParams) {
@@ -82,32 +79,18 @@ export default {
       }
     },
     coverImage(newCover, oldCover) {
-      console.log('[DynamicBackground] ===== coverImage prop changed =====');
-      console.log('[DynamicBackground] Old:', oldCover);
-      console.log('[DynamicBackground] New:', newCover);
-      console.log('[DynamicBackground] Are they different?', newCover !== oldCover);
-      console.log('[DynamicBackground] visible:', this.visible);
-      
       // Extract colors whenever cover changes, regardless of visibility
       // This ensures colors are ready when transitioning from paused to playing
       // and when switching tracks during playback
       if (newCover && newCover !== oldCover) {
-        console.log('[DynamicBackground] ✓ Conditions met, extracting colors...');
         this.extractAndApplyColors(newCover);
-      } else {
-        console.log('[DynamicBackground] ✗ Conditions not met, skipping color extraction');
-        console.log('[DynamicBackground]   newCover exists?', !!newCover);
-        console.log('[DynamicBackground]   covers different?', newCover !== oldCover);
       }
     }
   },
   mounted() {
-    console.log('[DynamicBackground] Component mounted');
-    console.log('[DynamicBackground] Initial props - visible:', this.visible, 'coverImage:', this.coverImage);
     // 使用 nextTick 确保 DOM 已经渲染
     this.$nextTick(() => {
       if (this.$refs.container) {
-        console.log('[DynamicBackground] Container ref found, initializing Three.js');
         this.initThreeJS();
         this.animate();
         window.addEventListener('resize', this.onWindowResize);
@@ -303,24 +286,15 @@ export default {
     },
     
     extractAndApplyColors(imageUrl) {
-      console.log('[DynamicBackground] extractAndApplyColors called with:', imageUrl);
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
-        console.log('[DynamicBackground] Image loaded successfully');
         const colors = this.extractColors(img);
-        console.log('[DynamicBackground] Extracted colors:', colors.map(c => ({ 
-          r: c.r.toFixed(3), 
-          g: c.g.toFixed(3), 
-          b: c.b.toFixed(3),
-          hex: '#' + c.getHexString()
-        })));
         // 设置目标颜色，让过渡动画自动完成
         this.targetColors.color1 = colors[0];
         this.targetColors.color2 = colors[1];
         this.targetColors.color3 = colors[2];
         this.targetColors.color4 = colors[3];
-        console.log('[DynamicBackground] Target colors updated');
         
         // 计算 uColor1 和 uColor4 的亮度来决定歌词颜色
         // 使用相对亮度公式: L = 0.299*R + 0.587*G + 0.114*B
@@ -332,10 +306,6 @@ export default {
         
         // 如果亮度低于 0.4（较暗），则启用深色模式（白色歌词）
         const isDarkBackground = minLuminance < 0.4;
-        console.log('[DynamicBackground] Luminance - color1:', luminance1.toFixed(3), 
-                    'color4:', luminance4.toFixed(3), 
-                    'min:', minLuminance.toFixed(3), 
-                    'isDark:', isDarkBackground);
         
         this.$store.commit('SetLyricDarkMode', isDarkBackground);
       };
@@ -346,7 +316,6 @@ export default {
     },
     
     extractColors(image) {
-      console.log('[DynamicBackground] extractColors called, image:', image.width, 'x', image.height);
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       // Resize for performance
@@ -370,7 +339,6 @@ export default {
         colorCounts[key] = (colorCounts[key] || 0) + 1;
       }
 
-      console.log('[DynamicBackground] Color counts:', Object.entries(colorCounts).length, 'unique colors found');
 
       // Sort by frequency
       const sortedColors = Object.entries(colorCounts).sort((a, b) => b[1] - a[1]);
@@ -401,7 +369,6 @@ export default {
         }
       }
 
-      console.log('[DynamicBackground] Palette before fill:', palette.length, 'colors');
 
       // Fill remaining slots
       while (palette.length < 4) {
@@ -412,7 +379,6 @@ export default {
         }
       }
 
-      console.log('[DynamicBackground] Final palette:', palette.map(c => '#' + c.getHexString()));
       return palette;
     },
     
@@ -429,7 +395,6 @@ export default {
     },
     
     pauseRendering() {
-      console.log('[DynamicBackground] Rendering paused');
       this.isPaused = true;
       if (this.animationId) {
         cancelAnimationFrame(this.animationId);
@@ -439,7 +404,6 @@ export default {
     
     resumeRendering() {
       if (!this.isPaused) return;
-      console.log('[DynamicBackground] Rendering resumed');
       this.isPaused = false;
       // 重置时钟，避免时间跳跃
       if (this.clock) {

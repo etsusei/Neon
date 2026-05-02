@@ -147,17 +147,12 @@ export default {
       }
     },
     coverImage(newCover, oldCover) {
-      console.log('[NewBgAlternative] coverImage changed:', oldCover, '->', newCover);
       if (newCover && newCover !== oldCover) {
         this.extractAndApplyColors(newCover);
       }
-    },
-    visible(newVal) {
-      console.log('[NewBgAlternative] visible changed:', newVal);
     }
   },
   mounted() {
-    console.log('[NewBgAlternative] Component mounted');
     this.$nextTick(() => {
       if (this.$refs.container) {
         this.initThree();
@@ -443,13 +438,10 @@ export default {
 
     // Cover color extraction.
     extractAndApplyColors(imageUrl) {
-      console.log('[NewBgAlternative] extractAndApplyColors called with:', imageUrl);
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
-        console.log('[NewBgAlternative] Image loaded successfully');
         const colors = extractPaletteFromImage(img);
-        console.log('[NewBgAlternative] Extracted colors:', colors.map(c => '#' + c.getHexString()));
 
         // Let the render loop animate into the new palette.
         colors.forEach((color, index) => {
@@ -459,7 +451,6 @@ export default {
         // Estimate lyric contrast mode from the extracted palette.
         const avgLuminance = getAverageLuminance(colors);
         const isDarkBackground = avgLuminance < 0.4;
-        console.log('[NewBgAlternative] Avg luminance:', avgLuminance.toFixed(3), 'isDark:', isDarkBackground);
         this.$store.commit('SetLyricDarkMode', isDarkBackground);
       };
       img.onerror = (error) => {
@@ -470,7 +461,6 @@ export default {
 
     // Render controls.
     pauseRendering() {
-      console.log('[NewBgAlternative] Rendering paused');
       this.isPaused = true;
       if (this.animationId) {
         cancelAnimationFrame(this.animationId);
@@ -480,7 +470,6 @@ export default {
 
     resumeRendering() {
       if (!this.isPaused) return;
-      console.log('[NewBgAlternative] Rendering resumed');
       this.isPaused = false;
       if (this.clock) {
         this.clock.start();

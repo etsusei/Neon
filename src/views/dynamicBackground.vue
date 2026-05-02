@@ -74,7 +74,6 @@ export default {
             headers:{'Access-Control-Allow-Origin': '*'},
             withCredentials:true,
         }).then((reponse)=>{
-            console.log(reponse)
         })
     },
     play(){

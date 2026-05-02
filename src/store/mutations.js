@@ -14,12 +14,10 @@ function setCurrentTrackIndex(state, trackIndex) {
 }
 
 function setPlaybackActive(state, isPlaying) {
-    console.log('[mutations] SetPlaybackActive:', isPlaying);
     state.playback.isPlaying = isPlaying;
 }
 
 function setPlaybackCover(state, coverUrl) {
-    console.log('[mutations] SetPlaybackCover:', coverUrl);
     state.playback.coverImage = coverUrl || "";
 }
 
@@ -33,17 +31,14 @@ function setPlaybackSeekTime(state, time) {
 
 function setPlaybackMode(state, mode) {
     state.playback.mode = mode;
-    console.log('[mutations] SetPlaybackMode:', mode);
 }
 
 function setSingleTrackPlayback(state, isSingleTrack) {
     state.playback.isSingleTrack = isSingleTrack;
-    console.log('[mutations] SetSingleTrackPlayback:', isSingleTrack);
 }
 
 function setShuffledPlaybackOrder(state, indices) {
     state.playback.shuffledIndices = indices;
-    console.log('[mutations] SetShuffledPlaybackOrder:', indices.length, 'items');
 }
 
 const mutations = {
@@ -89,14 +84,12 @@ const mutations = {
     },
     [types.ToggleImmersiveMode](state) {
         state.isImmersiveMode = !state.isImmersiveMode;
-        console.log('[mutations] ToggleImmersiveMode:', state.isImmersiveMode);
     },
     [types.SetLyricDarkMode](state, isDark) {
         state.lyricDarkMode = isDark;
     },
     [types.ToggleDarkMode](state) {
         state.isDarkMode = !state.isDarkMode;
-        console.log('[mutations] ToggleDarkMode:', state.isDarkMode);
     },
 
     // Legacy aliases.
