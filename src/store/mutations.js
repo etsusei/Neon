@@ -50,8 +50,7 @@ const mutations = {
                 name: songs[i].name,
                 artist: songs[i].ar[0].name,
                 album: songs[i].al.name,
-                cover: songs[i].al.picUrl,
-                source: "https://music.163.com/song/media/outer/url?id=" + songs[i].id + ".mp3"
+                cover: songs[i].al.picUrl
             })
         }
     },
@@ -63,8 +62,7 @@ const mutations = {
                 name: songs[i].name,
                 artist: songs[i].artists[0].name,
                 album: songs[i].album.name,
-                cover: songs[i].album.img1v1Url || songs[i].album.picUrl || "",
-                source: "https://music.163.com/song/media/outer/url?id=" + songs[i].id + ".mp3"
+                cover: songs[i].album.img1v1Url || songs[i].album.picUrl || ""
             })
         }
     },

@@ -3,8 +3,7 @@ const state = {
         id: 0,
         name: "",
         artist: "",
-        album: "",
-        source: ""
+        album: ""
     }],
     playback: {
         requestedTrackIndex: undefined,
