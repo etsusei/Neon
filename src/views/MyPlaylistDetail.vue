@@ -61,7 +61,7 @@ export default {
   methods: {
     ...mapMutations({
       pushToPlayer: 'PushTracks',
-      toPlay: 'GetIndex'
+      toPlay: 'RequestTrackPlayback'
     }),
     async loadPlaylist() {
       try {
@@ -93,7 +93,7 @@ export default {
       
       this.pushToPlayer(tracks)
       this.toPlay(0)
-      this.$store.commit('SetSinglePlay', false)
+      this.$store.commit('SetSingleTrackPlayback', false)
     },
     playSong(index) {
       const tracks = this.songs.map(s => ({
@@ -105,7 +105,7 @@ export default {
       
       this.pushToPlayer(tracks)
       this.toPlay(index)
-      this.$store.commit('SetSinglePlay', false)
+      this.$store.commit('SetSingleTrackPlayback', false)
     },
     async removeSong(song) {
       try {

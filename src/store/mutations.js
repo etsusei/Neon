@@ -1,4 +1,51 @@
 import * as types from './mutation-types';
+
+function requestTrackPlayback(state, trackIndex) {
+    // Force watchers to run even when the same index is selected again.
+    state.playback.requestedTrackIndex = null;
+    setTimeout(() => {
+        state.playback.requestedTrackIndex = trackIndex;
+    }, 0);
+}
+
+function setCurrentTrackIndex(state, trackIndex) {
+    state.playback.requestedTrackIndex = trackIndex;
+    state.playback.currentTrackIndex = trackIndex;
+}
+
+function setPlaybackActive(state, isPlaying) {
+    console.log('[mutations] SetPlaybackActive:', isPlaying);
+    state.playback.isPlaying = isPlaying;
+}
+
+function setPlaybackCover(state, coverUrl) {
+    console.log('[mutations] SetPlaybackCover:', coverUrl);
+    state.playback.coverImage = coverUrl || "";
+}
+
+function setPlaybackTime(state, time) {
+    state.playback.currentTime = time;
+}
+
+function setPlaybackSeekTime(state, time) {
+    state.playback.seekTime = time;
+}
+
+function setPlaybackMode(state, mode) {
+    state.playback.mode = mode;
+    console.log('[mutations] SetPlaybackMode:', mode);
+}
+
+function setSingleTrackPlayback(state, isSingleTrack) {
+    state.playback.isSingleTrack = isSingleTrack;
+    console.log('[mutations] SetSingleTrackPlayback:', isSingleTrack);
+}
+
+function setShuffledPlaybackOrder(state, indices) {
+    state.playback.shuffledIndices = indices;
+    console.log('[mutations] SetShuffledPlaybackOrder:', indices.length, 'items');
+}
+
 const mutations = {
     [types.PushTracks](state, songs) {
         state.tracks.splice(0, state.tracks.length);
@@ -26,27 +73,17 @@ const mutations = {
             })
         }
     },
-    [types.GetIndex](state, index) {
-        // 强制触发 watcher：先设为 null 再设为目标值
-        // 这样即使 index 相同也会触发更新
-        state.index = null;
-        setTimeout(() => {
-            state.index = index;
-        }, 0);
-    },
-    [types.PushIndex](state, currentIndex) {
-        // 直接设置，不使用强制触发（避免与 jumpToClick 形成循环）
-        state.index = currentIndex;
-        state.currentIndex = currentIndex;
-    },
-    [types.SetIsPlaying](state, isPlaying) {
-        console.log('[mutations] SetIsPlaying:', isPlaying);
-        state.isPlaying = isPlaying;
-    },
-    [types.SetCurrentTrackCover](state, coverUrl) {
-        console.log('[mutations] SetCurrentTrackCover:', coverUrl);
-        state.currentTrackCover = coverUrl;
-    },
+
+    [types.RequestTrackPlayback]: requestTrackPlayback,
+    [types.SetCurrentTrackIndex]: setCurrentTrackIndex,
+    [types.SetPlaybackActive]: setPlaybackActive,
+    [types.SetPlaybackCover]: setPlaybackCover,
+    [types.SetPlaybackTime]: setPlaybackTime,
+    [types.SetPlaybackSeekTime]: setPlaybackSeekTime,
+    [types.SetPlaybackMode]: setPlaybackMode,
+    [types.SetSingleTrackPlayback]: setSingleTrackPlayback,
+    [types.SetShuffledPlaybackOrder]: setShuffledPlaybackOrder,
+
     [types.SetAudioIntensity](state, intensity) {
         state.audioIntensity = intensity;
     },
@@ -54,31 +91,24 @@ const mutations = {
         state.isImmersiveMode = !state.isImmersiveMode;
         console.log('[mutations] ToggleImmersiveMode:', state.isImmersiveMode);
     },
-    [types.SetCurrentTime](state, time) {
-        state.currentTime = time;
-    },
-    [types.SetSeekTime](state, time) {
-        state.seekTime = time;
-    },
     [types.SetLyricDarkMode](state, isDark) {
         state.lyricDarkMode = isDark;
-    },
-    // 播放模式
-    [types.SetPlayMode](state, mode) {
-        state.playMode = mode;
-        console.log('[mutations] SetPlayMode:', mode);
-    },
-    [types.SetSinglePlay](state, isSingle) {
-        state.isSinglePlay = isSingle;
-        console.log('[mutations] SetSinglePlay:', isSingle);
-    },
-    [types.SetShuffledIndices](state, indices) {
-        state.shuffledIndices = indices;
-        console.log('[mutations] SetShuffledIndices:', indices.length, 'items');
     },
     [types.ToggleDarkMode](state) {
         state.isDarkMode = !state.isDarkMode;
         console.log('[mutations] ToggleDarkMode:', state.isDarkMode);
-    }
+    },
+
+    // Legacy aliases.
+    [types.GetIndex]: requestTrackPlayback,
+    [types.PushIndex]: setCurrentTrackIndex,
+    [types.SetIsPlaying]: setPlaybackActive,
+    [types.SetCurrentTrackCover]: setPlaybackCover,
+    [types.SetCurrentTime]: setPlaybackTime,
+    [types.SetSeekTime]: setPlaybackSeekTime,
+    [types.SetPlayMode]: setPlaybackMode,
+    [types.SetSinglePlay]: setSingleTrackPlayback,
+    [types.SetShuffledIndices]: setShuffledPlaybackOrder
 }
+
 export default mutations;

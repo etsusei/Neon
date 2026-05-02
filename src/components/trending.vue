@@ -94,12 +94,12 @@ export default {
   methods:{
      ...mapMutations({
       pushToPlayer:'PushTracks',
-      toPlay:'GetIndex'
+      toPlay:'RequestTrackPlayback'
     }),
     play(tracks,index){
       this.pushToPlayer(tracks);
       this.toPlay(index);
-      this.$store.commit('SetSinglePlay', false); // 歌单播放，非单次模式
+      this.$store.commit('SetSingleTrackPlayback', false);
     },
     async download(track) {
       const artistName = track.ar && track.ar[0] ? track.ar[0].name : 'Unknown';

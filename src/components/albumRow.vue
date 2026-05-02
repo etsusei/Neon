@@ -42,12 +42,12 @@ export default {
   methods:{
     ...mapMutations({
       pushToPlayer:'PushTracks',
-      toPlay:'GetIndex'
+      toPlay:'RequestTrackPlayback'
     }),
     play(tracks,index){
       this.pushToPlayer(tracks);
       this.toPlay(index);
-      this.$store.commit('SetSinglePlay', false); // 专辑播放，非单次模式
+      this.$store.commit('SetSingleTrackPlayback', false);
     },
     openAddToPlaylist(track) {
       // 专辑歌曲可能没有封面，从 albumInfo prop 获取

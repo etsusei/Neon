@@ -52,7 +52,13 @@ export default {
     };
   },
   computed: {
-    ...mapState(['tracks', 'currentIndex', 'currentTime', 'isPlaying', 'lyricDarkMode']),
+    ...mapState({
+      tracks: state => state.tracks,
+      currentIndex: state => state.playback.currentTrackIndex,
+      currentTime: state => state.playback.currentTime,
+      isPlaying: state => state.playback.isPlaying,
+      lyricDarkMode: state => state.lyricDarkMode
+    }),
     currentTrack() {
       if (this.tracks && this.currentIndex !== null && this.tracks[this.currentIndex]) {
         return this.tracks[this.currentIndex];
@@ -166,7 +172,7 @@ export default {
     
     seekToLine(line) {
       // 点击歌词跳转播放 - 通过 Vuex
-      this.$store.commit('SetSeekTime', line.time);
+      this.$store.commit('SetPlaybackSeekTime', line.time);
     }
   }
 };

@@ -97,14 +97,14 @@ export default {
   methods:{
      ...mapMutations({
       pushToPlayer:'PushSearchTracks',
-      toPlay:'GetIndex'
+      toPlay:'RequestTrackPlayback'
     }),
     play(tracks, index){
       // 搜索单曲：只推送这一首歌，设置单次播放模式
       const singleTrack = [tracks[index]];
       this.pushToPlayer(singleTrack);
       this.toPlay(0); // 索引为 0，因为只有一首歌
-      this.$store.commit('SetSinglePlay', true);
+      this.$store.commit('SetSingleTrackPlayback', true);
     },
     async download(track) {
       const artistName = track.artists && track.artists[0] ? track.artists[0].name : 'Unknown';

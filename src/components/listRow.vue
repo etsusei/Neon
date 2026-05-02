@@ -71,14 +71,13 @@ export default {
   methods:{
     ...mapMutations({
       pushToPlayer:'PushTracks',
-      toPlay:'GetIndex',
-      pushIndex: 'PushIndex'
+      toPlay:'RequestTrackPlayback'
     }),
     play(tracks,index){
       this.pushToPlayer(tracks);
       this.toPlay(index);
-      // pushIndex 已被移除，由 GetIndex 统一处理
-      this.$store.commit('SetSinglePlay', false); // 歌单播放，非单次模式
+      // Current track index is committed by the player after the request lands.
+      this.$store.commit('SetSingleTrackPlayback', false);
     },
     openAddToPlaylist(track) {
       this.currentSongToAdd = {

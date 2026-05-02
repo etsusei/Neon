@@ -47,8 +47,13 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(["tracks", "currentIndex"]),
-    ...mapState(["isPlaying"])
+    ...mapGetters({
+      tracks: "tracks",
+      currentIndex: "currentTrackIndex"
+    }),
+    ...mapState({
+      isPlaying: state => state.playback.isPlaying
+    })
   },
   watch: {
     show(visible) {
@@ -62,12 +67,12 @@ export default {
   },
   methods: {
     ...mapMutations({
-      toPlay: "GetIndex"
+      toPlay: "RequestTrackPlayback"
     }),
     playTrack(index) {
       this.toPlay(index);
       // 从播放列表播放，非单次模式
-      this.$store.commit('SetSinglePlay', false);
+      this.$store.commit('SetSingleTrackPlayback', false);
     },
     close() {
       this.$emit('close');

@@ -6,18 +6,20 @@ const state = {
         album: "",
         source: ""
     }],
-    index: undefined,
-    currentIndex: null,
-    isPlaying: false,
-    currentTrackCover: '',
+    playback: {
+        requestedTrackIndex: undefined,
+        currentTrackIndex: null,
+        isPlaying: false,
+        coverImage: "",
+        currentTime: 0,
+        seekTime: null,
+        mode: "sequence",
+        isSingleTrack: false,
+        shuffledIndices: []
+    },
     audioIntensity: 0.0,
     isImmersiveMode: false,
-    currentTime: 0,
-    seekTime: null,
     lyricDarkMode: false,
-    playMode: 'sequence',
-    isSinglePlay: false,
-    shuffledIndices: [],
     isDarkMode: false
 }
 

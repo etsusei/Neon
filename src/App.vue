@@ -8,7 +8,7 @@
       <app-background-layer
         :is-playing="isPlaying"
         :is-dark-mode="isDarkMode"
-        :cover-image="currentTrackCover"
+        :cover-image="playbackCoverImage"
       />
 
       <transition name="lyric-fade">
@@ -47,7 +47,13 @@ export default {
     };
   },
   computed: {
-    ...mapState(["isPlaying", "currentTrackCover", "isImmersiveMode", "isDarkMode"]),
+    ...mapState(["isImmersiveMode", "isDarkMode"]),
+    isPlaying() {
+      return this.$store.state.playback.isPlaying;
+    },
+    playbackCoverImage() {
+      return this.$store.state.playback.coverImage;
+    },
     isLoginPage() {
       return this.$route.name === 'Login';
     },

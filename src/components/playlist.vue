@@ -30,7 +30,10 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["tracks", "currentIndex"]),
+    ...mapGetters({
+      tracks: "tracks",
+      currentIndex: "currentTrackIndex"
+    }),
   },
   watch: {
     // currentIndex: {
@@ -44,7 +47,7 @@ export default {
   },
   methods: {
     ...mapMutations({
-      toPlay: "GetIndex",
+      toPlay: "RequestTrackPlayback",
     }),
   },
 };

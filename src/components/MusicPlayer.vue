@@ -82,18 +82,21 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["tracks", "index"]),
+    ...mapGetters(["tracks", "trackChangeRequest"]),
+    requestedTrackIndex() {
+      return this.trackChangeRequest;
+    },
     seekTime() {
-      return this.$store.state.seekTime;
+      return this.$store.state.playback.seekTime;
     },
     playMode() {
-      return this.$store.state.playMode;
+      return this.$store.state.playback.mode;
     },
-    isSinglePlay() {
-      return this.$store.state.isSinglePlay;
+    isSingleTrackPlayback() {
+      return this.$store.state.playback.isSingleTrack;
     },
     shuffledIndices() {
-      return this.$store.state.shuffledIndices;
+      return this.$store.state.playback.shuffledIndices;
     },
     playModeTitle() {
       const titles = {
@@ -120,7 +123,7 @@ export default {
       deep: true,
       immediate: false
     },
-    index: {
+    requestedTrackIndex: {
       handler: function (newindex) {
         if (newindex !== undefined && newindex !== null) {
           if (this.isTimerPlaying == true) {
@@ -137,17 +140,17 @@ export default {
       if (time !== null && time !== undefined) {
         this.seekToTime(time);
         // Reset seekTime after consuming it.
-        this.$store.commit('SetSeekTime', null);
+        this.$store.commit('SetPlaybackSeekTime', null);
       }
     }
   },
   methods: {
-    ...mapMutations({ pushIndex: "PushIndex" }),
+    ...mapMutations({ setCurrentTrackIndex: "SetCurrentTrackIndex" }),
     play() {
       if (this.audio.paused) {
         this.audio.play();
         this.isTimerPlaying = true;
-        this.$store.commit('SetIsPlaying', true);
+        this.$store.commit('SetPlaybackActive', true);
         this.startVisualization();
         if (this.audioContext && this.audioContext.state === "suspended") {
           this.audioContext.resume();
@@ -155,7 +158,7 @@ export default {
       } else {
         this.audio.pause();
         this.isTimerPlaying = false;
-        this.$store.commit('SetIsPlaying', false);
+        this.$store.commit('SetPlaybackActive', false);
         this.stopVisualization();
       }
     },
@@ -181,7 +184,7 @@ export default {
       this.duration = durmin + ":" + dursec;
       this.currentTime = curmin + ":" + cursec;
       // Sync current time to the store for lyrics.
-      this.$store.commit('SetCurrentTime', this.audio.currentTime);
+      this.$store.commit('SetPlaybackTime', this.audio.currentTime);
     },
     seekToPercentage(percentage) {
       let maxduration = this.audio.duration;
@@ -217,9 +220,9 @@ export default {
       localStorage.setItem('neon_volume', percentage.toString());
     },
     jumpToClick() {
-      this.currentTrackIndex = this.index;
+      this.currentTrackIndex = this.requestedTrackIndex;
       this.currentTrack = this.tracks[this.currentTrackIndex];
-      this.pushIndex(this.currentTrackIndex);
+      this.setCurrentTrackIndex(this.currentTrackIndex);
       this.isTimerPlaying = true;
       this.refreshPlayer();
     },
@@ -245,7 +248,7 @@ export default {
       }
       
       this.currentTrack = this.tracks[this.currentTrackIndex];
-      this.pushIndex(this.currentTrackIndex);
+      this.setCurrentTrackIndex(this.currentTrackIndex);
     },
     nextTrack() {
       this.transitionName = "sacle-out";
@@ -282,7 +285,7 @@ export default {
       }
       
       this.currentTrack = this.tracks[this.currentTrackIndex];
-      this.pushIndex(this.currentTrackIndex);
+      this.setCurrentTrackIndex(this.currentTrackIndex);
     },
 
     handlePlayerLogic() {
@@ -299,9 +302,9 @@ export default {
           
           // Add event listener to set isPlaying and update cover when audio actually starts
           this.audio.addEventListener('playing', () => {
-            this.$store.commit('SetIsPlaying', true);
+            this.$store.commit('SetPlaybackActive', true);
             // Update cover only when audio actually starts playing
-            this.$store.commit('SetCurrentTrackCover', this.currentTrack.cover);
+            this.$store.commit('SetPlaybackCover', this.currentTrack.cover);
             // Start visualization
             this.startVisualization();
             // Update lock screen metadata.
@@ -354,7 +357,7 @@ export default {
       const modes = ['sequence', 'shuffle', 'repeat-one'];
       const currentIndex = modes.indexOf(this.playMode);
       const nextMode = modes[(currentIndex + 1) % modes.length];
-      this.$store.commit('SetPlayMode', nextMode);
+      this.$store.commit('SetPlaybackMode', nextMode);
       
       // Generate a fresh shuffled order when entering shuffle mode.
       if (nextMode === 'shuffle') {
@@ -377,7 +380,7 @@ export default {
         const j = Math.floor(Math.random() * (i + 1));
         [indices[i], indices[j]] = [indices[j], indices[i]];
       }
-      this.$store.commit('SetShuffledIndices', indices);
+      this.$store.commit('SetShuffledPlaybackOrder', indices);
       console.log('[MusicPlayer] Generated shuffled indices:', indices);
     },
     refreshPlayer() {
@@ -415,9 +418,9 @@ export default {
       };
       this.audio.onended = function () {
         // Single-play mode for search results stops at the end.
-        if (vm.isSinglePlay) {
+        if (vm.isSingleTrackPlayback) {
           vm.isTimerPlaying = false;
-          vm.$store.commit('SetIsPlaying', false);
+          vm.$store.commit('SetPlaybackActive', false);
           vm.stopVisualization();
           return;
         }
@@ -427,7 +430,7 @@ export default {
           vm.audio.currentTime = 0;
           vm.audio.play().then(() => {
             vm.isTimerPlaying = true;
-            vm.$store.commit('SetIsPlaying', true);
+            vm.$store.commit('SetPlaybackActive', true);
           }).catch(err => {
             console.error('[MusicPlayer] Single repeat play failed:', err);
           });
@@ -439,7 +442,7 @@ export default {
           vm.audio.currentTime = 0;
           vm.audio.play().then(() => {
             vm.isTimerPlaying = true;
-            vm.$store.commit('SetIsPlaying', true);
+            vm.$store.commit('SetPlaybackActive', true);
           }).catch(err => {
             console.error('[MusicPlayer] Single track loop play failed:', err);
           });
@@ -454,10 +457,10 @@ export default {
       // Add event listener to set isPlaying and update cover when audio starts playing
       this.audio.addEventListener('playing', () => {
         console.log('[MusicPlayer] Initial audio playing - setting isPlaying to true');
-        this.$store.commit('SetIsPlaying', true);
+        this.$store.commit('SetPlaybackActive', true);
         // Update cover when initial audio starts playing
-        console.log('[MusicPlayer] Initial audio playing - updating currentTrackCover:', this.currentTrack.cover);
-        this.$store.commit('SetCurrentTrackCover', this.currentTrack.cover);
+        console.log('[MusicPlayer] Initial audio playing - updating playback cover:', this.currentTrack.cover);
+        this.$store.commit('SetPlaybackCover', this.currentTrack.cover);
         // Start visualization
         this.startVisualization();
       });
@@ -556,14 +559,14 @@ export default {
         navigator.mediaSession.setActionHandler('play', () => {
           this.audio.play();
           this.isTimerPlaying = true;
-          this.$store.commit('SetIsPlaying', true);
+          this.$store.commit('SetPlaybackActive', true);
           this.startVisualization();
         });
         
         navigator.mediaSession.setActionHandler('pause', () => {
           this.audio.pause();
           this.isTimerPlaying = false;
-          this.$store.commit('SetIsPlaying', false);
+          this.$store.commit('SetPlaybackActive', false);
           this.stopVisualization();
         });
         
@@ -615,7 +618,7 @@ export default {
         if (!this.isTimerPlaying) {
           this.audio.play();
           this.isTimerPlaying = true;
-          this.$store.commit('SetIsPlaying', true);
+          this.$store.commit('SetPlaybackActive', true);
           this.startVisualization();
         }
       }
