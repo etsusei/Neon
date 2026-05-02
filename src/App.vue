@@ -1,4 +1,5 @@
 <template>
+
   <div>
     <!-- 登录页面：全屏显示，不显示主界面 -->
     <template v-if="isLoginPage">
@@ -19,9 +20,9 @@
           }" 
         />
       </div>
-      <!-- 动态背景 - 始终渲染，通过opacity控制显示 -->
-      <dynamic-background 
-        ref="dynamicBackground"
+      <!-- 动态背景 (NewBgAlternative IDW) - 始终渲染，通过opacity控制显示 -->
+      <new-bg-alternative 
+        ref="newBgAlternative"
         v-show="!isDarkMode"
         :visible="isPlaying" 
         :coverImage="currentCover"
@@ -142,9 +143,11 @@
 import dayjs from "dayjs";
 import MusicPlayer from "../src/components/MusicPlayer.vue";
 import BackgroundAnimation from "../src/components/BackgroundAnimation.vue";
-import DynamicBackground from "../src/components/DynamicBackground.vue";
+import NewBgAlternative from "../src/components/NewBgAlternative.vue";
 import LyricDisplay from "../src/components/LyricDisplay.vue";
 import LiquidCard from "../src/components/LiquidCard.vue";
+// import NewBgTester from "../src/views/NewBgTester.vue";
+// import DynamicBackgroundTester from "../src/components/DynamicBackgroundTester.vue";
 import { mapGetters, mapState } from 'vuex';
 
 
@@ -152,9 +155,11 @@ export default {
   components: {
     MusicPlayer,
     BackgroundAnimation,
-    DynamicBackground,
+    NewBgAlternative,
     LyricDisplay,
     LiquidCard,
+    // NewBgTester,
+    // DynamicBackgroundTester
   },
   data() {
     return {
@@ -225,11 +230,11 @@ export default {
           // 播放中：暂停待机背景渲染，恢复动态背景渲染
           console.log('[App.vue] Pausing idle background, resuming dynamic background');
           this.$refs.backgroundAnimation?.pauseRendering();
-          this.$refs.dynamicBackground?.resumeRendering();
+          this.$refs.newBgAlternative?.resumeRendering();
         } else {
           // 停止：暂停动态背景渲染，恢复待机背景渲染
           console.log('[App.vue] Pausing dynamic background, resuming idle background');
-          this.$refs.dynamicBackground?.pauseRendering();
+          this.$refs.newBgAlternative?.pauseRendering();
           this.$refs.backgroundAnimation?.resumeRendering();
         }
       }, 1000);
@@ -239,13 +244,13 @@ export default {
         // 进入暗色模式：暂停所有背景渲染
         console.log('[App.vue] Dark Mode ON - pausing all backgrounds');
         this.$refs.backgroundAnimation?.pauseRendering();
-        this.$refs.dynamicBackground?.pauseRendering();
+        this.$refs.newBgAlternative?.pauseRendering();
         // Body background transition handled by CSS class toggle in methods
       } else {
         // 退出暗色模式：根据播放状态恢复
         console.log('[App.vue] Dark Mode OFF - resuming appropriate background');
         if (this.isPlaying) {
-          this.$refs.dynamicBackground?.resumeRendering();
+          this.$refs.newBgAlternative?.resumeRendering();
         } else {
           this.$refs.backgroundAnimation?.resumeRendering();
         }
@@ -311,14 +316,14 @@ export default {
       if (document.hidden) {
         console.log('[App.vue] Page hidden - pausing all background rendering');
         this.$refs.backgroundAnimation?.pauseRendering();
-        this.$refs.dynamicBackground?.pauseRendering();
+        this.$refs.newBgAlternative?.pauseRendering();
       } else {
         console.log('[App.vue] Page visible - resuming appropriate background');
         // 如果在暗色模式下，不恢复背景渲染
         if (this.isDarkMode) return;
         // 根据当前播放状态恢复相应的背景
         if (this.isPlaying) {
-          this.$refs.dynamicBackground?.resumeRendering();
+          this.$refs.newBgAlternative?.resumeRendering();
         } else {
           this.$refs.backgroundAnimation?.resumeRendering();
         }
@@ -1202,9 +1207,9 @@ a.router-link-active.router-link-exact-active {
   isolation: isolate; /* Create local stacking context to contain children */
 }
 
-.liquid-back:hover {
-  /* transform: scale(1.02); Handled by LiquidCard prop */
-}
+/* .liquid-back:hover {
+  transform: scale(1.02); Handled by LiquidCard prop
+} */
 
 .liquid-back-effect {
   position: absolute;

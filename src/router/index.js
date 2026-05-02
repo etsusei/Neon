@@ -51,16 +51,6 @@ const routes = [
     name: 'Search',
     component: () => import('../views/search.vue'),
     props: true,
-  },
-  {
-    path: '/dynamic',
-    name: 'Dynamic',
-    component: () => import('../views/dynamicBackground.vue'),
-  },
-  {
-    path: '/background',
-    name: 'Background',
-    component: () => import('../views/background.vue'),
   }
 ]
 
