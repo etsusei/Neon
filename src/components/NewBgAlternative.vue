@@ -480,34 +480,60 @@ export default {
       const imageData = ctx.getImageData(0, 0, 64, 64).data;
       const colorCounts = {};
       const quantization = 32;
+      let totalValidPixels = 0;
 
       for (let i = 0; i < imageData.length; i += 4) {
         const r = Math.floor(imageData[i] / quantization) * quantization;
         const g = Math.floor(imageData[i + 1] / quantization) * quantization;
         const b = Math.floor(imageData[i + 2] / quantization) * quantization;
 
-        // 放宽暗色过滤（shader 有 safePaletteColor 保底），只过滤纯黑和纯白
+        // 过滤纯黑和纯白
         if ((r + g + b) < 15 || (r + g + b) > 720) continue;
 
+        totalValidPixels++;
         const key = `${r},${g},${b}`;
         colorCounts[key] = (colorCounts[key] || 0) + 1;
       }
 
-      console.log('[NewBgAlternative] Color counts:', Object.entries(colorCounts).length, 'unique colors found');
+      console.log('[NewBgAlternative] Color counts:', Object.entries(colorCounts).length, 'unique colors,', totalValidPixels, 'valid pixels');
 
       // 按频率排序
       const sortedColors = Object.entries(colorCounts).sort((a, b) => b[1] - a[1]);
 
+      // 最小像素占比：一个颜色至少占 3% 的有效像素才有资格入选
+      const minPixelRatio = 0.03;
+      const minPixelCount = Math.max(totalValidPixels * minPixelRatio, 1);
+
       // 取 top 6 个足够不同的颜色
       const palette = [];
-      const minDistance = 0.15; // 比旧版 0.2 更宽松，更容易凑齐 6 个
+      const minDistance = 0.15;
 
-      for (let [key] of sortedColors) {
+      for (let [key, count] of sortedColors) {
         if (palette.length >= 6) break;
+
+        // 像素占比不够，跳过（可能是边框、小文字等干扰）
+        if (count < minPixelCount) {
+          continue;
+        }
 
         const [r, g, b] = key.split(',').map(Number);
         const color = new THREE.Color(`rgb(${r}, ${g}, ${b})`);
+        const luminance = 0.299 * color.r + 0.587 * color.g + 0.114 * color.b;
 
+        // 亮度离群检测：如果已有 palette 的平均亮度和这个颜色差距过大，跳过
+        if (palette.length >= 2) {
+          const paletteLuminances = palette.map(c => 0.299 * c.r + 0.587 * c.g + 0.114 * c.b);
+          const avgLum = paletteLuminances.reduce((a, b) => a + b, 0) / paletteLuminances.length;
+          const lumDiff = Math.abs(luminance - avgLum);
+          // 如果亮度差超过 0.45（比如 palette 平均 0.6 的浅色，来了个 0.1 的黑色），跳过
+          if (lumDiff > 0.45) {
+            console.log('[NewBgAlternative] Skipping luminance outlier:', '#' + color.getHexString(),
+              'lum:', luminance.toFixed(2), 'avgPalette:', avgLum.toFixed(2));
+            continue;
+          }
+        }
+
+        // 颜色差异检查
         let isDistinct = true;
         for (let existing of palette) {
           const dr = existing.r - color.r;
@@ -526,11 +552,13 @@ export default {
 
       console.log('[NewBgAlternative] Palette before fill:', palette.length, 'colors');
 
-      // 如果凑不齐 6 个，用 HSL 偏移生成变体
+      // 如果凑不齐 6 个，循环复用已有颜色（微调明度，不偏移色相）
       while (palette.length < 6) {
         if (palette.length > 0) {
-          const sourceIndex = palette.length % palette.length;
-          palette.push(palette[sourceIndex].clone().offsetHSL(0.08 * palette.length, 0, 0));
+          const sourceIndex = (palette.length) % palette.length;
+          // 只调整明度（±0.05），不改变色相，避免出现不相关的颜色
+          const lightnessShift = (palette.length % 2 === 0) ? 0.05 : -0.05;
+          palette.push(palette[sourceIndex].clone().offsetHSL(0, 0, lightnessShift));
         } else {
           palette.push(new THREE.Color(0x333333));
         }
