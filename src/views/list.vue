@@ -25,13 +25,21 @@
     </div>
     <div class="list-section">
       <list-row :tracks="this.songlist"/>
+      <!-- 懒加载哨兵：滚动接近底部时触发加载下一批 -->
+      <div ref="sentinel" class="load-sentinel">
+        <span v-if="loading">加载中…</span>
+        <span v-else-if="noMore && songlist && songlist.length">已全部加载</span>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import listRow from "../components/listRow.vue";
-import { getPlayListInfo,getAllSongs} from "../api/neteaseApi";
+import { getPlayListInfo, getSongsDetailChunk } from "../api/neteaseApi";
+
+const BATCH_SIZE = 50;
+
 export default {
   components: {
     listRow,
@@ -44,8 +52,12 @@ export default {
       imgCover: "",
       listName: "",
       detail: "",
-      songs: null,
-      songlist:null,
+      songs: null,        // 全部 trackIds（只有 id）
+      songlist: [],       // 已加载的歌曲对象，按顺序追加
+      loadedCount: 0,     // 已请求到的 trackIds 数量
+      loading: false,
+      noMore: false,
+      observer: null,
     };
   },
   methods: {
@@ -56,33 +68,70 @@ export default {
           this.creatorName = result.data.playlist.creator.nickname;
           this.listName = result.data.playlist.name;
           this.detail = result.data.playlist.description;
-          this.songs = result.data.playlist.trackIds;
+          this.songs = result.data.playlist.trackIds || [];
           this.imgCover = result.data.playlist.coverImgUrl;
-          this.getAllList(this.generateList(this.songs));
+          // 重置加载状态，先拉第一批
+          this.songlist = [];
+          this.loadedCount = 0;
+          this.noMore = this.songs.length === 0;
+          this.loadNextBatch();
         }
-      }); 
+      }).catch((e) => {
+        console.error("[list] 歌单信息加载失败:", e);
+      });
     },
-    getAllList(id){
-      getAllSongs(id).then((result)=>{
-        if(result.data.code=="200"){
-          this.songlist=result.data.songs;
+    // 懒加载：每次只拉下一批 BATCH_SIZE 首；滚动接近底部时再拉下一批。
+    // 既避免巨型请求在弱网整体卡死（分批），又避免进页面就全拉（懒加载）。
+    async loadNextBatch() {
+      if (this.loading || this.noMore) return;
+      const chunk = this.songs.slice(this.loadedCount, this.loadedCount + BATCH_SIZE);
+      if (chunk.length === 0) { this.noMore = true; return; }
+      this.loading = true;
+      const idsStr = chunk.map(t => t.id).join(",");
+      try {
+        const result = await getSongsDetailChunk(idsStr);
+        if (result.data && result.data.code == 200 && Array.isArray(result.data.songs)) {
+          this.songlist = this.songlist.concat(result.data.songs);
+          this.loadedCount += chunk.length;
+          if (this.loadedCount >= this.songs.length) this.noMore = true;
         }
-      })
-    },
-    generateList(list) {
-      var temp="";
-      for (var i = 0; i < list.length-1; i++) {
-        temp += list[i].id + ",";
+        // 失败则不推进 loadedCount，下次滚动/重试会重新请求这一批
+      } catch (e) {
+        console.error("[list] 歌曲分批加载失败:", e);
+      } finally {
+        this.loading = false;
+        // 首屏没填满时哨兵仍在视口内，继续补一批（IntersectionObserver 不会重复触发同一状态）
+        this.$nextTick(() => this.checkSentinel());
       }
-      temp= temp+list[list.length-1].id;
-      return temp;
+    },
+    checkSentinel() {
+      if (this.loading || this.noMore) return;
+      const el = this.$refs.sentinel;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      if (rect.top < (window.innerHeight || document.documentElement.clientHeight) + 300) {
+        this.loadNextBatch();
+      }
+    },
+    setupObserver() {
+      const el = this.$refs.sentinel;
+      if (!el) return;
+      // 滚动容器是 AppMainLayout 的 .projects-section-content；找不到则退回视口
+      const root = document.querySelector(".projects-section-content") || null;
+      this.observer = new IntersectionObserver((entries) => {
+        if (entries[0] && entries[0].isIntersecting) this.loadNextBatch();
+      }, { root, rootMargin: "300px" });
+      this.observer.observe(el);
     },
   },
   created() {
     this.getPlayList();
   },
   mounted() {
-
+    this.setupObserver();
+  },
+  beforeUnmount() {
+    if (this.observer) { this.observer.disconnect(); this.observer = null; }
   },
 };
 </script>
@@ -177,6 +226,17 @@ export default {
   width: 100%;
   text-align: left;
   margin-left: 18px;
+}
+.load-sentinel {
+  width: 100%;
+  min-height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 0;
+  color: var(--text-primary);
+  opacity: 0.6;
+  font-size: 14px;
 }
 .backblur {
   position: absolute;

@@ -14,7 +14,7 @@
       <div class="head-plus-icon"></div>
       <div class="head-download-icon"></div>
     </div>
-    <div class="listRow" v-for="(track, $index) in tracks" :key="$index" @click="play(tracks,$index)">
+    <div class="listRow" v-for="(track, $index) in displayTracks" :key="track.id || $index" @click="play(displayTracks,$index)">
       <div
         class="list-album-img"
         :style="{ backgroundImage: `url(${track.al.picUrl})` }"
@@ -67,6 +67,12 @@ export default {
       showAddPopup: false,
       currentSongToAdd: null
     };
+  },
+  computed: {
+    // 过滤掉增量加载时的 null 占位，避免访问 track.al/track.ar 报错
+    displayTracks() {
+      return (this.tracks || []).filter(Boolean);
+    }
   },
   methods:{
     ...mapMutations({

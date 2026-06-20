@@ -2,15 +2,67 @@ import axios from "axios"
 let baseUrl = 'https://neon.zeabur.app/'
 let musicUrl = 'https://api.kxzjoker.cn/api/163_music'
 
+// 带超时的 axios 实例：弱网下请求不会永久挂起，到点失败可被 catch/重试
+const http = axios.create({ timeout: 15000 })
+
+// 通用 GET 重试：弱网(尤其大陆访问东京)偶发丢包时，重试一次往往就成功
+const getWithRetry = async (url, { retries = 2, retryDelay = 800 } = {}) => {
+  let lastErr
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await http.get(url)
+    } catch (e) {
+      lastErr = e
+      if (attempt < retries) {
+        await new Promise(r => setTimeout(r, retryDelay * (attempt + 1)))
+      }
+    }
+  }
+  throw lastErr
+}
+
+// 单批歌曲详情（带重试），ids 为逗号串
+export const getSongsDetailChunk = (idsStr) => {
+  return getWithRetry(`${baseUrl}song/detail?ids=${idsStr}`)
+}
+
+/**
+ * 分批拉取歌曲详情，避免一个巨型请求在弱网上整体卡死。
+ * @param {Array} trackIds  trackIds 数组（每项含 .id），保持原始顺序
+ * @param {Function} onBatch (songs, fromIndex) => void  每批到达即回调用于增量渲染
+ * @param {Number} batchSize 每批 ID 数量
+ * @returns {Promise<Array>} 全部歌曲(按原顺序，失败的批次位置为占位 null 会被过滤)
+ */
+export const getAllSongsBatched = async (trackIds, onBatch, batchSize = 50) => {
+  const ids = (trackIds || []).map(t => t.id)
+  const chunks = []
+  for (let i = 0; i < ids.length; i += batchSize) {
+    chunks.push({ start: i, ids: ids.slice(i, i + batchSize) })
+  }
+  const all = new Array(ids.length).fill(null)
+  await Promise.all(chunks.map(async ({ start, ids: chunkIds }) => {
+    try {
+      const result = await getSongsDetailChunk(chunkIds.join(','))
+      if (result.data && result.data.code == 200 && Array.isArray(result.data.songs)) {
+        result.data.songs.forEach((song, idx) => { all[start + idx] = song })
+        if (typeof onBatch === 'function') onBatch(result.data.songs, start)
+      }
+    } catch (e) {
+      console.error(`[API] 歌曲详情第 ${start / batchSize + 1} 批加载失败:`, e)
+    }
+  }))
+  return all.filter(Boolean)
+}
+
 export const getAlbumInfo = (id) => {
     return axios.get(`${baseUrl}album?id=${id}`);
 }
 export const getPlayListInfo = (id) => {
-    return axios.get(`${baseUrl}playlist/detail?id=${id}`)
+    return getWithRetry(`${baseUrl}playlist/detail?id=${id}`)
 }
 
 export const getAllSongs = (id) => {
-    return axios.get(`${baseUrl}song/detail?ids=${id}`)
+    return getWithRetry(`${baseUrl}song/detail?ids=${id}`)
 }
 
 export const getArtistTrend = (id) => {
