@@ -1,6 +1,8 @@
 import axios from "axios"
-let baseUrl = 'https://neon.zeabur.app/'
-let musicUrl = 'https://api.kxzjoker.cn/api/163_music'
+const normalizeBaseUrl = (url) => url.endsWith('/') ? url : `${url}/`
+const baseUrl = normalizeBaseUrl(process.env.VUE_APP_API_BASE_URL || 'https://neon.zeabur.app/')
+const musicUrl = 'https://api.kxzjoker.cn/api/163_music'
+const encodeKeyword = (keyword) => encodeURIComponent(keyword || '')
 
 // 带超时的 axios 实例：弱网下请求不会永久挂起，到点失败可被 catch/重试
 const http = axios.create({ timeout: 15000 })
@@ -40,17 +42,27 @@ export const getAllSongsBatched = async (trackIds, onBatch, batchSize = 50) => {
     chunks.push({ start: i, ids: ids.slice(i, i + batchSize) })
   }
   const all = new Array(ids.length).fill(null)
-  await Promise.all(chunks.map(async ({ start, ids: chunkIds }) => {
-    try {
-      const result = await getSongsDetailChunk(chunkIds.join(','))
-      if (result.data && result.data.code == 200 && Array.isArray(result.data.songs)) {
-        result.data.songs.forEach((song, idx) => { all[start + idx] = song })
-        if (typeof onBatch === 'function') onBatch(result.data.songs, start)
+  const concurrency = 4
+  let nextIndex = 0
+
+  const loadNextChunk = async () => {
+    while (nextIndex < chunks.length) {
+      const { start, ids: chunkIds } = chunks[nextIndex++]
+      try {
+        const result = await getSongsDetailChunk(chunkIds.join(','))
+        if (result.data && result.data.code == 200 && Array.isArray(result.data.songs)) {
+          result.data.songs.forEach((song, idx) => { all[start + idx] = song })
+          if (typeof onBatch === 'function') onBatch(result.data.songs, start)
+        }
+      } catch (e) {
+        console.error(`[API] 歌曲详情第 ${start / batchSize + 1} 批加载失败:`, e)
       }
-    } catch (e) {
-      console.error(`[API] 歌曲详情第 ${start / batchSize + 1} 批加载失败:`, e)
     }
-  }))
+  }
+
+  await Promise.all(
+    Array.from({ length: Math.min(concurrency, chunks.length) }, loadNextChunk)
+  )
   return all.filter(Boolean)
 }
 
@@ -94,7 +106,7 @@ export const getSongUrl = async (id) => {
 
 /////////////////////////search//////////////////////////
 export const searchSongs = (keyword, offset = 0, limit = 20) => {
-    return axios.get(`${baseUrl}search?keywords=${keyword}&type=1&offset=${offset}&limit=${limit}`)
+    return axios.get(`${baseUrl}search?keywords=${encodeKeyword(keyword)}&type=1&offset=${offset}&limit=${limit}`)
 }
 
 // 获取单曲详情（包含封面）- 使用官方API（更可靠）
@@ -143,15 +155,15 @@ export const getSongDetail = async (songId) => {
 }
 
 export const searchAlbums = (keyword, offset = 0, limit = 20) => {
-    return axios.get(`${baseUrl}search?keywords=${keyword}&type=10&offset=${offset}&limit=${limit}`)
+    return axios.get(`${baseUrl}search?keywords=${encodeKeyword(keyword)}&type=10&offset=${offset}&limit=${limit}`)
 }
 
 export const searchArtists = (keyword, offset = 0, limit = 20) => {
-    return axios.get(`${baseUrl}search?keywords=${keyword}&type=100&offset=${offset}&limit=${limit}`)
+    return axios.get(`${baseUrl}search?keywords=${encodeKeyword(keyword)}&type=100&offset=${offset}&limit=${limit}`)
 }
 
 export const searchLists = (keyword, offset = 0, limit = 20) => {
-    return axios.get(`${baseUrl}search?keywords=${keyword}&type=1000&offset=${offset}&limit=${limit}`)
+    return axios.get(`${baseUrl}search?keywords=${encodeKeyword(keyword)}&type=1000&offset=${offset}&limit=${limit}`)
 }
 
 export const getTrendList = () => {
