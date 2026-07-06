@@ -1,4 +1,5 @@
 import * as types from './mutation-types';
+import { thumb } from '../utils/imgThumb';
 
 function requestTrackPlayback(state, trackIndex) {
     // Force watchers to run even when the same index is selected again.
@@ -50,7 +51,7 @@ const mutations = {
                 name: songs[i].name,
                 artist: songs[i].ar[0].name,
                 album: songs[i].al.name,
-                cover: songs[i].al.picUrl
+                cover: thumb(songs[i].al.picUrl, 400)
             })
         }
     },
@@ -62,7 +63,7 @@ const mutations = {
                 name: songs[i].name,
                 artist: songs[i].artists[0].name,
                 album: songs[i].album.name,
-                cover: songs[i].album.img1v1Url || songs[i].album.picUrl || ""
+                cover: thumb(songs[i].album.img1v1Url || songs[i].album.picUrl || "", 400)
             })
         }
     },

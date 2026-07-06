@@ -2,7 +2,7 @@
   <div class="cover-container" ref="scrollContainer" @scroll="handleScroll">
     <div class="cover-warpper" v-for="(track,$index) in displayedCovers" :key="$index">
       <router-link :to="{name:'Album',params:{albumId:`${track.id}`}}">
-        <div class="cover" :style="{ backgroundImage:`url(${track.picUrl})`}"></div>
+        <div class="cover" :style="{ backgroundImage:`url(${thumb(track.picUrl, 300)})`}"></div>
       </router-link>
       <div class="name">{{track.name}}</div>
     </div>
@@ -23,6 +23,8 @@
 </template>
 
 <script>
+import { thumb } from '../utils/imgThumb';
+
 const PAGE_SIZE = 12;
 
 export default {
@@ -50,6 +52,7 @@ export default {
     }
   },
   methods: {
+    thumb,
     handleScroll(e) {
       const container = e.target;
       const scrollTop = container.scrollTop;

@@ -37,6 +37,7 @@
 <script>
 import listRow from "../components/listRow.vue";
 import { getPlayListInfo, getSongsDetailChunk } from "../api/neteaseApi";
+import { thumb } from "../utils/imgThumb";
 
 const BATCH_SIZE = 50;
 
@@ -64,12 +65,12 @@ export default {
     getPlayList() {
       getPlayListInfo(this.listId).then((result) => {
         if (result.data.code == "200") {
-          this.creatorImg = result.data.playlist.creator.avatarUrl;
+          this.creatorImg = thumb(result.data.playlist.creator.avatarUrl, 100);
           this.creatorName = result.data.playlist.creator.nickname;
           this.listName = result.data.playlist.name;
           this.detail = result.data.playlist.description;
           this.songs = result.data.playlist.trackIds || [];
-          this.imgCover = result.data.playlist.coverImgUrl;
+          this.imgCover = thumb(result.data.playlist.coverImgUrl, 500);
           // 重置加载状态，先拉第一批
           this.songlist = [];
           this.loadedCount = 0;

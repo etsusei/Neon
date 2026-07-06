@@ -27,7 +27,7 @@
             class="playlist-option"
             @click="addToPlaylist(playlist)"
           >
-            <div class="playlist-cover" :style="{ backgroundImage: `url(${playlist.cover || defaultCover})` }"></div>
+            <div class="playlist-cover" :style="{ backgroundImage: `url(${thumb(playlist.cover || defaultCover, 100)})` }"></div>
             <div class="playlist-name">{{ playlist.name }}</div>
             <div class="playlist-count">{{ playlist.song_count }} 首</div>
           </div>
@@ -43,7 +43,8 @@
 
 <script>
 import { getMyPlaylists, createPlaylist, addSongToPlaylist } from '../api/userApi'
-import { ElMessage } from 'element-plus'
+import { ElMessage } from 'element-plus/es/components/message'
+import { thumb } from '../utils/imgThumb'
 
 export default {
   name: 'AddToPlaylistPopup',
@@ -72,6 +73,7 @@ export default {
     }
   },
   methods: {
+    thumb,
     async loadPlaylists() {
       try {
         const res = await getMyPlaylists()

@@ -26,14 +26,16 @@
 </template>
 
 <script>
+import { defineAsyncComponent } from 'vue';
 import BackgroundAnimation from './BackgroundAnimation.vue';
-import NewBgAlternative from './NewBgAlternative.vue';
 
 export default {
   name: 'AppBackgroundLayer',
   components: {
     BackgroundAnimation,
-    NewBgAlternative
+    // 异步加载：NewBgAlternative 依赖 three.js(~600KB)，同步引入会把它打进首屏主包。
+    // 背景是纯装饰，让首屏先渲染内容，three 从独立 chunk 后到。
+    NewBgAlternative: defineAsyncComponent(() => import('./NewBgAlternative.vue'))
   },
   props: {
     isPlaying: {

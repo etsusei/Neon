@@ -3,9 +3,9 @@
     <div v-if="!isLoaded" class="skeleton-placeholder">
       <div class="skeleton-shimmer"></div>
     </div>
-    <img 
+    <img
       v-show="isLoaded"
-      :src="src"
+      :src="displaySrc"
       :alt="alt"
       @load="handleLoad"
       @error="handleError"
@@ -18,6 +18,8 @@
 </template>
 
 <script>
+import { thumb } from '../utils/imgThumb';
+
 export default {
   name: 'SkeletonImage',
   props: {
@@ -32,6 +34,16 @@ export default {
     circle: {
       type: Boolean,
       default: false
+    },
+    // 网易云图床缩略图尺寸(px)；传 0 表示加载原图
+    thumbSize: {
+      type: Number,
+      default: 300
+    }
+  },
+  computed: {
+    displaySrc() {
+      return this.thumbSize > 0 ? thumb(this.src, this.thumbSize) : this.src;
     }
   },
   data() {

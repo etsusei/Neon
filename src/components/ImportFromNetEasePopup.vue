@@ -51,7 +51,7 @@
                   @click.stop
                   @change="toggleSelect(playlist.id)"
                 />
-                <div class="playlist-cover" :style="{ backgroundImage: `url(${playlist.coverImgUrl})` }"></div>
+                <div class="playlist-cover" :style="{ backgroundImage: `url(${thumb(playlist.coverImgUrl, 100)})` }"></div>
                 <div class="playlist-info">
                   <div class="playlist-name">{{ playlist.name }}</div>
                   <div class="playlist-meta">{{ playlist.trackCount }} 首</div>
@@ -92,7 +92,8 @@
 <script>
 import axios from 'axios'
 import { createPlaylist, addSongToPlaylist } from '../api/userApi'
-import { ElMessage } from 'element-plus'
+import { ElMessage } from 'element-plus/es/components/message'
+import { thumb } from '../utils/imgThumb'
 
 const NETEASE_API = 'https://neon.zeabur.app'
 
@@ -124,6 +125,7 @@ export default {
     }
   },
   methods: {
+    thumb,
     async searchPlaylists() {
       if (!this.userId.trim()) return
       

@@ -42,7 +42,7 @@
 import { mapGetters } from "vuex";
 import { mapMutations } from "vuex";
 import { getSongUrl } from "../api/neteaseApi";
-import { ElMessage } from "element-plus";
+import { ElMessage } from "element-plus/es/components/message";
 import PlaylistPopup from "./PlaylistPopup.vue";
 import LiquidCard from "./LiquidCard.vue";
 import AudioIntensityAnalyzer from "../utils/audioIntensityAnalyzer";
@@ -78,7 +78,9 @@ export default {
       audioAnalyzer: new AudioIntensityAnalyzer(),
       showPlaylist: false,
       // iOS background playback support
-      isIOS: false
+      isIOS: false,
+      // 已为哪首歌预取过下一首的 URL（防止 timeupdate 里重复请求）
+      prefetchedForId: null
     };
   },
   computed: {
@@ -184,6 +186,30 @@ export default {
       this.currentTime = curmin + ":" + cursec;
       // Sync current time to the store for lyrics.
       this.$store.commit('SetPlaybackTime', this.audio.currentTime);
+      this.prefetchNextUrl();
+    },
+    // 快放完时预取下一首的播放 URL：请求会命中/预热后端 /api/music/url 缓存，
+    // 切歌时 getSongUrl 立即返回，接近无缝。结果本身不保存（网易 URL 有时效）。
+    prefetchNextUrl() {
+      if (this.isSingleTrackPlayback || this.playMode === 'repeat-one') return;
+      if (!this.audio || !this.audio.duration || !this.tracks || this.tracks.length < 2) return;
+      const remaining = this.audio.duration - this.audio.currentTime;
+      if (!(remaining > 0) || remaining > 30) return;
+      const curId = this.currentTrack && this.currentTrack.id;
+      if (!curId || this.prefetchedForId === curId) return;
+      let nextIndex;
+      if (this.playMode === 'shuffle' && this.shuffledIndices && this.shuffledIndices.length === this.tracks.length) {
+        const pos = this.shuffledIndices.indexOf(this.currentTrackIndex);
+        // 洗牌序列播到最后一首时会重新洗牌，下一首不可预知，放弃预取
+        if (pos === -1 || pos >= this.shuffledIndices.length - 1) return;
+        nextIndex = this.shuffledIndices[pos + 1];
+      } else {
+        nextIndex = this.currentTrackIndex < this.tracks.length - 1 ? this.currentTrackIndex + 1 : 0;
+      }
+      const next = this.tracks[nextIndex];
+      if (!next || !next.id) return;
+      this.prefetchedForId = curId;
+      getSongUrl(next.id).catch(() => {});
     },
     seekToPercentage(percentage) {
       let maxduration = this.audio.duration;

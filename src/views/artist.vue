@@ -28,6 +28,7 @@
 import Trending from "../components/trending.vue";
 import cover from "../components/cover.vue";
 import { getArtistTrend,getArtistAlbum} from "../api/neteaseApi";
+import { thumb } from "../utils/imgThumb";
 export default {
   components: {
     Trending,
@@ -48,7 +49,7 @@ export default {
     getTrend(){
       getArtistTrend(this.artistId).then((result)=>{
         if(result.data.code=="200"){
-          this.imgCover=result.data.artist.img1v1Url;
+          this.imgCover=thumb(result.data.artist.img1v1Url, 500);
           this.artistName=result.data.artist.name;
           this.trendSong=result.data.hotSongs;
         }

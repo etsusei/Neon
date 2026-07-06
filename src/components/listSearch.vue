@@ -17,7 +17,7 @@
     <div class="listRow" v-for="(track, $index) in result" :key="$index" @click="play(result,$index)">
       <div
         class="list-album-img"
-        :style="{ backgroundImage: `url(${track.album && track.album.img1v1Url ? track.album.img1v1Url : ''})` }"
+        :style="{ backgroundImage: `url(${thumb(track.album && track.album.img1v1Url ? track.album.img1v1Url : '', 100)})` }"
       ></div>
       <div class="list-songname">
         <div class="list-content">{{ track.name }}</div>
@@ -69,6 +69,7 @@
 <script>
 import {mapMutations} from 'vuex';
 import AddToPlaylistPopup from './AddToPlaylistPopup.vue';
+import { thumb } from '../utils/imgThumb';
 
 export default {
   props: {
@@ -95,6 +96,7 @@ export default {
     };
   },
   methods:{
+     thumb,
      ...mapMutations({
       pushToPlayer:'PushSearchTracks',
       toPlay:'RequestTrackPlayback'

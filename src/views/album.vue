@@ -32,6 +32,7 @@
 <script>
 import { getAlbumInfo } from "../api/neteaseApi";
 import AlbumRow from '../components/albumRow.vue';
+import { thumb } from "../utils/imgThumb";
 export default {
   components: {
     AlbumRow,
@@ -58,9 +59,9 @@ export default {
         if (result.data.resourceState == true) {
           this.artistName = result.data.album.artist.name;
           this.albumName = result.data.album.name;
-          this.artistImg = result.data.album.artist.img1v1Url;
+          this.artistImg = thumb(result.data.album.artist.img1v1Url, 100);
           this.detail = result.data.album.description;
-          this.imgCover = result.data.album.blurPicUrl;
+          this.imgCover = thumb(result.data.album.blurPicUrl, 500);
           this.songs = result.data.songs;
         }
       });

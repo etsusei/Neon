@@ -82,7 +82,7 @@
               @change="toggleSelect(playlist.id)"
             />
           </div>
-          <div class="playlist-cover" :style="{ backgroundImage: `url(${playlist.cover || defaultCover})` }"></div>
+          <div class="playlist-cover" :style="{ backgroundImage: `url(${thumb(playlist.cover || defaultCover, 300)})` }"></div>
           <div class="playlist-info">
             <div class="playlist-name">{{ playlist.name }}</div>
             <div class="playlist-count">{{ playlist.song_count }} 首</div>
@@ -103,7 +103,9 @@
 
 <script>
 import { getMyPlaylists, createPlaylist, deletePlaylist, exportPlaylists, importPlaylists } from '../api/userApi'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus/es/components/message'
+import { ElMessageBox } from 'element-plus/es/components/message-box'
+import { thumb } from '../utils/imgThumb'
 import ImportFromNetEasePopup from '../components/ImportFromNetEasePopup.vue'
 import LiquidCard from '../components/LiquidCard.vue'
 
@@ -131,6 +133,7 @@ export default {
     }
   },
   methods: {
+    thumb,
     async loadPlaylists() {
       try {
         const res = await getMyPlaylists()

@@ -5,7 +5,7 @@
         <i class="fa fa-arrow-left"></i>
       </div>
       <div class="playlist-header-info">
-        <div class="playlist-cover" :style="{ backgroundImage: `url(${playlist.cover || defaultCover})` }"></div>
+        <div class="playlist-cover" :style="{ backgroundImage: `url(${thumb(playlist.cover || defaultCover, 300)})` }"></div>
         <div class="playlist-meta">
           <h1>{{ playlist.name }}</h1>
           <p>{{ songs.length }} 首歌曲</p>
@@ -24,7 +24,7 @@
         @click="playSong(index)"
       >
         <div class="song-index">{{ index + 1 }}</div>
-        <div class="song-cover" :style="{ backgroundImage: `url(${song.cover})` }"></div>
+        <div class="song-cover" :style="{ backgroundImage: `url(${thumb(song.cover, 100)})` }"></div>
         <div class="song-info">
           <div class="song-name">{{ song.song_name }}</div>
           <div class="song-artist">{{ song.artist }}</div>
@@ -46,7 +46,9 @@
 <script>
 import { getPlaylistSongs, removeSongFromPlaylist, getMyPlaylists } from '../api/userApi'
 import { mapMutations } from 'vuex'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus/es/components/message'
+import { ElMessageBox } from 'element-plus/es/components/message-box'
+import { thumb } from '../utils/imgThumb'
 
 export default {
   name: 'MyPlaylistDetail',
@@ -59,6 +61,7 @@ export default {
     }
   },
   methods: {
+    thumb,
     ...mapMutations({
       pushToPlayer: 'PushTracks',
       toPlay: 'RequestTrackPlayback'

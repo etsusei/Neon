@@ -57,7 +57,7 @@
 <script>
 import LiquidCard from '../components/LiquidCard.vue'
 import { updateProfile } from '../api/userApi'
-import { ElMessage } from 'element-plus'
+import { ElMessage } from 'element-plus/es/components/message'
 
 export default {
   name: 'Settings',
