@@ -10,50 +10,6 @@
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  
-  :deep(.lyric-container) {
-    width: 80%;
-    max-width: 800px;
-    height: 70%;
-    pointer-events: auto;
-  }
-  
-  :deep(.lyric-line) {
-    color: rgba(255, 255, 255, 0.3);
-    font-size: 24px;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    
-    &:hover {
-      color: rgba(255, 255, 255, 0.6);
-    }
-    
-    &.active {
-      color: rgba(255, 255, 255, 0.95);
-      font-size: 32px;
-    }
-    
-    &.near {
-      color: rgba(255, 255, 255, 0.5);
-      font-size: 22px;
-    }
-    
-    &.far {
-      color: rgba(255, 255, 255, 0.2);
-      font-size: 20px;
-    }
-  }
-  
-  :deep(.no-lyric) {
-    color: rgba(255, 255, 255, 0.5);
-    
-    i {
-      color: rgba(255, 255, 255, 0.4);
-    }
-  }
-  
-  :deep(.loading i) {
-    color: rgba(255, 255, 255, 0.4);
-  }
 }
 
 /* Immersive lyric fade transition */

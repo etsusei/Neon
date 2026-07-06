@@ -1,9 +1,13 @@
 <template>
-  <div class="lyric-container" :class="{ 'dark-mode': immersive && lyricDarkMode }" ref="container">
+  <div
+    class="lyric-container"
+    :class="{ immersive, 'dark-mode': immersive && lyricDarkMode }"
+    ref="container"
+  >
     <div 
       class="lyric-content" 
       ref="content"
-      @wheel="handleWheel"
+      @wheel.stop="handleWheel"
     >
       <div 
         v-for="(line, index) in lyrics" 
@@ -14,8 +18,9 @@
           'near': Math.abs(index - currentLineIndex) === 1,
           'far': Math.abs(index - currentLineIndex) > 1
         }"
+        :style="immersive ? lyricLineStyle(index) : null"
         :ref="'line-' + index"
-        @click="seekToLine(line)"
+        @click.stop="seekToLine(line)"
       >
         {{ line.text }}
       </div>
@@ -169,6 +174,28 @@ export default {
         this.userScrolling = false;
       }, 3000);
     },
+
+    lyricLineStyle(index) {
+      if (this.currentLineIndex < 0) {
+        return {
+          '--distance-opacity': 0.56,
+          '--distance-blur': '0.45px',
+          '--distance-scale': 0.98
+        };
+      }
+
+      const distance = Math.abs(index - this.currentLineIndex);
+      const cappedDistance = Math.min(distance, 5);
+      const opacityByDistance = [1, 0.7, 0.5, 0.4, 0.34, 0.32];
+      const blurByDistance = [0, 0.65, 1.35, 2.15, 2.8, 3.4];
+      const scaleByDistance = [1, 0.978, 0.956, 0.936, 0.918, 0.9];
+
+      return {
+        '--distance-opacity': opacityByDistance[cappedDistance],
+        '--distance-blur': `${blurByDistance[cappedDistance]}px`,
+        '--distance-scale': scaleByDistance[cappedDistance]
+      };
+    },
     
     seekToLine(line) {
       // 点击歌词跳转播放 - 通过 Vuex
@@ -183,6 +210,11 @@ export default {
   width: 100%;
   height: 100%;
   position: relative;
+  --lyric-text: rgba(0, 0, 0, 0.96);
+  --lyric-muted: rgba(0, 0, 0, 0.32);
+  --lyric-near: rgba(0, 0, 0, 0.58);
+  --lyric-hover: rgba(0, 0, 0, 0.72);
+  --lyric-shadow: none;
 }
 
 .lyric-content {
@@ -234,6 +266,123 @@ export default {
   }
 }
 
+.lyric-container.immersive {
+  width: min(76vw, 760px);
+  max-width: calc(100vw - 32px);
+  height: min(84vh, 820px);
+  pointer-events: auto;
+  --lyric-text: rgba(10, 10, 12, 0.94);
+  --lyric-muted: rgba(10, 10, 12, 0.3);
+  --lyric-far: rgba(10, 10, 12, 0.18);
+  --lyric-near: rgba(10, 10, 12, 0.54);
+  --lyric-hover: rgba(10, 10, 12, 0.7);
+  --lyric-active-glow:
+    0 0 8px rgba(255, 255, 255, 0.16),
+    0 10px 24px rgba(0, 0, 0, 0.12);
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Display",
+    "SF Pro Text",
+    "PingFang SC",
+    "Microsoft YaHei",
+    sans-serif;
+
+  .lyric-content {
+    padding: 28vh 8px 40vh;
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      rgba(0, 0, 0, 0.35) 8%,
+      #000 22%,
+      #000 74%,
+      rgba(0, 0, 0, 0.35) 88%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      rgba(0, 0, 0, 0.35) 8%,
+      #000 22%,
+      #000 74%,
+      rgba(0, 0, 0, 0.35) 88%,
+      transparent 100%
+    );
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      width: 0;
+    }
+  }
+
+  .lyric-line {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 14px 8px;
+    text-align: center;
+    color: var(--lyric-muted);
+    opacity: var(--distance-opacity, 0.32);
+    font-size: clamp(22px, 3vw, 34px);
+    font-weight: 760;
+    line-height: 1.34;
+    letter-spacing: 0;
+    text-shadow: var(--lyric-shadow);
+    filter: blur(var(--distance-blur, 0.4px));
+    transform-origin: center;
+    transform: scale(var(--distance-scale, 1));
+    transition:
+      color 0.28s ease,
+      opacity 0.28s ease,
+      transform 0.28s ease,
+      filter 0.28s ease;
+
+    &:hover {
+      color: var(--lyric-hover);
+      filter: blur(0);
+      transform: scale(1.015);
+    }
+
+    &.active {
+      color: var(--lyric-text);
+      font-size: clamp(25px, 3.35vw, 39px);
+      font-weight: 820;
+      text-shadow: var(--lyric-active-glow);
+      transform: scale(1.025);
+      filter: blur(0) saturate(1.12);
+      opacity: 1;
+    }
+
+    &.near {
+      color: var(--lyric-near);
+      font-size: clamp(22px, 3vw, 34px);
+    }
+
+    &.far {
+      color: var(--lyric-far);
+      font-size: clamp(21px, 2.75vw, 31px);
+    }
+  }
+
+  .no-lyric,
+  .loading {
+    pointer-events: auto;
+  }
+
+  .no-lyric {
+    color: var(--lyric-near);
+    text-shadow: var(--lyric-shadow);
+
+    i {
+      color: var(--lyric-muted);
+    }
+  }
+
+  .loading i {
+    color: var(--lyric-near);
+    text-shadow: var(--lyric-shadow);
+  }
+}
+
 .no-lyric {
   position: absolute;
   top: 50%;
@@ -272,23 +421,36 @@ export default {
 
 /* 深色模式 - 深色背景时使用白色歌词 */
 .lyric-container.dark-mode {
+  --lyric-text: rgba(255, 255, 255, 0.96);
+  --lyric-muted: rgba(255, 255, 255, 0.34);
+  --lyric-far: rgba(255, 255, 255, 0.2);
+  --lyric-near: rgba(255, 255, 255, 0.6);
+  --lyric-hover: rgba(255, 255, 255, 0.78);
+  --lyric-shadow:
+    0 0 18px rgba(255, 255, 255, 0.12),
+    0 12px 34px rgba(0, 0, 0, 0.42);
+  --lyric-active-glow:
+    0 0 6px rgba(255, 255, 255, 0.24),
+    0 0 16px rgba(255, 255, 255, 0.14),
+    0 14px 32px rgba(0, 0, 0, 0.42);
+
   .lyric-line {
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--lyric-muted);
     
     &.active {
-      color: rgba(255, 255, 255, 0.95);
+      color: var(--lyric-text);
     }
     
     &.near {
-      color: rgba(255, 255, 255, 0.5);
+      color: var(--lyric-near);
     }
     
     &.far {
-      color: rgba(255, 255, 255, 0.2);
+      color: var(--lyric-far);
     }
     
     &:hover {
-      color: rgba(255, 255, 255, 0.7);
+      color: var(--lyric-hover);
     }
   }
   
