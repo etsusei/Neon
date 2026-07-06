@@ -2,5 +2,11 @@ module.exports = {
     publicPath: '/',  // Zeabur 部署使用根目录
     outputDir: 'dist',
     assetsDir: 'assets',
-    productionSourceMap: false  // 生产环境不生成 source map，减小体积
+    productionSourceMap: false,  // 生产环境不生成 source map，减小体积
+    transpileDependencies: [
+        'element-plus',
+        '@element-plus',
+        '@ctrl/tinycolor',
+        '@popperjs'
+    ]
 }
