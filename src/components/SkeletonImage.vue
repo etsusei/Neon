@@ -4,10 +4,10 @@
       <div class="skeleton-shimmer"></div>
     </div>
     <img
-      v-show="isLoaded"
+      :class="{ visible: isLoaded }"
       :src="displaySrc"
       :alt="alt"
-      loading="lazy"
+      loading="eager"
       decoding="async"
       @load="handleLoad"
       @error="handleError"
@@ -94,7 +94,12 @@ export default {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    opacity: 0;
     transition: opacity 0.3s ease;
+
+    &.visible {
+      opacity: 1;
+    }
   }
 }
 
