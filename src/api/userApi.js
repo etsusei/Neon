@@ -1,57 +1,39 @@
-import axios from "axios"
+import { apiClient } from "./http"
 
-const baseUrl = process.env.VUE_APP_API_BASE_URL || 'https://neon.zeabur.app/'
-
-// 获取存储的 token
-const getToken = () => localStorage.getItem('auth_token')
-
-// 创建带认证的 axios 实例
-const authAxios = axios.create({
-    baseURL: baseUrl
-})
-
-authAxios.interceptors.request.use(config => {
-    const token = getToken()
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-})
-
-// ========== 认证 API ==========
+// ========== Auth API ==========
 
 export const login = (username, password) => {
-    return axios.post(`${baseUrl}api/auth/login`, { username, password })
+    return apiClient.post('api/auth/login', { username, password })
 }
 
 export const getCurrentUser = () => {
-    return authAxios.get('api/auth/me')
+    return apiClient.get('api/auth/me')
 }
 
 export const updateProfile = (data) => {
-    return authAxios.put('api/auth/profile', data)
+    return apiClient.put('api/auth/profile', data)
 }
 
-// ========== 歌单 API ==========
+// ========== Playlist API ==========
 
 export const getMyPlaylists = () => {
-    return authAxios.get('api/playlists')
+    return apiClient.get('api/playlists')
 }
 
 export const createPlaylist = (name, cover) => {
-    return authAxios.post('api/playlists', { name, cover })
+    return apiClient.post('api/playlists', { name, cover })
 }
 
 export const deletePlaylist = (id) => {
-    return authAxios.delete(`api/playlists/${id}`)
+    return apiClient.delete(`api/playlists/${id}`)
 }
 
 export const getPlaylistSongs = (id) => {
-    return authAxios.get(`api/playlists/${id}/songs`)
+    return apiClient.get(`api/playlists/${id}/songs`)
 }
 
 export const addSongToPlaylist = (playlistId, song) => {
-    return authAxios.post(`api/playlists/${playlistId}/songs`, {
+    return apiClient.post(`api/playlists/${playlistId}/songs`, {
         song_id: song.id,
         song_name: song.name,
         artist: song.artist,
@@ -61,15 +43,15 @@ export const addSongToPlaylist = (playlistId, song) => {
 }
 
 export const removeSongFromPlaylist = (playlistId, songId) => {
-    return authAxios.delete(`api/playlists/${playlistId}/songs/${songId}`)
+    return apiClient.delete(`api/playlists/${playlistId}/songs/${songId}`)
 }
 
-// ========== 导出/导入 API ==========
+// ========== Export / import API ==========
 
 export const exportPlaylists = () => {
-    return authAxios.get('api/export')
+    return apiClient.get('api/export')
 }
 
 export const importPlaylists = (data) => {
-    return authAxios.post('api/export', data)
+    return apiClient.post('api/export', data)
 }

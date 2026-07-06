@@ -1,31 +1,16 @@
-import axios from "axios"
-const normalizeBaseUrl = (url) => url.endsWith('/') ? url : `${url}/`
-const baseUrl = normalizeBaseUrl(process.env.VUE_APP_API_BASE_URL || 'https://neon.zeabur.app/')
+import { apiClient, externalClient, getWithRetry } from "./http"
+import { thumb } from "../utils/imgThumb"
+
 const musicUrl = 'https://api.kxzjoker.cn/api/163_music'
 const encodeKeyword = (keyword) => encodeURIComponent(keyword || '')
 
 // 带超时的 axios 实例：弱网下请求不会永久挂起，到点失败可被 catch/重试
-const http = axios.create({ timeout: 15000 })
 
 // 通用 GET 重试：弱网(尤其大陆访问东京)偶发丢包时，重试一次往往就成功
-const getWithRetry = async (url, { retries = 2, retryDelay = 800 } = {}) => {
-  let lastErr
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    try {
-      return await http.get(url)
-    } catch (e) {
-      lastErr = e
-      if (attempt < retries) {
-        await new Promise(r => setTimeout(r, retryDelay * (attempt + 1)))
-      }
-    }
-  }
-  throw lastErr
-}
 
 // 单批歌曲详情（带重试），ids 为逗号串
 export const getSongsDetailChunk = (idsStr) => {
-  return getWithRetry(`${baseUrl}song/detail?ids=${idsStr}`)
+  return getWithRetry(`song/detail?ids=${idsStr}`)
 }
 
 /**
@@ -67,28 +52,28 @@ export const getAllSongsBatched = async (trackIds, onBatch, batchSize = 50) => {
 }
 
 export const getAlbumInfo = (id) => {
-    return axios.get(`${baseUrl}album?id=${id}`);
+    return apiClient.get(`album?id=${id}`);
 }
 export const getPlayListInfo = (id) => {
-    return getWithRetry(`${baseUrl}playlist/detail?id=${id}`)
+    return getWithRetry(`playlist/detail?id=${id}`)
 }
 
 export const getAllSongs = (id) => {
-    return getWithRetry(`${baseUrl}song/detail?ids=${id}`)
+    return getWithRetry(`song/detail?ids=${id}`)
 }
 
 export const getArtistTrend = (id) => {
-    return axios.get(`${baseUrl}artists?id=${id}`)
+    return apiClient.get(`artists?id=${id}`)
 }
 
 export const getArtistAlbum = (id) => {
-    return axios.get(`${baseUrl}artist/album?id=${id}`)
+    return apiClient.get(`artist/album?id=${id}`)
 }
 
 // 获取歌曲播放URL - 调用后端统一接口（后端处理 VIP Cookie 和 fallback）
 export const getSongUrl = async (id) => {
     try {
-        const response = await axios.get(`${baseUrl}api/music/url?id=${id}`)
+        const response = await apiClient.get(`api/music/url?id=${id}`)
         if (response.data && response.data.code === 200 && response.data.data?.url) {
             return {
                 data: {
@@ -106,17 +91,17 @@ export const getSongUrl = async (id) => {
 
 /////////////////////////search//////////////////////////
 export const searchSongs = (keyword, offset = 0, limit = 20) => {
-    return axios.get(`${baseUrl}search?keywords=${encodeKeyword(keyword)}&type=1&offset=${offset}&limit=${limit}`)
+    return apiClient.get(`search?keywords=${encodeKeyword(keyword)}&type=1&offset=${offset}&limit=${limit}`)
 }
 
 // 获取单曲详情（包含封面）- 使用官方API（更可靠）
 export const getSongDetailOfficial = async (songId) => {
     try {
-        const response = await axios.get(`${baseUrl}song/detail?ids=${songId}`);
+        const response = await apiClient.get(`song/detail?ids=${songId}`);
         if (response.data.songs && response.data.songs.length > 0) {
             const song = response.data.songs[0];
             return {
-                pic: song.al?.picUrl || '',
+                pic: thumb(song.al?.picUrl || '', 300),
                 name: song.name,
                 ar_name: song.ar?.[0]?.name || ''
             };
@@ -132,9 +117,12 @@ export const getSongDetailOfficial = async (songId) => {
 export const getSongsDetailBatch = async (songIds) => {
     try {
         const idsStr = songIds.join(',');
-        const response = await axios.get(`${baseUrl}song/detail?ids=${idsStr}`);
+        const response = await apiClient.get(`song/detail?ids=${idsStr}`);
         if (response.data.songs) {
-            return response.data.songs;
+            return response.data.songs.map(song => ({
+                ...song,
+                al: song.al ? { ...song.al, picUrl: thumb(song.al.picUrl, 300) } : song.al
+            }));
         }
         return [];
     } catch (e) {
@@ -146,7 +134,7 @@ export const getSongsDetailBatch = async (songIds) => {
 // 获取单曲详情 - 使用第三方API（备用，用于下载）
 export const getSongDetail = async (songId) => {
     try {
-        const response = await axios.get(`${musicUrl}?url=https://y.music.163.com/m/song?id=${songId}&level=standard&type=json`);
+        const response = await externalClient.get(`${musicUrl}?url=https://y.music.163.com/m/song?id=${songId}&level=standard&type=json`);
         return response.data;
     } catch (e) {
         console.error('获取歌曲详情失败:', e);
@@ -155,26 +143,26 @@ export const getSongDetail = async (songId) => {
 }
 
 export const searchAlbums = (keyword, offset = 0, limit = 20) => {
-    return axios.get(`${baseUrl}search?keywords=${encodeKeyword(keyword)}&type=10&offset=${offset}&limit=${limit}`)
+    return apiClient.get(`search?keywords=${encodeKeyword(keyword)}&type=10&offset=${offset}&limit=${limit}`)
 }
 
 export const searchArtists = (keyword, offset = 0, limit = 20) => {
-    return axios.get(`${baseUrl}search?keywords=${encodeKeyword(keyword)}&type=100&offset=${offset}&limit=${limit}`)
+    return apiClient.get(`search?keywords=${encodeKeyword(keyword)}&type=100&offset=${offset}&limit=${limit}`)
 }
 
 export const searchLists = (keyword, offset = 0, limit = 20) => {
-    return axios.get(`${baseUrl}search?keywords=${encodeKeyword(keyword)}&type=1000&offset=${offset}&limit=${limit}`)
+    return apiClient.get(`search?keywords=${encodeKeyword(keyword)}&type=1000&offset=${offset}&limit=${limit}`)
 }
 
 export const getTrendList = () => {
-    return axios.get(`${baseUrl}top/playlist?limit=10&order=hot`)
+    return apiClient.get(`top/playlist?limit=10&order=hot`)
 }
 
 export const getRank = () => {
-    return axios.get(`${baseUrl}toplist/detail`)
+    return apiClient.get(`toplist/detail`)
 }
 
 // 获取歌词
 export const getLyric = (songId) => {
-    return axios.get(`${baseUrl}lyric?id=${songId}`)
+    return apiClient.get(`lyric?id=${songId}`)
 }

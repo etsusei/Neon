@@ -48,7 +48,13 @@
           <i class="fa" :class="isDarkMode ? 'fa-sun-o' : 'fa-moon-o'"></i>
         </button>
         <router-link :to="{ name: 'Settings' }" class="profile-btn">
-          <img src="https://img0.baidu.com/it/u=3522288622,363838562&fm=253&fmt=auto&app=138&f=JPEG?w=537&h=269" />
+          <img
+            src="https://img0.baidu.com/it/u=3522288622,363838562&fm=253&fmt=auto&app=138&f=JPEG?w=537&h=269"
+            loading="lazy"
+            decoding="async"
+            referrerpolicy="no-referrer"
+            alt="Profile"
+          />
           <span>{{ displayUsername }}</span>
         </router-link>
       </div>

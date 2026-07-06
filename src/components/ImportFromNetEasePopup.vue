@@ -90,12 +90,10 @@
 </template>
 
 <script>
-import axios from 'axios'
 import { createPlaylist, addSongToPlaylist } from '../api/userApi'
+import { apiClient } from '../api/http'
 import { ElMessage } from 'element-plus/es/components/message'
 import { thumb } from '../utils/imgThumb'
-
-const NETEASE_API = 'https://neon.zeabur.app'
 
 export default {
   name: 'ImportFromNetEasePopup',
@@ -135,7 +133,7 @@ export default {
       this.selectedIds = []
       
       try {
-        const res = await axios.get(`${NETEASE_API}/user/playlist?uid=${this.userId.trim()}`)
+        const res = await apiClient.get(`user/playlist?uid=${encodeURIComponent(this.userId.trim())}`)
         if (res.data.code === 200 && res.data.playlist) {
           // 过滤掉"喜欢的音乐"等系统歌单，只保留用户创建的
           this.playlists = res.data.playlist.filter(p => p.creator.userId == this.userId)
@@ -175,7 +173,7 @@ export default {
           if (!playlist) continue
           
           // 获取歌单详情（包含 trackIds）
-          const detailRes = await axios.get(`${NETEASE_API}/playlist/detail?id=${playlistId}`)
+          const detailRes = await apiClient.get(`playlist/detail?id=${playlistId}`)
           if (detailRes.data.code !== 200) continue
           
           const detail = detailRes.data.playlist
@@ -188,7 +186,7 @@ export default {
           
           // 批量获取歌曲详情（每次最多500首）
           const ids = trackIds.map(t => t.id).join(',')
-          const songRes = await axios.get(`${NETEASE_API}/song/detail?ids=${ids}`)
+          const songRes = await apiClient.get(`song/detail?ids=${ids}`)
           if (songRes.data.code !== 200) continue
           
           // 按 trackIds 的原始顺序排列歌曲
@@ -199,7 +197,7 @@ export default {
           const tracks = trackIds.map(t => songsMap.get(t.id)).filter(Boolean)
           
           // 创建本地歌单
-          const createRes = await createPlaylist(playlist.name, playlist.coverImgUrl)
+          const createRes = await createPlaylist(playlist.name, thumb(playlist.coverImgUrl, 300))
           if (createRes.data.code !== 200) continue
           
           const newPlaylistId = createRes.data.data.id

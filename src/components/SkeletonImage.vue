@@ -7,6 +7,8 @@
       v-show="isLoaded"
       :src="displaySrc"
       :alt="alt"
+      loading="lazy"
+      decoding="async"
       @load="handleLoad"
       @error="handleError"
       referrerpolicy="no-referrer"

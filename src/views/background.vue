@@ -4,10 +4,16 @@
       <img
         class="bg-color album-artwork"
         src="https://p1.music.126.net/6Hrz_bIYDBJ3z272Kojvkg==/109951166514155566.jpg"
+        loading="lazy"
+        decoding="async"
+        alt=""
       />
       <img
         class="bg-black album-artwork"
         src="https://p1.music.126.net/6Hrz_bIYDBJ3z272Kojvkg==/109951166514155566.jpg"
+        loading="lazy"
+        decoding="async"
+        alt=""
       />
     </div>
   </div>
