@@ -14,7 +14,7 @@
     "deploy": "npm run build && gh-pages -d dist"
   },
   "dependencies": {
-    "axios": "^0.26.1",
+    "axios": "^1.18.1",
     "core-js": "^3.6.5",
     "dayjs": "^1.10.7",
     "element-plus": "^1.2.0-beta.4",
