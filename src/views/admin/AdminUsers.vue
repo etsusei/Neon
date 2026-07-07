@@ -44,7 +44,6 @@
         <template #body="{ data }">
           <ToggleSwitch
             :modelValue="data.is_admin"
-            :disabled="data.id === currentUserId"
             @update:modelValue="toggleAdmin(data, $event)"
           />
         </template>
@@ -72,8 +71,8 @@
             severity="danger"
             text
             rounded
-            :disabled="data.id === currentUserId"
-            v-tooltip.top="'删除用户'"
+            :disabled="data.id === currentUserId || data.is_admin"
+            v-tooltip.top="data.is_admin ? '请先解除管理员权限再删除' : '删除用户'"
             @click="confirmDelete(data)"
           />
         </template>
