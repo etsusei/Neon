@@ -14,8 +14,19 @@
       </div>
     </div>
     <div class="album-right">
-      <marquee-text class="album-right_name" :text="track.name" />
-      <marquee-text class="album-right_info" :text="track.artist" />
+      <!-- 两行共用同一循环周期(取较长者)，停留/起步/归位时刻同步 -->
+      <marquee-text
+        class="album-right_name"
+        :text="track.name"
+        :cycle="sharedCycle"
+        @measure="nameCycle = $event"
+      />
+      <marquee-text
+        class="album-right_info"
+        :text="track.artist"
+        :cycle="sharedCycle"
+        @measure="infoCycle = $event"
+      />
     </div>
   </div>
 </template>
@@ -38,6 +49,18 @@ export default {
       default: 1
     }
   },
-  emits: ['toggle-immersive-mode']
+  emits: ['toggle-immersive-mode'],
+  data() {
+    return {
+      nameCycle: 0,
+      infoCycle: 0
+    };
+  },
+  computed: {
+    // 两行的共同循环周期：取各自然周期的较大值
+    sharedCycle() {
+      return Math.max(this.nameCycle, this.infoCycle);
+    }
+  }
 };
 </script>
