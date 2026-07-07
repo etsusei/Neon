@@ -24,7 +24,7 @@
       </div>
     </div>
     <div class="list-section">
-      <list-row :tracks="this.songlist"/>
+      <list-row :tracks="this.songlist" :editable="canEdit" @remove-track="removeTrack"/>
       <!-- 懒加载哨兵：滚动接近底部时触发加载下一批 -->
       <div ref="sentinel" class="load-sentinel">
         <span v-if="loading">加载中…</span>
@@ -37,7 +37,11 @@
 <script>
 import listRow from "../components/listRow.vue";
 import { getPlayListInfo, getSongsDetailChunk, mergePrivileges } from "../api/neteaseApi";
+import { removeTracksFromNeteasePlaylist } from "../api/neteaseUserApi";
+import { isNeteaseLoggedIn, getNeteaseProfile } from "../utils/neteaseAuth";
 import { thumb } from "../utils/imgThumb";
+import { ElMessage } from "element-plus/es/components/message";
+import { ElMessageBox } from "element-plus/es/components/message-box";
 
 const BATCH_SIZE = 50;
 
@@ -59,7 +63,16 @@ export default {
       loading: false,
       noMore: false,
       observer: null,
+      creatorId: null,    // 歌单创建者，用于判断是否可编辑
     };
+  },
+  computed: {
+    // 网易云登录且是自己创建的歌单才能删歌
+    canEdit() {
+      if (!this.creatorId || !isNeteaseLoggedIn()) return false;
+      const profile = getNeteaseProfile();
+      return !!(profile && profile.userId === this.creatorId);
+    },
   },
   methods: {
     getPlayList() {
@@ -67,6 +80,7 @@ export default {
         if (result.data.code == "200") {
           this.creatorImg = thumb(result.data.playlist.creator.avatarUrl, 100);
           this.creatorName = result.data.playlist.creator.nickname;
+          this.creatorId = result.data.playlist.creator.userId;
           this.listName = result.data.playlist.name;
           this.detail = result.data.playlist.description;
           this.songs = result.data.playlist.trackIds || [];
@@ -80,6 +94,34 @@ export default {
       }).catch((e) => {
         console.error("[list] 歌单信息加载失败:", e);
       });
+    },
+    // 从自己的网易云歌单里删除歌曲（确认弹窗风格与本地歌单一致）
+    async removeTrack(track) {
+      try {
+        await ElMessageBox.confirm(`确定要从歌单中移除「${track.name}」吗？`, "确认移除", {
+          confirmButtonText: "移除",
+          cancelButtonText: "取消",
+          type: "warning",
+        });
+
+        const res = await removeTracksFromNeteasePlaylist(this.listId, track.id);
+        if (res.data.code === 200 || (res.data.body && res.data.body.code === 200)) {
+          // 同步本地状态：展示列表、trackIds、懒加载游标一起修
+          this.songlist = this.songlist.filter((s) => s.id !== track.id);
+          const idx = (this.songs || []).findIndex((t) => t.id === track.id);
+          if (idx > -1) {
+            this.songs.splice(idx, 1);
+            if (idx < this.loadedCount) this.loadedCount--;
+          }
+          ElMessage.success("已移除");
+        } else {
+          ElMessage.error(res.data.msg || res.data.message || "移除失败");
+        }
+      } catch (err) {
+        if (err !== "cancel") {
+          ElMessage.error("移除失败");
+        }
+      }
     },
     // 懒加载：每次只拉下一批 BATCH_SIZE 首；滚动接近底部时再拉下一批。
     // 既避免巨型请求在弱网整体卡死（分批），又避免进页面就全拉（懒加载）。

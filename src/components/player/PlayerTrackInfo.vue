@@ -14,17 +14,20 @@
       </div>
     </div>
     <div class="album-right">
-      <div class="album-right_name">{{ track.name }}</div>
-      <div class="album-right_info">
-        {{ track.album }}-----{{ track.artist }}
-      </div>
+      <marquee-text class="album-right_name" :text="track.name" />
+      <marquee-text class="album-right_info" :text="`${track.album}-----${track.artist}`" />
     </div>
   </div>
 </template>
 
 <script>
+import MarqueeText from '../MarqueeText.vue';
+
 export default {
   name: 'PlayerTrackInfo',
+  components: {
+    MarqueeText
+  },
   props: {
     track: {
       type: Object,

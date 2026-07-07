@@ -13,6 +13,7 @@
       </div>
       <div class="head-plus-icon"></div>
       <div class="head-download-icon"></div>
+      <div class="head-trash-icon" v-if="editable"></div>
     </div>
     <div class="listRow" :class="{ 'track-unavailable': isUnavailableSong(track) }" v-for="(track, $index) in displayTracks" :key="track.id || $index" @click="play(displayTracks,$index)">
       <div
@@ -45,8 +46,11 @@
       <div class="download-icon" @click.stop="download(track)">
         <i class="fa fa-download"></i>
       </div>
+      <div class="trash-icon" v-if="editable" @click.stop="$emit('remove-track', track)">
+        <i class="fa fa-trash"></i>
+      </div>
     </div>
-    
+
     <!-- 添加到歌单弹窗 -->
     <add-to-playlist-popup
       :show="showAddPopup"
@@ -71,7 +75,8 @@ import { thumb } from '../utils/imgThumb';
 import { isVipSong, isUnavailableSong } from '../utils/songBadge';
 
 export default {
-  props: ["tracks"],
+  props: ["tracks", "editable"],
+  emits: ["remove-track"],
   components: {
     AddToPlaylistPopup,
     DownloadQualityPopup
@@ -211,6 +216,30 @@ export default {
 .download-icon:hover {
   color: rgb(0, 100, 200);
   transform: scale(1.1);
+}
+.trash-icon {
+  margin: auto 0;
+  color: #999;
+  font-size: 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  margin-right: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+.trash-icon:hover {
+  color: #f5222d;
+  transform: scale(1.1);
+}
+.head-trash-icon {
+  margin: auto 0;
+  font-size: 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  margin-right: 20px;
+  width: 20px;
 }
 .link {
   color: var(--text-primary);
