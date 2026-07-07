@@ -23,6 +23,7 @@
               @next-track="nextTrack"
               @toggle-play-mode="togglePlayMode"
               @seek-percentage="seekToPercentage"
+              @add-to-playlist="openAddToPlaylist"
             />
           </div>
           <div class="musicplayer-right">
@@ -36,6 +37,12 @@
       </liquid-card>
     </div>
     <playlist-popup :show="showPlaylist" @close="showPlaylist = false" />
+    <!-- 爱心：把当前播放的歌加入歌单 -->
+    <add-to-playlist-popup
+      :show="showAddToPlaylist"
+      :song="currentTrack"
+      @close="showAddToPlaylist = false"
+    />
   </div>
 </template>
 <script>
@@ -44,6 +51,7 @@ import { mapMutations } from "vuex";
 import { getSongUrl } from "../api/neteaseApi";
 import { ElMessage } from "element-plus/es/components/message";
 import PlaylistPopup from "./PlaylistPopup.vue";
+import AddToPlaylistPopup from "./AddToPlaylistPopup.vue";
 import LiquidCard from "./LiquidCard.vue";
 import AudioIntensityAnalyzer from "../utils/audioIntensityAnalyzer";
 import PlayerTrackInfo from "./player/PlayerTrackInfo.vue";
@@ -52,6 +60,7 @@ import PlayerVolume from "./player/PlayerVolume.vue";
 export default {
   components: {
     PlaylistPopup,
+    AddToPlaylistPopup,
     LiquidCard,
     PlayerTrackInfo,
     PlayerControls,
@@ -77,6 +86,7 @@ export default {
       visualizationFrameId: null,
       audioAnalyzer: new AudioIntensityAnalyzer(),
       showPlaylist: false,
+      showAddToPlaylist: false,
       // iOS background playback support
       isIOS: false,
       // 已为哪首歌预取过下一首的 URL（防止 timeupdate 里重复请求）
@@ -409,6 +419,13 @@ export default {
         [indices[i], indices[j]] = [indices[j], indices[i]];
       }
       this.$store.commit('SetShuffledPlaybackOrder', indices);
+    },
+    openAddToPlaylist() {
+      if (!this.currentTrack || !this.currentTrack.id) {
+        ElMessage.warning("当前没有正在播放的歌曲");
+        return;
+      }
+      this.showAddToPlaylist = true;
     },
     refreshPlayer() {
       this.handlePlayerLogic();

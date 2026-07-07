@@ -4,6 +4,11 @@
   <transition name="slide-up">
     <div v-if="show" class="playlist-popup-overlay" @click.self="close">
       <div class="playlist-popup">
+        <!-- 液态玻璃四层结构，与其他弹窗保持一致 -->
+        <div class="pp-glass-effect"></div>
+        <div class="pp-glass-tint"></div>
+        <div class="pp-glass-shine"></div>
+        <div class="pp-glass-content">
         <div class="popup-header">
           <span class="popup-title">正在播放</span>
           <span class="popup-count">{{ tracks.length }} 首</span>
@@ -31,6 +36,7 @@
               <div class="item-artist" :title="track.artist">{{ track.artist }}</div>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>
@@ -113,23 +119,66 @@ export default {
   padding-bottom: 85px; // 留出播放器空间
 }
 
+/* 液态玻璃容器：结构与其他弹窗一致(effect/tint/shine/content 四层) */
 .playlist-popup {
+  position: relative;
+  isolation: isolate;
   width: 320px;
   max-height: calc(100vh - 200px);
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
   border-radius: 20px;
   display: flex;
-  flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+  color: rgba(0, 0, 0, 0.85);
+  text-align: left;
+}
+
+.pp-glass-effect {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: url(#glass-distortion) blur(24px);
+  -webkit-backdrop-filter: url(#glass-distortion) blur(24px);
+}
+
+.pp-glass-tint {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  pointer-events: none;
+  background-color: rgba(255, 255, 255, 0.45);
+  transition: background-color 0.5s ease;
+}
+
+.pp-glass-shine {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+  box-shadow:
+    inset 2px 2px 1px 0 rgba(255, 255, 255, 0.5),
+    inset -1px -1px 1px 1px rgba(255, 255, 255, 0.5);
+}
+
+.pp-glass-content {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
 }
 
 .popup-header {
   display: flex;
   align-items: center;
   padding: 16px 20px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   
   .popup-title {
     font-size: 16px;
@@ -252,5 +301,53 @@ export default {
 .slide-up-enter-from,
 .slide-up-leave-to {
   opacity: 0;
+}
+</style>
+
+<!-- 暗色模式覆盖：弹窗 teleport 到 body，用 body 上的类名适配 -->
+<style lang="scss">
+body.dark-mode-active {
+  .playlist-popup {
+    color: #e0e0e0;
+  }
+
+  .pp-glass-tint {
+    background-color: rgba(23, 23, 23, 0.75);
+  }
+
+  .pp-glass-shine {
+    box-shadow:
+      inset 2px 2px 1px 0 rgba(255, 255, 255, 0.1),
+      inset -1px -1px 1px 1px rgba(255, 255, 255, 0.1);
+  }
+
+  .playlist-popup .popup-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+
+    .popup-count {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .popup-close:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .popup-close i {
+      color: rgba(255, 255, 255, 0.6);
+    }
+  }
+
+  .playlist-popup .popup-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .playlist-popup .item-index,
+  .playlist-popup .item-artist {
+    color: rgba(255, 255, 255, 0.45);
+  }
+
+  .playlist-popup .popup-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.25);
+  }
 }
 </style>

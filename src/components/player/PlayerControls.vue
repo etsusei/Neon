@@ -2,7 +2,7 @@
   <div class="player-controls">
     <div class="track-control">
       <div class="track-control_row">
-        <div class="track-control_icon">
+        <div class="track-control_icon" @click="$emit('add-to-playlist')" title="添加到歌单">
           <i class="fa fa-heart"></i>
         </div>
         <div class="track-control_icon" @click="$emit('prev-track')">
@@ -63,7 +63,7 @@ export default {
       default: '00:00'
     }
   },
-  emits: ['play', 'prev-track', 'next-track', 'toggle-play-mode', 'seek-percentage'],
+  emits: ['play', 'prev-track', 'next-track', 'toggle-play-mode', 'seek-percentage', 'add-to-playlist'],
   methods: {
     clickProgress(event) {
       const rect = event.currentTarget.getBoundingClientRect();
