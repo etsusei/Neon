@@ -63,33 +63,98 @@
             <span v-else>登录</span>
           </button>
         </form>
+
+        <div class="admin-entry">
+          <a @click="showAdminDialog = true">
+            <i class="fa fa-shield"></i> 管理员入口
+          </a>
+        </div>
       </div>
     </div>
+
+    <!-- 管理员登录弹窗 -->
+    <Dialog
+      v-model:visible="showAdminDialog"
+      modal
+      header="管理员登录"
+      :style="{ width: '360px' }"
+      :draggable="false"
+      @hide="resetAdminForm"
+    >
+      <form @submit.prevent="handleAdminLogin" class="admin-login-form">
+        <div class="admin-field">
+          <label for="admin-username">用户名</label>
+          <InputText
+            id="admin-username"
+            v-model="adminUsername"
+            autocomplete="username"
+            fluid
+          />
+        </div>
+        <div class="admin-field">
+          <label for="admin-password">密码</label>
+          <Password
+            id="admin-password"
+            v-model="adminPassword"
+            :feedback="false"
+            toggle-mask
+            autocomplete="current-password"
+            fluid
+          />
+        </div>
+
+        <Message v-if="adminError" severity="error" :closable="false">{{ adminError }}</Message>
+
+        <Button
+          type="submit"
+          label="进入管理系统"
+          icon="pi pi-sign-in"
+          :loading="adminLoading"
+          fluid
+        />
+      </form>
+    </Dialog>
   </div>
 </template>
 
 <script>
 import { login } from '../api/userApi'
 import BackgroundAnimation from '../components/BackgroundAnimation.vue'
+import Dialog from 'primevue/dialog'
+import InputText from 'primevue/inputtext'
+import Password from 'primevue/password'
+import Button from 'primevue/button'
+import Message from 'primevue/message'
 
 export default {
   name: 'Login',
   components: {
-    BackgroundAnimation
+    BackgroundAnimation,
+    Dialog,
+    InputText,
+    Password,
+    Button,
+    Message
   },
   data() {
     return {
       username: '',
       password: '',
       loading: false,
-      error: ''
+      error: '',
+      // 管理员登录弹窗
+      showAdminDialog: false,
+      adminUsername: '',
+      adminPassword: '',
+      adminLoading: false,
+      adminError: ''
     }
   },
   methods: {
     async handleLogin() {
       this.error = ''
       this.loading = true
-      
+
       try {
         const res = await login(this.username, this.password)
         if (res.data.code === 200) {
@@ -104,6 +169,39 @@ export default {
       } finally {
         this.loading = false
       }
+    },
+    async handleAdminLogin() {
+      if (!this.adminUsername || !this.adminPassword) {
+        this.adminError = '请输入用户名和密码'
+        return
+      }
+      this.adminError = ''
+      this.adminLoading = true
+
+      try {
+        const res = await login(this.adminUsername, this.adminPassword)
+        if (res.data.code === 200) {
+          if (!res.data.data.user.is_admin) {
+            this.adminError = '该账号没有管理员权限'
+            return
+          }
+          localStorage.setItem('auth_token', res.data.data.token)
+          localStorage.setItem('user_info', JSON.stringify(res.data.data.user))
+          this.$router.push('/admin')
+        } else {
+          this.adminError = res.data.msg || '登录失败'
+        }
+      } catch (err) {
+        this.adminError = err.response?.data?.msg || '网络错误'
+      } finally {
+        this.adminLoading = false
+      }
+    },
+    resetAdminForm() {
+      this.adminUsername = ''
+      this.adminPassword = ''
+      this.adminError = ''
+      this.adminLoading = false
     }
   },
   mounted() {
@@ -246,6 +344,40 @@ export default {
   margin: 0;
   text-align: center;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.admin-entry {
+  margin-top: 20px;
+  text-align: center;
+
+  a {
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 13px;
+    cursor: pointer;
+    transition: color 0.2s;
+
+    &:hover {
+      color: rgba(255, 255, 255, 0.9);
+    }
+  }
+}
+
+.admin-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 4px;
+
+  .admin-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+    }
+  }
 }
 
 .login-btn {

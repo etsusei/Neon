@@ -1,6 +1,6 @@
 ﻿<template>
   <div>
-    <template v-if="isLoginPage">
+    <template v-if="isStandalonePage">
       <router-view />
     </template>
 
@@ -54,8 +54,9 @@ export default {
     playbackCoverImage() {
       return this.$store.state.playback.coverImage;
     },
-    isLoginPage() {
-      return this.$route.name === 'Login';
+    isStandalonePage() {
+      // 登录页和管理后台不使用播放器主布局
+      return this.$route.name === 'Login' || this.$route.path.startsWith('/admin');
     },
     displayUsername() {
       try {
