@@ -786,7 +786,7 @@ export default {
   justify-content: center;
   padding: 0 10px 0 16px;
   /* 歌名/歌手两行限定同一固定宽度，超长交给跑马灯滚动，不再溢出盖住进度条 */
-  width: 230px;
+  width: 280px;
   min-width: 0;
   overflow: hidden;
 }

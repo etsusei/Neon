@@ -97,7 +97,7 @@ export default {
 /* 滚动时必须从左缘起步（全局 text-align:center 会把超宽的行居中，起点就错了） */
 .is-scrolling {
   text-align: left;
-  -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 28px), transparent 100%);
-  mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 28px), transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 16px, #000 calc(100% - 28px), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 16px, #000 calc(100% - 28px), transparent 100%);
 }
 </style>

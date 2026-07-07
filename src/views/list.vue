@@ -102,6 +102,8 @@ export default {
           confirmButtonText: "移除",
           cancelButtonText: "取消",
           type: "warning",
+          // 不锁定页面滚动：锁定会让 body 滚动条消失、视口变宽，居中的播放器控件会跳动
+          lockScroll: false,
         });
 
         const res = await removeTracksFromNeteasePlaylist(this.listId, track.id);

@@ -207,7 +207,9 @@ export default {
           {
             confirmButtonText: isUnsubscribe ? '取消收藏' : '删除',
             cancelButtonText: '取消',
-            type: 'warning'
+            type: 'warning',
+            // 不锁滚动，避免滚动条消失导致布局跳动
+            lockScroll: false
           }
         )
 

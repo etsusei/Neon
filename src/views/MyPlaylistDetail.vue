@@ -128,7 +128,9 @@ export default {
         await ElMessageBox.confirm(`确定要从歌单中移除「${song.song_name}」吗？`, '确认移除', {
           confirmButtonText: '移除',
           cancelButtonText: '取消',
-          type: 'warning'
+          type: 'warning',
+          // 不锁滚动，避免滚动条消失导致布局跳动
+          lockScroll: false
         })
         
         const res = await removeSongFromPlaylist(this.id, song.song_id)

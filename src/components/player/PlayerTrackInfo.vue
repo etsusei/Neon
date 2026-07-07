@@ -15,7 +15,7 @@
     </div>
     <div class="album-right">
       <marquee-text class="album-right_name" :text="track.name" />
-      <marquee-text class="album-right_info" :text="`${track.album}-----${track.artist}`" />
+      <marquee-text class="album-right_info" :text="track.artist" />
     </div>
   </div>
 </template>
