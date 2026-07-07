@@ -3,6 +3,11 @@
     <transition name="fade">
       <div v-if="show" class="dl-overlay" @click.self="close">
         <div class="dl-popup">
+          <!-- 液态玻璃三层结构，与 LiquidCard 保持一致 -->
+          <div class="dl-glass-effect"></div>
+          <div class="dl-glass-tint"></div>
+          <div class="dl-glass-shine"></div>
+          <div class="dl-glass-content">
           <div class="popup-header">
             <span class="popup-title">下载歌曲</span>
             <div class="popup-close" @click="close">
@@ -75,6 +80,7 @@
                 <button class="btn-primary" @click="failInfo = null">重新选择</button>
               </div>
             </template>
+          </div>
           </div>
         </div>
       </div>
@@ -226,29 +232,75 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.4);
   z-index: 200;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+/* 液态玻璃容器：结构与 LiquidCard 一致(effect/tint/shine/content 四层) */
 .dl-popup {
+  position: relative;
+  isolation: isolate;
   width: 360px;
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(20px);
-  border-radius: 16px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+  color: rgba(0, 0, 0, 0.85);
+  --dl-accent: #1f6f64;
+  --dl-accent-strong: #164c45;
+  --dl-accent-soft: rgba(31, 111, 100, 0.14);
+  --dl-button-start: #172321;
+  --dl-button-mid: #1f6f64;
+  --dl-button-end: #b49a62;
+  --dl-button-shadow: rgba(31, 111, 100, 0.28);
+}
+
+.dl-glass-effect {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: url(#glass-distortion) blur(24px);
+  -webkit-backdrop-filter: url(#glass-distortion) blur(24px);
+}
+
+.dl-glass-tint {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  pointer-events: none;
+  background-color: rgba(255, 255, 255, 0.45);
+  transition: background-color 0.5s ease;
+}
+
+.dl-glass-shine {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+  box-shadow:
+    inset 2px 2px 1px 0 rgba(255, 255, 255, 0.5),
+    inset -1px -1px 1px 1px rgba(255, 255, 255, 0.5);
+}
+
+.dl-glass-content {
+  position: relative;
+  z-index: 3;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
 }
 
 .popup-header {
   display: flex;
   align-items: center;
   padding: 16px 20px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 
   .popup-title {
     font-size: 17px;
@@ -264,6 +316,7 @@ export default {
     justify-content: center;
     cursor: pointer;
     border-radius: 50%;
+    transition: background 0.2s;
 
     &:hover {
       background: rgba(0, 0, 0, 0.1);
@@ -277,10 +330,10 @@ export default {
   gap: 8px;
   padding: 12px 20px 0;
   font-size: 13px;
-  color: #666;
+  color: rgba(0, 0, 0, 0.6);
 
   i {
-    color: #667eea;
+    color: var(--dl-accent);
   }
 
   span {
@@ -296,7 +349,7 @@ export default {
 
 .section-label {
   font-size: 12px;
-  color: #999;
+  color: rgba(0, 0, 0, 0.45);
   margin: 12px 0 8px;
 }
 
@@ -309,20 +362,21 @@ export default {
   flex: 1;
   text-align: center;
   padding: 9px 0;
-  border: 2px solid #eee;
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.25);
   border-radius: 10px;
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s;
 
   &:hover {
-    border-color: #ccc;
+    border-color: rgba(0, 0, 0, 0.25);
   }
 
   &.active {
-    border-color: #667eea;
-    background: rgba(102, 126, 234, 0.08);
-    color: #667eea;
+    border-color: var(--dl-accent);
+    background: var(--dl-accent-soft);
+    color: var(--dl-accent-strong);
     font-weight: 600;
   }
 }
@@ -337,25 +391,26 @@ export default {
   display: flex;
   align-items: center;
   padding: 10px 12px;
-  border: 2px solid #eee;
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.25);
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s;
 
   &:hover {
-    border-color: #ccc;
+    border-color: rgba(0, 0, 0, 0.25);
   }
 
   &.selected {
-    border-color: #667eea;
-    background: rgba(102, 126, 234, 0.08);
+    border-color: var(--dl-accent);
+    background: var(--dl-accent-soft);
   }
 }
 
 .level-radio {
   width: 18px;
   height: 18px;
-  border: 2px solid #ccc;
+  border: 2px solid rgba(0, 0, 0, 0.25);
   border-radius: 50%;
   margin-right: 12px;
   display: flex;
@@ -367,12 +422,12 @@ export default {
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: #667eea;
+    background: var(--dl-accent);
   }
 }
 
 .level-item.selected .level-radio {
-  border-color: #667eea;
+  border-color: var(--dl-accent);
 }
 
 .level-name {
@@ -382,7 +437,7 @@ export default {
 
 .level-desc {
   font-size: 12px;
-  color: #999;
+  color: rgba(0, 0, 0, 0.45);
   margin-top: 2px;
 }
 
@@ -390,7 +445,7 @@ export default {
   width: 100%;
   margin-top: 16px;
   padding: 13px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--dl-button-start) 0%, var(--dl-button-mid) 68%, var(--dl-button-end) 100%);
   color: white;
   border: none;
   border-radius: 10px;
@@ -400,6 +455,14 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  box-shadow: 0 10px 22px var(--dl-button-shadow);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 26px var(--dl-button-shadow);
+    filter: saturate(1.05);
+  }
 
   &:disabled {
     opacity: 0.6;
@@ -426,7 +489,7 @@ export default {
 
 .fail-desc {
   font-size: 13px;
-  color: #666;
+  color: rgba(0, 0, 0, 0.6);
   line-height: 1.7;
   margin-bottom: 16px;
 }
@@ -442,6 +505,7 @@ export default {
     font-size: 14px;
     cursor: pointer;
     border: none;
+    transition: background 0.2s;
 
     &:disabled {
       opacity: 0.6;
@@ -450,17 +514,18 @@ export default {
   }
 
   .btn-secondary {
-    background: rgba(0, 0, 0, 0.06);
-    color: #333;
+    background: rgba(0, 0, 0, 0.08);
+    color: rgba(0, 0, 0, 0.75);
 
     &:hover {
-      background: rgba(0, 0, 0, 0.1);
+      background: rgba(0, 0, 0, 0.14);
     }
   }
 
   .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--dl-button-start) 0%, var(--dl-button-mid) 68%, var(--dl-button-end) 100%);
     color: white;
+    box-shadow: 0 8px 18px var(--dl-button-shadow);
   }
 }
 
@@ -472,5 +537,90 @@ export default {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+</style>
+
+<!-- 暗色模式覆盖：弹窗 teleport 到 body，取不到 .app-container 上的变量，用 body 上的类名适配 -->
+<style lang="scss">
+body.dark-mode-active {
+  .dl-popup {
+    color: #e0e0e0;
+    --dl-accent: #66d2bd;
+    --dl-accent-strong: #9fe4d6;
+    --dl-accent-soft: rgba(102, 210, 189, 0.18);
+    --dl-button-start: #101716;
+    --dl-button-mid: #1d6b60;
+    --dl-button-end: #a98d55;
+    --dl-button-shadow: rgba(102, 210, 189, 0.18);
+  }
+
+  .dl-glass-tint {
+    background-color: rgba(23, 23, 23, 0.75);
+  }
+
+  .dl-glass-shine {
+    box-shadow:
+      inset 2px 2px 1px 0 rgba(255, 255, 255, 0.1),
+      inset -1px -1px 1px 1px rgba(255, 255, 255, 0.1);
+  }
+
+  .dl-popup .popup-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+
+    .popup-close:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+  }
+
+  .dl-popup .song-brief {
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  .dl-popup .section-label,
+  .dl-popup .level-desc {
+    color: rgba(255, 255, 255, 0.45);
+  }
+
+  .dl-popup .format-tab,
+  .dl-popup .level-item {
+    border-color: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.05);
+
+    &:hover {
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+  }
+
+  .dl-popup .format-tab.active {
+    border-color: var(--dl-accent);
+    background: var(--dl-accent-soft);
+    color: var(--dl-accent-strong);
+  }
+
+  .dl-popup .level-item.selected {
+    border-color: var(--dl-accent);
+    background: var(--dl-accent-soft);
+  }
+
+  .dl-popup .level-radio {
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .dl-popup .level-item.selected .level-radio {
+    border-color: var(--dl-accent);
+  }
+
+  .dl-popup .fail-desc {
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  .dl-popup .btn-secondary {
+    background: rgba(255, 255, 255, 0.12);
+    color: #e0e0e0;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.18);
+    }
+  }
 }
 </style>
