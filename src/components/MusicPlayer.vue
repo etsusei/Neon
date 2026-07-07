@@ -322,6 +322,10 @@ export default {
 
       getSongUrl(this.currentTrack.id).then((res) => {
         if (res.data && res.data.url) {
+          // 网易云登录的非会员播 VIP 歌时拿到的是试听片段，如实提示
+          if (res.data.playInfo && res.data.playInfo.trial) {
+            ElMessage.warning("当前账号非会员，播放 30 秒试听片段");
+          }
           this.audio.src = res.data.url;
           this.skipFailedCount = 0;
           

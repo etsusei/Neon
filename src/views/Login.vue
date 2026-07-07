@@ -32,8 +32,21 @@
       <div class="liquid-glass-content">
         <h1 class="login-title">Neon</h1>
         <p class="login-subtitle">在线音乐播放器</p>
-        
-        <form @submit.prevent="handleLogin" class="login-form">
+
+        <div class="login-mode-switch">
+          <button
+            type="button"
+            :class="{ active: loginMode === 'account' }"
+            @click="switchMode('account')"
+          >账号登录</button>
+          <button
+            type="button"
+            :class="{ active: loginMode === 'netease' }"
+            @click="switchMode('netease')"
+          >网易云登录</button>
+        </div>
+
+        <form v-if="loginMode === 'account'" @submit.prevent="handleLogin" class="login-form">
           <div class="input-group">
             <i class="fa fa-user"></i>
             <input 
@@ -63,6 +76,40 @@
             <span v-else>登录</span>
           </button>
         </form>
+
+        <!-- 网易云扫码登录 -->
+        <div v-else class="netease-login">
+          <template v-if="!showManualCookie">
+            <div class="qr-box">
+              <img v-if="qrImg" :src="qrImg" alt="登录二维码" />
+              <div v-else class="qr-loading"><i class="fa fa-spinner fa-spin"></i></div>
+              <div v-if="qrStatus === 'expired'" class="qr-mask" @click="startNeteaseLogin">
+                <i class="fa fa-refresh"></i>
+                <span>二维码已过期<br/>点击刷新</span>
+              </div>
+              <div v-else-if="qrStatus === 'scanned'" class="qr-mask scanned">
+                <i class="fa fa-check-circle"></i>
+                <span>已扫码<br/>请在手机上确认</span>
+              </div>
+            </div>
+            <p class="qr-hint">{{ qrHint }}</p>
+            <p v-if="neteaseError" class="error-msg">{{ neteaseError }}</p>
+            <a class="manual-toggle" @click="openManualCookie">扫码不可用？手动填入 Cookie</a>
+          </template>
+          <template v-else>
+            <textarea
+              v-model="manualCookie"
+              class="cookie-input"
+              placeholder="粘贴网易云 Cookie（需包含 MUSIC_U=...）"
+              rows="4"
+            ></textarea>
+            <p v-if="neteaseError" class="error-msg">{{ neteaseError }}</p>
+            <button type="button" class="login-btn" :disabled="neteaseLoading" @click="handleManualCookieLogin">
+              {{ neteaseLoading ? '验证中...' : '用 Cookie 登录' }}
+            </button>
+            <a class="manual-toggle" @click="backToQr">返回扫码登录</a>
+          </template>
+        </div>
 
         <div class="admin-entry">
           <a @click="showAdminDialog = true">
@@ -119,6 +166,9 @@
 
 <script>
 import { login } from '../api/userApi'
+import { getQrKey, checkQrStatus, getNeteaseLoginStatus } from '../api/neteaseUserApi'
+import { setNeteaseLogin, isNeteaseLoggedIn } from '../utils/neteaseAuth'
+import QRCode from 'qrcode'
 import BackgroundAnimation from '../components/BackgroundAnimation.vue'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
@@ -147,7 +197,29 @@ export default {
       adminUsername: '',
       adminPassword: '',
       adminLoading: false,
-      adminError: ''
+      adminError: '',
+      // 网易云扫码登录
+      loginMode: 'account',
+      qrImg: '',
+      qrStatus: 'loading', // loading | waiting | scanned | expired | success
+      qrKey: '',
+      pollTimer: null,
+      pollInFlight: false,
+      neteaseError: '',
+      neteaseLoading: false,
+      showManualCookie: false,
+      manualCookie: ''
+    }
+  },
+  computed: {
+    qrHint() {
+      switch (this.qrStatus) {
+        case 'loading': return '二维码加载中...'
+        case 'scanned': return '已扫码，请在手机上确认登录'
+        case 'expired': return '二维码已过期'
+        case 'success': return '登录成功，正在跳转...'
+        default: return '使用网易云音乐 App 扫码登录'
+      }
     }
   },
   methods: {
@@ -202,13 +274,137 @@ export default {
       this.adminPassword = ''
       this.adminError = ''
       this.adminLoading = false
+    },
+    // ========== 网易云扫码登录 ==========
+    switchMode(mode) {
+      if (this.loginMode === mode) return
+      this.loginMode = mode
+      this.neteaseError = ''
+      if (mode === 'netease') {
+        this.showManualCookie = false
+        this.startNeteaseLogin()
+      } else {
+        this.stopPolling()
+      }
+    },
+    async startNeteaseLogin() {
+      this.stopPolling()
+      this.qrImg = ''
+      this.qrStatus = 'loading'
+      this.neteaseError = ''
+      try {
+        const res = await getQrKey()
+        const unikey = res.data?.data?.unikey
+        if (!unikey) throw new Error('no unikey')
+        this.qrKey = unikey
+        this.qrImg = await QRCode.toDataURL(`https://music.163.com/login?codekey=${unikey}`, {
+          width: 200,
+          margin: 1
+        })
+        this.qrStatus = 'waiting'
+        this.pollTimer = setInterval(this.pollQrStatus, 2000)
+      } catch (err) {
+        console.error('QR key error:', err)
+        this.qrStatus = 'expired'
+        this.neteaseError = '获取二维码失败，请点击刷新重试'
+      }
+    },
+    stopPolling() {
+      if (this.pollTimer) {
+        clearInterval(this.pollTimer)
+        this.pollTimer = null
+      }
+      this.pollInFlight = false
+    },
+    async pollQrStatus() {
+      if (this.pollInFlight || !this.qrKey) return
+      this.pollInFlight = true
+      try {
+        const res = await checkQrStatus(this.qrKey)
+        const code = res.data?.code
+        if (code === 800) {
+          this.qrStatus = 'expired'
+          this.stopPolling()
+        } else if (code === 802) {
+          this.qrStatus = 'scanned'
+        } else if (code === 803) {
+          this.stopPolling()
+          this.qrStatus = 'success'
+          await this.finishNeteaseLogin(res.data.cookie)
+        }
+        // 801 等待扫码：保持现状继续轮询
+      } catch (err) {
+        // 单次轮询失败不终止流程，下一轮继续
+        console.error('QR poll error:', err)
+      } finally {
+        this.pollInFlight = false
+      }
+    },
+    // 从 Set-Cookie 拼出的串里剔除 Max-Age/Expires/Path 等属性，只留真正的键值对
+    cleanCookieString(raw) {
+      return String(raw || '')
+        .split(';')
+        .map(s => s.trim())
+        .filter(p => p && p.includes('=') && !/^(Max-Age|Expires|Path|Domain|HTTPOnly|Secure|SameSite)=/i.test(p))
+        .join('; ')
+    },
+    async finishNeteaseLogin(rawCookie) {
+      const cookie = this.cleanCookieString(rawCookie)
+      if (!cookie.includes('MUSIC_U')) {
+        this.qrStatus = 'expired'
+        this.neteaseError = '登录响应缺少凭证（可能被风控拦截），请重试或改用手动 Cookie'
+        return
+      }
+      this.neteaseLoading = true
+      try {
+        const res = await getNeteaseLoginStatus(cookie)
+        const profile = res.data?.data?.profile
+        if (!profile) {
+          this.qrStatus = 'expired'
+          this.neteaseError = '登录态无效或已过期'
+          return
+        }
+        setNeteaseLogin(cookie, {
+          userId: profile.userId,
+          nickname: profile.nickname,
+          avatarUrl: profile.avatarUrl
+        })
+        this.$router.push('/')
+      } catch (err) {
+        console.error('NetEase login status error:', err)
+        this.qrStatus = 'expired'
+        this.neteaseError = '验证登录态失败，请重试'
+      } finally {
+        this.neteaseLoading = false
+      }
+    },
+    openManualCookie() {
+      this.stopPolling()
+      this.showManualCookie = true
+      this.neteaseError = ''
+    },
+    backToQr() {
+      this.showManualCookie = false
+      this.neteaseError = ''
+      this.startNeteaseLogin()
+    },
+    async handleManualCookieLogin() {
+      const cookie = this.cleanCookieString(this.manualCookie)
+      if (!cookie.includes('MUSIC_U')) {
+        this.neteaseError = 'Cookie 中必须包含 MUSIC_U 字段'
+        return
+      }
+      await this.finishNeteaseLogin(cookie)
     }
   },
   mounted() {
-    // 如果已登录，跳转首页
-    if (localStorage.getItem('auth_token')) {
+    // 如果已登录（自建账号或网易云任一），跳转首页
+    if (localStorage.getItem('auth_token') || isNeteaseLoggedIn()) {
       this.$router.push('/')
     }
+  },
+  beforeUnmount() {
+    this.stopPolling()
   }
 }
 </script>
@@ -344,6 +540,134 @@ export default {
   margin: 0;
   text-align: center;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* 登录方式切换 */
+.login-mode-switch {
+  display: flex;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 24px;
+
+  button {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 9px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &.active {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+  }
+}
+
+/* 网易云扫码登录 */
+.netease-login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.qr-box {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: white;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .qr-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: #999;
+    font-size: 28px;
+  }
+
+  .qr-mask {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.75);
+    color: white;
+    text-align: center;
+    font-size: 14px;
+    cursor: pointer;
+
+    i {
+      font-size: 30px;
+    }
+
+    &.scanned {
+      cursor: default;
+
+      i {
+        color: #52c41a;
+      }
+    }
+  }
+}
+
+.qr-hint {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  text-align: center;
+}
+
+.manual-toggle {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 13px;
+  cursor: pointer;
+  transition: color 0.2s;
+
+  &:hover {
+    color: rgba(255, 255, 255, 0.9);
+  }
+}
+
+.cookie-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  font-size: 13px;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  backdrop-filter: blur(10px);
+  resize: vertical;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.6);
+  }
 }
 
 .admin-entry {

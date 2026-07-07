@@ -18,6 +18,11 @@ apiClient.interceptors.request.use(config => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
+  // 网易云登录态：整串 cookie 编码后放自定义头，后端解析后以用户账号调网易接口(严格模式，不再用服务器 VIP Cookie)
+  const neteaseCookie = localStorage.getItem('netease_cookie')
+  if (neteaseCookie && !config.headers['X-Netease-Cookie']) {
+    config.headers['X-Netease-Cookie'] = encodeURIComponent(neteaseCookie)
+  }
   return config
 })
 

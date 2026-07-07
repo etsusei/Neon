@@ -79,7 +79,19 @@ export const getSongUrl = async (id) => {
                 data: {
                     url: response.data.data.url,
                     id: id,
-                    source: response.data.data.source
+                    source: response.data.data.source,
+                    // 网易云登录用户的播放反馈：{ trial, reason, trialStart, trialEnd }
+                    playInfo: response.data.data.playInfo || null
+                }
+            }
+        }
+        // 严格模式下后端会带具体原因(VIP 专属/地区不可播)，透传给播放器提示
+        if (response.data) {
+            return {
+                data: {
+                    url: null,
+                    msg: response.data.msg || '无法获取歌曲链接',
+                    playInfo: response.data.data?.playInfo || null
                 }
             }
         }

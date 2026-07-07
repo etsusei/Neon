@@ -87,7 +87,8 @@ const router = createRouter({
 
 // 路由守卫
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('auth_token')
+  // 自建账号 token 或网易云登录态，二者任一即视为已登录
+  const token = localStorage.getItem('auth_token') || localStorage.getItem('netease_cookie')
 
   // 登录页不需要认证
   if (to.name === 'Login') {

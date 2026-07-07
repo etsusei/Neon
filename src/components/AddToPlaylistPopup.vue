@@ -8,7 +8,12 @@
             <i class="fa fa-times"></i>
           </div>
         </div>
-        
+
+        <div class="popup-source-switch" v-if="hasNetease && hasLocal">
+          <button :class="{ active: source === 'netease' }" @click="switchSource('netease')">网易云</button>
+          <button :class="{ active: source === 'local' }" @click="switchSource('local')">本地</button>
+        </div>
+
         <div class="create-new">
           <input 
             v-model="newPlaylistName" 
@@ -43,6 +48,8 @@
 
 <script>
 import { getMyPlaylists, createPlaylist, addSongToPlaylist } from '../api/userApi'
+import { getNeteaseUserPlaylists, createNeteasePlaylist, addTracksToNeteasePlaylist } from '../api/neteaseUserApi'
+import { isNeteaseLoggedIn, getNeteaseProfile } from '../utils/neteaseAuth'
 import { ElMessage } from 'element-plus/es/components/message'
 import { thumb } from '../utils/imgThumb'
 
@@ -62,20 +69,45 @@ export default {
     return {
       playlists: [],
       newPlaylistName: '',
-      defaultCover: 'https://p2.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg'
+      defaultCover: 'https://p2.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg',
+      // 目标歌单来源：netease=网易云账号歌单，local=自建账号歌单
+      source: 'local',
+      hasNetease: false,
+      hasLocal: false
     }
   },
   watch: {
     show(val) {
       if (val) {
+        this.hasNetease = isNeteaseLoggedIn()
+        this.hasLocal = !!localStorage.getItem('auth_token')
+        this.source = this.hasNetease ? 'netease' : 'local'
         this.loadPlaylists()
       }
     }
   },
   methods: {
     thumb,
+    switchSource(source) {
+      if (this.source === source) return
+      this.source = source
+      this.playlists = []
+      this.loadPlaylists()
+    },
     async loadPlaylists() {
       try {
+        if (this.source === 'netease') {
+          const profile = getNeteaseProfile()
+          if (!profile || !profile.userId) return
+          const res = await getNeteaseUserPlaylists(profile.userId)
+          if (res.data.code === 200) {
+            // 只能往自己创建的歌单里加歌，收藏的歌单不显示
+            this.playlists = (res.data.playlist || [])
+              .filter(p => p.creator && p.creator.userId === profile.userId)
+              .map(p => ({ id: p.id, name: p.name, cover: p.coverImgUrl, song_count: p.trackCount }))
+          }
+          return
+        }
         const res = await getMyPlaylists()
         if (res.data.code === 200) {
           this.playlists = res.data.data
@@ -86,8 +118,19 @@ export default {
     },
     async createAndAdd() {
       if (!this.newPlaylistName.trim()) return
-      
+
       try {
+        if (this.source === 'netease') {
+          const res = await createNeteasePlaylist(this.newPlaylistName.trim())
+          const newId = res.data.playlist?.id || res.data.id
+          if (res.data.code === 200 && newId) {
+            await this.addToPlaylist({ id: newId, name: this.newPlaylistName.trim() })
+            this.newPlaylistName = ''
+          } else {
+            ElMessage.error(res.data.msg || '创建歌单失败')
+          }
+          return
+        }
         // 创建歌单，用歌曲封面作为默认封面
         const res = await createPlaylist(this.newPlaylistName.trim(), this.song.cover)
         if (res.data.code === 200) {
@@ -104,8 +147,20 @@ export default {
         ElMessage.error('歌曲信息不完整')
         return
       }
-      
+
       try {
+        if (this.source === 'netease') {
+          const res = await addTracksToNeteasePlaylist(playlist.id, this.song.id)
+          if (res.data.code === 200 || res.data.body?.code === 200) {
+            ElMessage.success(`已添加到「${playlist.name}」`)
+            this.close()
+          } else if (res.data.code === 502) {
+            ElMessage.warning('歌曲已在该歌单中')
+          } else {
+            ElMessage.error(res.data.msg || res.data.message || '添加失败')
+          }
+          return
+        }
         const res = await addSongToPlaylist(playlist.id, this.song)
         if (res.data.code === 200) {
           ElMessage.success(`已添加到「${playlist.name}」`)
@@ -261,5 +316,31 @@ export default {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.popup-source-switch {
+  display: flex;
+  background: rgba(102, 126, 234, 0.12);
+  border-radius: 10px;
+  padding: 3px;
+  margin-bottom: 12px;
+
+  button {
+    flex: 1;
+    padding: 7px 0;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #666;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+  }
 }
 </style>

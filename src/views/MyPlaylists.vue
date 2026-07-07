@@ -2,7 +2,11 @@
   <div class="my-playlists-container">
     <div class="header">
       <h1>我的歌单</h1>
-      <div class="header-actions">
+      <div class="source-switch" v-if="hasNetease && hasLocal">
+        <button :class="{ active: source === 'netease' }" @click="switchSource('netease')">网易云</button>
+        <button :class="{ active: source === 'local' }" @click="switchSource('local')">本地</button>
+      </div>
+      <div class="header-actions" v-if="source === 'local'">
         <template v-if="selectMode">
           <span class="select-hint">已选 {{ selectedIds.length }} 个</span>
           <button class="cancel-btn" @click="cancelSelect">取消</button>
@@ -84,7 +88,10 @@
           </div>
           <div class="playlist-cover" :style="{ backgroundImage: `url(${thumb(playlist.cover || defaultCover, 300)})` }"></div>
           <div class="playlist-info">
-            <div class="playlist-name">{{ playlist.name }}</div>
+            <div class="playlist-name">
+              {{ playlist.name }}
+              <span class="subscribed-tag" v-if="source === 'netease' && !playlist.isOwn">收藏</span>
+            </div>
             <div class="playlist-count">{{ playlist.song_count }} 首</div>
           </div>
           <div class="playlist-actions" @click.stop v-if="!selectMode">
@@ -103,6 +110,8 @@
 
 <script>
 import { getMyPlaylists, createPlaylist, deletePlaylist, exportPlaylists, importPlaylists } from '../api/userApi'
+import { getNeteaseUserPlaylists, createNeteasePlaylist, deleteNeteasePlaylist, unsubscribeNeteasePlaylist } from '../api/neteaseUserApi'
+import { isNeteaseLoggedIn, getNeteaseProfile } from '../utils/neteaseAuth'
 import { ElMessage } from 'element-plus/es/components/message'
 import { ElMessageBox } from 'element-plus/es/components/message-box'
 import { thumb } from '../utils/imgThumb'
@@ -124,7 +133,11 @@ export default {
       selectMode: false,
       selectedIds: [],
       showImportMenu: false,
-      showNetEaseImport: false
+      showNetEaseImport: false,
+      // 歌单来源：netease=网易云账号歌单，local=自建账号歌单
+      source: 'local',
+      hasNetease: false,
+      hasLocal: false
     }
   },
   computed: {
@@ -134,8 +147,30 @@ export default {
   },
   methods: {
     thumb,
+    switchSource(source) {
+      if (this.source === source) return
+      this.source = source
+      this.playlists = []
+      this.cancelSelect()
+      this.loadPlaylists()
+    },
     async loadPlaylists() {
       try {
+        if (this.source === 'netease') {
+          const profile = getNeteaseProfile()
+          if (!profile || !profile.userId) return
+          const res = await getNeteaseUserPlaylists(profile.userId)
+          if (res.data.code === 200) {
+            this.playlists = (res.data.playlist || []).map(p => ({
+              id: p.id,
+              name: p.name,
+              cover: p.coverImgUrl,
+              song_count: p.trackCount,
+              isOwn: !!(p.creator && p.creator.userId === profile.userId)
+            }))
+          }
+          return
+        }
         const res = await getMyPlaylists()
         if (res.data.code === 200) {
           this.playlists = res.data.data
@@ -146,39 +181,63 @@ export default {
     },
     async createNewPlaylist() {
       if (!this.newPlaylistName.trim()) return
-      
+
       try {
-        const res = await createPlaylist(this.newPlaylistName.trim())
+        const res = this.source === 'netease'
+          ? await createNeteasePlaylist(this.newPlaylistName.trim())
+          : await createPlaylist(this.newPlaylistName.trim())
         if (res.data.code === 200) {
           this.newPlaylistName = ''
           this.loadPlaylists()
           ElMessage.success('创建成功')
+        } else {
+          ElMessage.error(res.data.msg || '创建失败')
         }
       } catch (err) {
         ElMessage.error('创建失败')
       }
     },
     async confirmDelete(playlist) {
+      const isNetease = this.source === 'netease'
+      const isUnsubscribe = isNetease && !playlist.isOwn
       try {
-        await ElMessageBox.confirm(`确定删除歌单 "${playlist.name}"？`, '删除确认', {
-          confirmButtonText: '删除',
-          cancelButtonText: '取消',
-          type: 'warning'
-        })
-        
-        const res = await deletePlaylist(playlist.id)
+        await ElMessageBox.confirm(
+          isUnsubscribe ? `取消收藏歌单 "${playlist.name}"？` : `确定删除歌单 "${playlist.name}"？`,
+          isUnsubscribe ? '取消收藏' : '删除确认',
+          {
+            confirmButtonText: isUnsubscribe ? '取消收藏' : '删除',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }
+        )
+
+        let res
+        if (isUnsubscribe) {
+          res = await unsubscribeNeteasePlaylist(playlist.id)
+        } else if (isNetease) {
+          res = await deleteNeteasePlaylist(playlist.id)
+        } else {
+          res = await deletePlaylist(playlist.id)
+        }
         if (res.data.code === 200) {
           this.loadPlaylists()
-          ElMessage.success('删除成功')
+          ElMessage.success(isUnsubscribe ? '已取消收藏' : '删除成功')
+        } else {
+          ElMessage.error(res.data.msg || '操作失败')
         }
       } catch (err) {
         if (err !== 'cancel') {
-          ElMessage.error('删除失败')
+          ElMessage.error('操作失败')
         }
       }
     },
     goToPlaylist(id) {
-      this.$router.push(`/my-playlists/${id}`)
+      // 网易云歌单复用现有的歌单详情页（走网易接口渲染）
+      if (this.source === 'netease') {
+        this.$router.push(`/listpage/${id}`)
+      } else {
+        this.$router.push(`/my-playlists/${id}`)
+      }
     },
     // 选择模式相关方法
     enterSelectMode() {
@@ -273,6 +332,9 @@ export default {
     }
   },
   mounted() {
+    this.hasNetease = isNeteaseLoggedIn()
+    this.hasLocal = !!localStorage.getItem('auth_token')
+    this.source = this.hasNetease ? 'netease' : 'local'
     this.loadPlaylists()
   }
 }
@@ -295,6 +357,42 @@ export default {
     margin: 0;
     font-size: 24px;
   }
+}
+
+.source-switch {
+  display: flex;
+  background: rgba(102, 126, 234, 0.12);
+  border-radius: 10px;
+  padding: 3px;
+
+  button {
+    padding: 7px 18px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+  }
+}
+
+.subscribed-tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(102, 126, 234, 0.15);
+  color: #667eea;
+  font-size: 11px;
+  font-weight: 500;
+  vertical-align: middle;
 }
 
 .header-actions {

@@ -5,19 +5,25 @@
       <liquid-card custom-class="user-card-glass" :hover-effect="true">
         <div class="user-card-content">
           <div class="avatar-wrapper">
-            <div class="avatar">
-              <i class="fa fa-user"></i>
+            <div
+              class="avatar"
+              :style="neteaseProfile && neteaseProfile.avatarUrl
+                ? { backgroundImage: `url(${neteaseProfile.avatarUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                : {}"
+            >
+              <i v-if="!neteaseProfile || !neteaseProfile.avatarUrl" class="fa fa-user"></i>
             </div>
             <div class="avatar-glow"></div>
           </div>
-          <h2 class="user-name">{{ userInfo.username }}</h2>
-          <p class="user-id">ID: {{ userInfo.id }}</p>
+          <h2 class="user-name">{{ neteaseProfile ? neteaseProfile.nickname : userInfo.username }}</h2>
+          <p class="user-id" v-if="neteaseProfile">网易云 UID: {{ neteaseProfile.userId }}</p>
+          <p class="user-id" v-else>ID: {{ userInfo.id }}</p>
         </div>
       </liquid-card>
     </div>
 
-    <!-- 设置卡片 -->
-    <div class="settings-card-wrapper">
+    <!-- 设置卡片（自建账号才有用户名/密码可改） -->
+    <div class="settings-card-wrapper" v-if="hasLocal">
       <liquid-card custom-class="settings-card-glass">
         <div class="settings-form-content">
           <form @submit.prevent="handleUpdate">
@@ -57,6 +63,7 @@
 <script>
 import LiquidCard from '../components/LiquidCard.vue'
 import { updateProfile } from '../api/userApi'
+import { getNeteaseProfile, clearNeteaseLogin } from '../utils/neteaseAuth'
 import { ElMessage } from 'element-plus/es/components/message'
 
 export default {
@@ -69,7 +76,9 @@ export default {
       newPassword: '',
       loading: false,
       error: '',
-      success: ''
+      success: '',
+      neteaseProfile: null,
+      hasLocal: false
     }
   },
   components: {
@@ -124,18 +133,23 @@ export default {
     handleLogout() {
       localStorage.removeItem('auth_token')
       localStorage.removeItem('user_info')
+      clearNeteaseLogin()
       this.$router.push('/login')
       ElMessage.success('已退出登录')
     }
   },
   async mounted() {
+    this.neteaseProfile = getNeteaseProfile()
+    this.hasLocal = !!localStorage.getItem('auth_token')
+
     // 先从 localStorage 显示，然后从服务器获取最新信息
     const stored = localStorage.getItem('user_info')
     if (stored) {
       this.userInfo = JSON.parse(stored)
     }
-    
-    // 从服务器获取最新用户信息
+
+    // 从服务器获取最新用户信息（仅自建账号）
+    if (!this.hasLocal) return
     try {
       const { getCurrentUser } = await import('../api/userApi')
       const res = await getCurrentUser()
