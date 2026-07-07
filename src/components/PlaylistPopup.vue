@@ -1,4 +1,6 @@
 <template>
+  <!-- teleport 到 body：祖先的 transform/backdrop-filter 会劫持 fixed 定位 -->
+  <teleport to="body">
   <transition name="slide-up">
     <div v-if="show" class="playlist-popup-overlay" @click.self="close">
       <div class="playlist-popup">
@@ -9,7 +11,7 @@
             <i class="fa fa-times"></i>
           </div>
         </div>
-        <div class="popup-content">
+        <div class="popup-content" ref="content">
           <div
             v-for="(track, $index) in tracks"
             :key="$index"
@@ -33,6 +35,7 @@
       </div>
     </div>
   </transition>
+  </teleport>
 </template>
 
 <script>
@@ -78,8 +81,9 @@ export default {
       this.$emit('close');
     },
     scrollToCurrentTrack() {
-      const container = this.$el?.querySelector('.popup-content');
-      const currentItem = this.$el?.querySelector('.popup-item.playing');
+      // teleport 后 $el 是占位注释节点，改用 ref 定位
+      const container = this.$refs.content;
+      const currentItem = container?.querySelector('.popup-item.playing');
       if (container && currentItem) {
         // 计算滚动位置使当前歌曲显示在中间
         const containerHeight = container.clientHeight;

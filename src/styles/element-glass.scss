@@ -1,0 +1,93 @@
+/* Element Plus 弹窗的液态玻璃皮肤：让 ElMessageBox(删除/移除确认等)
+   与 DownloadQualityPopup / AddToPlaylistPopup 的玻璃风格保持一致 */
+
+.el-message-box {
+  --el-messagebox-border-radius: 20px;
+  background: rgba(255, 255, 255, 0.55) !important;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: none !important;
+  border-radius: 20px !important;
+  box-shadow:
+    0 10px 40px rgba(0, 0, 0, 0.25),
+    inset 2px 2px 1px 0 rgba(255, 255, 255, 0.5),
+    inset -1px -1px 1px 1px rgba(255, 255, 255, 0.5) !important;
+
+  .el-message-box__title {
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.85);
+  }
+
+  .el-message-box__message {
+    color: rgba(0, 0, 0, 0.75);
+  }
+
+  .el-message-box__headerbtn .el-message-box__close {
+    color: rgba(0, 0, 0, 0.45);
+  }
+
+  .el-button {
+    border-radius: 10px;
+    border-color: rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 0.5);
+    transition: all 0.2s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.75);
+      color: inherit;
+      border-color: rgba(0, 0, 0, 0.25);
+    }
+  }
+
+  .el-button--primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+
+    &:hover {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      filter: brightness(1.1);
+    }
+  }
+}
+
+/* 暗色模式（body 上的类名，弹窗渲染在 body 下） */
+body.dark-mode-active {
+  .el-message-box {
+    background: rgba(23, 23, 23, 0.75) !important;
+    box-shadow:
+      0 10px 40px rgba(0, 0, 0, 0.45),
+      inset 2px 2px 1px 0 rgba(255, 255, 255, 0.1),
+      inset -1px -1px 1px 1px rgba(255, 255, 255, 0.1) !important;
+
+    .el-message-box__title {
+      color: #e0e0e0;
+    }
+
+    .el-message-box__message {
+      color: rgba(255, 255, 255, 0.75);
+    }
+
+    .el-message-box__headerbtn .el-message-box__close {
+      color: rgba(255, 255, 255, 0.45);
+    }
+
+    .el-button {
+      border-color: rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.08);
+      color: #e0e0e0;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.16);
+        border-color: rgba(255, 255, 255, 0.3);
+      }
+    }
+
+    .el-button--primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      color: white;
+    }
+  }
+}

@@ -1,7 +1,15 @@
 <template>
+  <!-- teleport 到 body：祖先的 transform/backdrop-filter 会劫持 fixed 定位，
+       弹窗会随 hover 状态在"内容区居中"和"视口居中"之间跳动 -->
+  <teleport to="body">
   <transition name="fade">
     <div v-if="show" class="add-to-playlist-overlay" @click.self="close">
-      <div class="add-to-playlist-popup">
+      <div class="atp-popup">
+        <!-- 液态玻璃四层结构，与 DownloadQualityPopup/LiquidCard 保持一致 -->
+        <div class="atp-glass-effect"></div>
+        <div class="atp-glass-tint"></div>
+        <div class="atp-glass-shine"></div>
+        <div class="atp-glass-content">
         <div class="popup-header">
           <span class="popup-title">添加到歌单</span>
           <div class="popup-close" @click="close">
@@ -41,9 +49,11 @@
         <div class="empty-state" v-else>
           <p>还没有歌单，新建一个吧</p>
         </div>
+        </div>
       </div>
     </div>
   </transition>
+  </teleport>
 </template>
 
 <script>
@@ -191,29 +201,71 @@ export default {
   justify-content: center;
 }
 
-.add-to-playlist-popup {
+/* 液态玻璃容器：结构与 DownloadQualityPopup/LiquidCard 一致(effect/tint/shine/content 四层) */
+.atp-popup {
+  position: relative;
+  isolation: isolate;
   width: 320px;
   max-height: 60vh;
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(20px);
-  border-radius: 16px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+  color: rgba(0, 0, 0, 0.85);
+  display: flex;
+}
+
+.atp-glass-effect {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: url(#glass-distortion) blur(24px);
+  -webkit-backdrop-filter: url(#glass-distortion) blur(24px);
+}
+
+.atp-glass-tint {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  pointer-events: none;
+  background-color: rgba(255, 255, 255, 0.45);
+  transition: background-color 0.5s ease;
+}
+
+.atp-glass-shine {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+  box-shadow:
+    inset 2px 2px 1px 0 rgba(255, 255, 255, 0.5),
+    inset -1px -1px 1px 1px rgba(255, 255, 255, 0.5);
+}
+
+.atp-glass-content {
+  position: relative;
+  z-index: 3;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  min-height: 0;
 }
 
 .popup-header {
   display: flex;
   align-items: center;
-  padding: 16px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
   .popup-title {
     font-size: 16px;
     font-weight: 600;
   }
-  
+
   .popup-close {
     margin-left: auto;
     width: 28px;
@@ -223,7 +275,8 @@ export default {
     justify-content: center;
     cursor: pointer;
     border-radius: 50%;
-    
+    transition: background 0.2s;
+
     &:hover {
       background: rgba(0, 0, 0, 0.1);
     }
@@ -234,29 +287,37 @@ export default {
   display: flex;
   gap: 8px;
   padding: 12px 16px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+
   input {
     flex: 1;
+    min-width: 0;
     padding: 10px 12px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 10px;
     font-size: 14px;
-    
+    background: rgba(255, 255, 255, 0.5);
+    color: inherit;
+
+    &::placeholder {
+      color: rgba(0, 0, 0, 0.35);
+    }
+
     &:focus {
       outline: none;
       border-color: #667eea;
+      background: rgba(255, 255, 255, 0.7);
     }
   }
-  
+
   button {
     padding: 10px 16px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
-    
+
     &:disabled {
       opacity: 0.5;
       cursor: not-allowed;
@@ -268,6 +329,7 @@ export default {
   flex: 1;
   overflow-y: auto;
   padding: 8px 0;
+  min-height: 0;
 }
 
 .playlist-option {
@@ -276,9 +338,9 @@ export default {
   padding: 10px 16px;
   cursor: pointer;
   transition: background 0.2s;
-  
+
   &:hover {
-    background: rgba(0, 0, 0, 0.05);
+    background: rgba(0, 0, 0, 0.06);
   }
 }
 
@@ -295,17 +357,18 @@ export default {
   flex: 1;
   margin-left: 12px;
   font-size: 14px;
+  text-align: left;
 }
 
 .playlist-count {
   font-size: 12px;
-  color: #999;
+  color: rgba(0, 0, 0, 0.4);
 }
 
 .empty-state {
   padding: 30px;
   text-align: center;
-  color: #999;
+  color: rgba(0, 0, 0, 0.4);
 }
 
 .fade-enter-active,
@@ -323,7 +386,7 @@ export default {
   background: rgba(102, 126, 234, 0.12);
   border-radius: 10px;
   padding: 3px;
-  margin-bottom: 12px;
+  margin: 12px 16px 0;
 
   button {
     flex: 1;
@@ -331,7 +394,7 @@ export default {
     border: none;
     border-radius: 8px;
     background: transparent;
-    color: #666;
+    color: rgba(0, 0, 0, 0.55);
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
@@ -340,6 +403,68 @@ export default {
     &.active {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
+    }
+  }
+}
+</style>
+
+<!-- 暗色模式覆盖：弹窗 teleport 到 body，取不到 .app-container 上的变量，用 body 上的类名适配 -->
+<style lang="scss">
+body.dark-mode-active {
+  .atp-popup {
+    color: #e0e0e0;
+  }
+
+  .atp-glass-tint {
+    background-color: rgba(23, 23, 23, 0.75);
+  }
+
+  .atp-glass-shine {
+    box-shadow:
+      inset 2px 2px 1px 0 rgba(255, 255, 255, 0.1),
+      inset -1px -1px 1px 1px rgba(255, 255, 255, 0.1);
+  }
+
+  .atp-popup .popup-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+
+    .popup-close:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+  }
+
+  .atp-popup .create-new {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+
+    input {
+      border-color: rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.08);
+      color: #e0e0e0;
+
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.35);
+      }
+    }
+  }
+
+  .atp-popup .playlist-option:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .atp-popup .playlist-count,
+  .atp-popup .empty-state {
+    color: rgba(255, 255, 255, 0.45);
+  }
+
+  .atp-popup .popup-source-switch {
+    background: rgba(255, 255, 255, 0.08);
+
+    button {
+      color: rgba(255, 255, 255, 0.55);
+
+      &.active {
+        color: white;
+      }
     }
   }
 }
