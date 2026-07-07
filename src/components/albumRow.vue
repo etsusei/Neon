@@ -16,10 +16,17 @@
     </div>
     
     <!-- 添加到歌单弹窗 -->
-    <add-to-playlist-popup 
-      :show="showAddPopup" 
+    <add-to-playlist-popup
+      :show="showAddPopup"
       :song="currentSongToAdd"
       @close="showAddPopup = false"
+    />
+
+    <!-- 下载音质选择弹窗 -->
+    <download-quality-popup
+      :show="showDownloadPopup"
+      :song="downloadTarget"
+      @close="showDownloadPopup = false"
     />
   </div>
 </template>
@@ -27,16 +34,20 @@
 <script>
 import {mapMutations} from 'vuex';
 import AddToPlaylistPopup from './AddToPlaylistPopup.vue';
+import DownloadQualityPopup from './DownloadQualityPopup.vue';
 
 export default {
   props:['tracks', 'albumInfo'],
   components: {
-    AddToPlaylistPopup
+    AddToPlaylistPopup,
+    DownloadQualityPopup
   },
   data() {
     return {
       showAddPopup: false,
-      currentSongToAdd: null
+      currentSongToAdd: null,
+      showDownloadPopup: false,
+      downloadTarget: null
     };
   },
   methods:{
@@ -60,24 +71,17 @@ export default {
       };
       this.showAddPopup = true;
     },
-    async download(track) {
+    download(track) {
       // 从 track.ar 或 track.artists 获取艺术家名
-      const artistName = track.ar && track.ar[0] ? track.ar[0].name : 
-                         (track.artists && track.artists[0] ? track.artists[0].name : 'Unknown');
-      const filename = `${track.name} - ${artistName}`;
-      
-      // 使用后端代理下载接口
-      const downloadUrl = `https://neon.zeabur.app/api/music/download?id=${track.id}&name=${encodeURIComponent(filename)}`;
-      
-      
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.src = downloadUrl;
-      document.body.appendChild(iframe);
-      
-      setTimeout(() => {
-        document.body.removeChild(iframe);
-      }, 5000);
+      const artistName = track.ar && track.ar[0] ? track.ar[0].name :
+                         (track.artists && track.artists[0] ? track.artists[0].name : '');
+      // 打开音质选择弹窗，由弹窗完成资源检查和下载
+      this.downloadTarget = {
+        id: track.id,
+        name: track.name,
+        artist: artistName
+      };
+      this.showDownloadPopup = true;
     }
   }
 };

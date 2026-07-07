@@ -40,6 +40,13 @@
       <i class="fa fa-music"></i>
       <p>歌单还是空的</p>
     </div>
+
+    <!-- 下载音质选择弹窗 -->
+    <download-quality-popup
+      :show="showDownloadPopup"
+      :song="downloadTarget"
+      @close="showDownloadPopup = false"
+    />
   </div>
 </template>
 
@@ -49,15 +56,21 @@ import { mapMutations } from 'vuex'
 import { ElMessage } from 'element-plus/es/components/message'
 import { ElMessageBox } from 'element-plus/es/components/message-box'
 import { thumb } from '../utils/imgThumb'
+import DownloadQualityPopup from '../components/DownloadQualityPopup.vue'
 
 export default {
   name: 'MyPlaylistDetail',
   props: ['id'],
+  components: {
+    DownloadQualityPopup
+  },
   data() {
     return {
       playlist: {},
       songs: [],
-      defaultCover: 'https://p2.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg'
+      defaultCover: 'https://p2.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg',
+      showDownloadPopup: false,
+      downloadTarget: null
     }
   },
   methods: {
@@ -129,23 +142,14 @@ export default {
         }
       }
     },
-    async downloadSong(song) {
-      const filename = `${song.song_name} - ${song.artist}`;
-      
-      // 使用后端代理下载接口
-      const downloadUrl = `https://neon.zeabur.app/api/music/download?id=${song.song_id}&name=${encodeURIComponent(filename)}`;
-      
-      
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.src = downloadUrl;
-      document.body.appendChild(iframe);
-      
-      setTimeout(() => {
-        document.body.removeChild(iframe);
-      }, 5000);
-      
-      ElMessage.success('开始下载...');
+    downloadSong(song) {
+      // 打开音质选择弹窗，由弹窗完成资源检查和下载
+      this.downloadTarget = {
+        id: song.song_id,
+        name: song.song_name,
+        artist: song.artist || ''
+      }
+      this.showDownloadPopup = true
     }
   },
   mounted() {

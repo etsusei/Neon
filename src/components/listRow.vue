@@ -45,10 +45,17 @@
     </div>
     
     <!-- 添加到歌单弹窗 -->
-    <add-to-playlist-popup 
-      :show="showAddPopup" 
+    <add-to-playlist-popup
+      :show="showAddPopup"
       :song="currentSongToAdd"
       @close="showAddPopup = false"
+    />
+
+    <!-- 下载音质选择弹窗 -->
+    <download-quality-popup
+      :show="showDownloadPopup"
+      :song="downloadTarget"
+      @close="showDownloadPopup = false"
     />
   </div>
 </template>
@@ -56,17 +63,21 @@
 <script>
 import {mapMutations} from 'vuex';
 import AddToPlaylistPopup from './AddToPlaylistPopup.vue';
+import DownloadQualityPopup from './DownloadQualityPopup.vue';
 import { thumb } from '../utils/imgThumb';
 
 export default {
   props: ["tracks"],
   components: {
-    AddToPlaylistPopup
+    AddToPlaylistPopup,
+    DownloadQualityPopup
   },
   data() {
     return {
       showAddPopup: false,
-      currentSongToAdd: null
+      currentSongToAdd: null,
+      showDownloadPopup: false,
+      downloadTarget: null
     };
   },
   computed: {
@@ -97,24 +108,14 @@ export default {
       };
       this.showAddPopup = true;
     },
-    async download(track) {
-      const artistName = track.ar && track.ar[0] ? track.ar[0].name : 'Unknown';
-      const filename = `${track.name} - ${artistName}`;
-      
-      // 使用后端代理下载接口，直接触发浏览器下载
-      const downloadUrl = `https://neon.zeabur.app/api/music/download?id=${track.id}&name=${encodeURIComponent(filename)}`;
-      
-      
-      // 创建隐藏的 iframe 触发下载，避免页面跳转
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.src = downloadUrl;
-      document.body.appendChild(iframe);
-      
-      // 5秒后移除 iframe
-      setTimeout(() => {
-        document.body.removeChild(iframe);
-      }, 5000);
+    download(track) {
+      // 打开音质选择弹窗，由弹窗完成资源检查和下载
+      this.downloadTarget = {
+        id: track.id,
+        name: track.name,
+        artist: track.ar && track.ar[0] ? track.ar[0].name : ''
+      };
+      this.showDownloadPopup = true;
     }
   }
 };

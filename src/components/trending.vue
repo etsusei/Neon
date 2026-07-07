@@ -48,10 +48,17 @@
     </div>
     
     <!-- 添加到歌单弹窗 -->
-    <add-to-playlist-popup 
-      :show="showAddPopup" 
+    <add-to-playlist-popup
+      :show="showAddPopup"
       :song="currentSongToAdd"
       @close="showAddPopup = false"
+    />
+
+    <!-- 下载音质选择弹窗 -->
+    <download-quality-popup
+      :show="showDownloadPopup"
+      :song="downloadTarget"
+      @close="showDownloadPopup = false"
     />
   </div>
 </template>
@@ -59,6 +66,7 @@
 <script>
 import {mapMutations} from 'vuex';
 import AddToPlaylistPopup from './AddToPlaylistPopup.vue';
+import DownloadQualityPopup from './DownloadQualityPopup.vue';
 import { thumb } from '../utils/imgThumb';
 
 const PAGE_SIZE = 20;
@@ -66,14 +74,17 @@ const PAGE_SIZE = 20;
 export default {
   props:['tracks'],
   components: {
-    AddToPlaylistPopup
+    AddToPlaylistPopup,
+    DownloadQualityPopup
   },
   data() {
     return {
       displayCount: PAGE_SIZE,
       loading: false,
       showAddPopup: false,
-      currentSongToAdd: null
+      currentSongToAdd: null,
+      showDownloadPopup: false,
+      downloadTarget: null
     };
   },
   computed: {
@@ -103,22 +114,14 @@ export default {
       this.toPlay(index);
       this.$store.commit('SetSingleTrackPlayback', false);
     },
-    async download(track) {
-      const artistName = track.ar && track.ar[0] ? track.ar[0].name : 'Unknown';
-      const filename = `${track.name} - ${artistName}`;
-      
-      // 使用后端代理下载接口
-      const downloadUrl = `https://neon.zeabur.app/api/music/download?id=${track.id}&name=${encodeURIComponent(filename)}`;
-      
-      
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.src = downloadUrl;
-      document.body.appendChild(iframe);
-      
-      setTimeout(() => {
-        document.body.removeChild(iframe);
-      }, 5000);
+    download(track) {
+      // 打开音质选择弹窗，由弹窗完成资源检查和下载
+      this.downloadTarget = {
+        id: track.id,
+        name: track.name,
+        artist: track.ar && track.ar[0] ? track.ar[0].name : ''
+      };
+      this.showDownloadPopup = true;
     },
     handleScroll(e) {
       const container = e.target;
