@@ -26,10 +26,28 @@ import router from './router'
 import 'font-awesome/css/font-awesome.css'
 import './css/mobile-player.css'
 import store from './store'
+// PrimeVue：管理后台 UI 框架（组件在各 admin 页面内按需引入）
+// @primeuix 子路径由 vue.config.js 里的 alias 映射到 dist（webpack 4 不支持 exports）
+import PrimeVue from 'primevue/config'
+import ToastService from 'primevue/toastservice'
+import ConfirmationService from 'primevue/confirmationservice'
+import Aura from '@primeuix/themes/aura'
+import 'primeicons/primeicons.css'
 
 createApp(App)
   .use(router)
   .use(store)
+  .use(PrimeVue, {
+    theme: {
+      preset: Aura,
+      options: {
+        // 深色模式由 html 元素上的 .admin-dark class 控制（见 AdminLayout）
+        darkModeSelector: '.admin-dark'
+      }
+    }
+  })
+  .use(ToastService)
+  .use(ConfirmationService)
   .use(ElMenu)
   .use(ElMenuItem)
   .use(ElSubMenu)

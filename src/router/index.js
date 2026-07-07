@@ -51,6 +51,32 @@ const routes = [
     name: 'Search',
     component: () => import('../views/search.vue'),
     props: true,
+  },
+  {
+    path: '/admin',
+    component: () => import('../views/admin/AdminLayout.vue'),
+    meta: { requiresAdmin: true },
+    children: [
+      {
+        path: '',
+        redirect: { name: 'AdminDashboard' }
+      },
+      {
+        path: 'dashboard',
+        name: 'AdminDashboard',
+        component: () => import('../views/admin/AdminDashboard.vue')
+      },
+      {
+        path: 'users',
+        name: 'AdminUsers',
+        component: () => import('../views/admin/AdminUsers.vue')
+      },
+      {
+        path: 'playlists',
+        name: 'AdminPlaylists',
+        component: () => import('../views/admin/AdminPlaylists.vue')
+      }
+    ]
   }
 ]
 
@@ -73,6 +99,21 @@ router.beforeEach((to, from, next) => {
   if (!token) {
     next({ name: 'Login' })
     return
+  }
+
+  // 管理后台需要管理员权限
+  if (to.matched.some(record => record.meta.requiresAdmin)) {
+    let isAdmin = false
+    try {
+      const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}')
+      isAdmin = !!userInfo.is_admin
+    } catch (e) {
+      isAdmin = false
+    }
+    if (!isAdmin) {
+      next({ name: 'Home' })
+      return
+    }
   }
 
   next()
