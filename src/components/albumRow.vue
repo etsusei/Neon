@@ -1,11 +1,14 @@
 <template>
   <div class="album-row-container">
-    <div class="albumRow" v-for="(track, $index) in tracks" :key="$index" @click="play(tracks,$index)">
+    <div class="albumRow" :class="{ 'track-unavailable': isUnavailableSong(track) }" v-for="(track, $index) in tracks" :key="$index" @click="play(tracks,$index)">
       <div class="album-index">
         {{ $index + 1 }}
       </div>
       <div class="album-songname">
-        <div class="album-content">{{ track.name }}</div>
+        <div class="album-content">
+          {{ track.name }}
+          <span class="vip-badge" v-if="isVipSong(track)">VIP</span>
+        </div>
       </div>
       <div class="album-plus-icon" @click.stop="openAddToPlaylist(track)">
         <i class="fa fa-plus"></i>
@@ -35,6 +38,7 @@
 import {mapMutations} from 'vuex';
 import AddToPlaylistPopup from './AddToPlaylistPopup.vue';
 import DownloadQualityPopup from './DownloadQualityPopup.vue';
+import { isVipSong, isUnavailableSong } from '../utils/songBadge';
 
 export default {
   props:['tracks', 'albumInfo'],
@@ -51,6 +55,8 @@ export default {
     };
   },
   methods:{
+    isVipSong,
+    isUnavailableSong,
     ...mapMutations({
       pushToPlayer:'PushTracks',
       toPlay:'RequestTrackPlayback'

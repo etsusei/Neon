@@ -13,6 +13,17 @@ export const getSongsDetailChunk = (idsStr) => {
   return getWithRetry(`song/detail?ids=${idsStr}`)
 }
 
+// song/detail 的 privileges 数组与 songs 平行返回，合并进歌曲对象，
+// 供列表标记 VIP(fee=1)/不可播(st<0)。返回 songs 数组。
+export const mergePrivileges = (data) => {
+  const songs = (data && data.songs) || []
+  const privileges = (data && data.privileges) || []
+  const map = {}
+  privileges.forEach(p => { if (p && p.id != null) map[p.id] = p })
+  songs.forEach(s => { if (s && !s.privilege && map[s.id]) s.privilege = map[s.id] })
+  return songs
+}
+
 /**
  * 分批拉取歌曲详情，避免一个巨型请求在弱网上整体卡死。
  * @param {Array} trackIds  trackIds 数组（每项含 .id），保持原始顺序
@@ -36,8 +47,9 @@ export const getAllSongsBatched = async (trackIds, onBatch, batchSize = 50) => {
       try {
         const result = await getSongsDetailChunk(chunkIds.join(','))
         if (result.data && result.data.code == 200 && Array.isArray(result.data.songs)) {
-          result.data.songs.forEach((song, idx) => { all[start + idx] = song })
-          if (typeof onBatch === 'function') onBatch(result.data.songs, start)
+          const songs = mergePrivileges(result.data)
+          songs.forEach((song, idx) => { all[start + idx] = song })
+          if (typeof onBatch === 'function') onBatch(songs, start)
         }
       } catch (e) {
         console.error(`[API] 歌曲详情第 ${start / batchSize + 1} 批加载失败:`, e)
@@ -131,7 +143,7 @@ export const getSongsDetailBatch = async (songIds) => {
         const idsStr = songIds.join(',');
         const response = await apiClient.get(`song/detail?ids=${idsStr}`);
         if (response.data.songs) {
-            return response.data.songs.map(song => ({
+            return mergePrivileges(response.data).map(song => ({
                 ...song,
                 al: song.al ? { ...song.al, picUrl: thumb(song.al.picUrl, 300) } : song.al
             }));

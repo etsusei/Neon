@@ -36,7 +36,7 @@
 
 <script>
 import listRow from "../components/listRow.vue";
-import { getPlayListInfo, getSongsDetailChunk } from "../api/neteaseApi";
+import { getPlayListInfo, getSongsDetailChunk, mergePrivileges } from "../api/neteaseApi";
 import { thumb } from "../utils/imgThumb";
 
 const BATCH_SIZE = 50;
@@ -92,7 +92,7 @@ export default {
       try {
         const result = await getSongsDetailChunk(idsStr);
         if (result.data && result.data.code == 200 && Array.isArray(result.data.songs)) {
-          this.songlist = this.songlist.concat(result.data.songs);
+          this.songlist = this.songlist.concat(mergePrivileges(result.data));
           this.loadedCount += chunk.length;
           if (this.loadedCount >= this.songs.length) this.noMore = true;
         }

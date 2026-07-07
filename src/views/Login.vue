@@ -331,11 +331,24 @@ export default {
           this.stopPolling()
           this.qrStatus = 'success'
           await this.finishNeteaseLogin(res.data.cookie)
+        } else if (code !== undefined && code !== 801) {
+          // 其他状态码（如 8821 风控）：终止轮询，展示网易返回的真实原因
+          this.stopPolling()
+          this.qrStatus = 'expired'
+          this.neteaseError = `${res.data.message || '登录失败'} (${code})，可尝试手动 Cookie 登录`
         }
         // 801 等待扫码：保持现状继续轮询
       } catch (err) {
-        // 单次轮询失败不终止流程，下一轮继续
-        console.error('QR poll error:', err)
+        // HTTP 错误时响应体里往往有真实状态码，能识别就按上面的逻辑处理
+        const body = err.response?.data
+        if (body && body.code !== undefined && ![800, 801, 802, 803].includes(body.code)) {
+          this.stopPolling()
+          this.qrStatus = 'expired'
+          this.neteaseError = `${body.message || '登录失败'} (${body.code})，可尝试手动 Cookie 登录`
+        } else {
+          // 单次轮询失败不终止流程，下一轮继续
+          console.error('QR poll error:', err)
+        }
       } finally {
         this.pollInFlight = false
       }

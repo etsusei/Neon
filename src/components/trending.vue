@@ -11,13 +11,16 @@
       <div class="head-plus-icon"></div>
       <div class="head-download-icon"></div>
     </div>
-    <div class="listRow" v-for="(track, $index) in displayedTracks" :key="$index" @click="play(tracks,$index)">
+    <div class="listRow" :class="{ 'track-unavailable': isUnavailableSong(track) }" v-for="(track, $index) in displayedTracks" :key="$index" @click="play(tracks,$index)">
       <div
         class="list-album-img"
         :style="{ backgroundImage: `url(${thumb(track.al.picUrl, 100)})` }"
       ></div>
       <div class="list-songname">
-        <div class="list-content">{{ track.name }}</div>
+        <div class="list-content">
+          {{ track.name }}
+          <span class="vip-badge" v-if="isVipSong(track)">VIP</span>
+        </div>
       </div>
       <div class="list-albuminfo">
         <div class="list-content">
@@ -68,6 +71,7 @@ import {mapMutations} from 'vuex';
 import AddToPlaylistPopup from './AddToPlaylistPopup.vue';
 import DownloadQualityPopup from './DownloadQualityPopup.vue';
 import { thumb } from '../utils/imgThumb';
+import { isVipSong, isUnavailableSong } from '../utils/songBadge';
 
 const PAGE_SIZE = 20;
 
@@ -105,6 +109,8 @@ export default {
   },
   methods:{
      thumb,
+     isVipSong,
+     isUnavailableSong,
      ...mapMutations({
       pushToPlayer:'PushTracks',
       toPlay:'RequestTrackPlayback'
