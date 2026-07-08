@@ -98,7 +98,6 @@
 
 <script>
 import { baseUrl, apiClient } from '../api/http'
-import { getSongsDetailChunk } from '../api/neteaseApi'
 import { ElMessage } from 'element-plus/es/components/message'
 
 const LEVEL_LABELS = {
@@ -150,7 +149,7 @@ export default {
       selectedLevel: 'exhigh',
       checking: false,
       failInfo: null,
-      // 各音质挡位是否有资源(song/detail 的 l/m/h/sq/hr 字段)；null 表示未知，不做限制
+      // 各音质挡位是否实际可下载(用 hires 挡位向后端探测一次得出)；null 表示未知，不做限制
       qualityMap: null,
       maxLevel: null
     }
@@ -202,24 +201,40 @@ export default {
       if (!this.song || !this.song.id) return
       const songId = this.song.id
       try {
-        const res = await getSongsDetailChunk(songId)
-        const data = res.data
-        const track = data && data.code === 200 && Array.isArray(data.songs) ? data.songs[0] : null
+        // 用最高挡位(hires)向后端探测一次，actual 即服务器实际能解析到的最高音质。
+        // 不能用 song/detail 的 sq/hr 字段：那只说明资源存在，账号无权限时实际拿不到，
+        // 会出现"显示有 FLAC 但下载时说最高 320k"的不一致。
+        // 后端按 歌曲+挡位 缓存解析结果，用户之后按最高挡位下载时会直接命中。
+        const res = await apiClient.get(`api/music/download/check?id=${songId}&level=hires`)
+        const data = res.data && res.data.data
         // 弹窗可能已经关掉或换了歌，丢弃过期结果
-        if (!track || !this.song || this.song.id !== songId) return
-        this.qualityMap = {
-          standard: !!track.l,
-          higher: !!track.m,
-          exhigh: !!track.h,
-          lossless: !!track.sq,
-          hires: !!track.hr
-        }
-        this.maxLevel = LEVEL_ORDER.find(l => this.qualityMap[l]) || null
+        if (!this.song || this.song.id !== songId) return
+        if (!(res.data.code === 200 && data && data.available)) return
+        const max = this.resolveActualLevel(data.actual)
+        if (!max) return
+        // maxRank 之后(音质更低)的挡位都可下载，之前(音质更高)的都拿不到
+        const maxRank = LEVEL_ORDER.indexOf(max)
+        const map = {}
+        LEVEL_ORDER.forEach((l, i) => { map[l] = i >= maxRank })
+        this.qualityMap = map
+        this.maxLevel = max
         this.ensureSelectable()
       } catch (e) {
-        // 详情拿不到就不展示最高音质，也不限制选择
+        // 探测失败就不展示最高音质，也不限制选择
         console.warn('获取歌曲音质信息失败:', e)
       }
+    },
+    // 把后端返回的实际资源信息归一成挡位：优先用 level 字段，缺失时按格式/码率推断
+    resolveActualLevel(actual) {
+      if (!actual) return null
+      if (actual.level && LEVEL_LABELS[actual.level]) return actual.level
+      if (actual.format === 'flac') return 'lossless'
+      if (actual.format === 'mp3') {
+        if (!actual.br || actual.br >= 300000) return 'exhigh'
+        if (actual.br >= 180000) return 'higher'
+        return 'standard'
+      }
+      return null
     },
     // 当前选中的格式/挡位没有资源时，自动落到可用的最高挡位
     ensureSelectable() {
