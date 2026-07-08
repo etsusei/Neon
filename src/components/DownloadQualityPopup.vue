@@ -201,13 +201,30 @@ export default {
       ElMessage.success('开始下载...')
       this.close()
     },
-    triggerDownload() {
+    async triggerDownload() {
       const filename = this.song.artist
         ? `${this.song.name} - ${this.song.artist}`
         : `${this.song.name}`
-      const downloadUrl = `${baseUrl}api/music/download?id=${this.song.id}&name=${encodeURIComponent(filename)}&level=${this.selectedLevel}`
+      const query = `id=${this.song.id}&level=${this.selectedLevel}`
 
-      // 创建隐藏的 iframe 触发下载，避免页面跳转
+      // 优先直连网易 CDN 下载：音频不经过服务器中转。
+      // 服务器部署在海外时回国带宽极小(几 KB/s)，而网易 CDN 对国内用户是本地网络，
+      // 且返回 access-control-allow-origin: *，可以直接 fetch 成 blob 保存。
+      try {
+        const res = await apiClient.get(`api/music/download/url?${query}`)
+        const data = res.data && res.data.data
+        if (res.data.code === 200 && data && data.url) {
+          const ext = data.format === 'flac' ? 'flac' : 'mp3'
+          await this.saveFromUrl(data.url, `${filename}.${ext}`)
+          ElMessage.success('下载完成')
+          return
+        }
+      } catch (err) {
+        console.warn('直链下载失败，回退服务器代理下载:', err)
+      }
+
+      // 回退：服务器代理下载，用隐藏 iframe 触发，避免页面跳转
+      const downloadUrl = `${baseUrl}api/music/download?${query}&name=${encodeURIComponent(filename)}`
       const iframe = document.createElement('iframe')
       iframe.style.display = 'none'
       iframe.src = downloadUrl
@@ -215,6 +232,19 @@ export default {
       setTimeout(() => {
         document.body.removeChild(iframe)
       }, 8000)
+    },
+    async saveFromUrl(url, filename) {
+      const resp = await fetch(url)
+      if (!resp.ok) throw new Error(`fetch failed: ${resp.status}`)
+      const blob = await resp.blob()
+      const objectUrl = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = objectUrl
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 10000)
     },
     close() {
       this.failInfo = null
