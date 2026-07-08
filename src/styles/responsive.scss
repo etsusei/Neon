@@ -46,7 +46,8 @@
   }
   
   .app-content {
-    padding: 8px 8px 24px 8px;
+    /* 底部同样给固定播放器留空间 */
+    padding: 8px 8px 110px 8px;
   }
   
   .projects-section {

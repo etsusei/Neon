@@ -82,7 +82,9 @@ body {
     min-height: 0;
     box-sizing: border-box;
     /* overflow: hidden; Removed for debug */
-    padding: 16px 24px 24px 0;
+    /* 底部 120px 给固定在底端的播放器(约105px高)留空间——必须放在基础样式里，
+       否则宽屏(>1366px)不命中媒体查询时面板会伸到播放器底下 */
+    padding: 16px 24px 120px 0;
     /* transition: opacity 0.8s ease-in-out; Stacking context fix */
     position: relative;
     position: relative;
