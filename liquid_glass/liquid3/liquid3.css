@@ -1,0 +1,168 @@
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  font-family: "DM Sans", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+/* ============ 测试背景 ============ */
+.bg {
+  position: fixed;
+  inset: 0;
+  background: #101018;
+  overflow: hidden;
+}
+
+.bg-blobs {
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(38% 42% at 22% 28%, #ff5f8f 0%, transparent 70%),
+    radial-gradient(34% 38% at 74% 20%, #22d3ee 0%, transparent 70%),
+    radial-gradient(42% 46% at 68% 76%, #a78bfa 0%, transparent 70%),
+    radial-gradient(30% 34% at 24% 78%, #fbbf24 0%, transparent 70%),
+    radial-gradient(24% 28% at 50% 50%, #34d399 0%, transparent 70%);
+  filter: saturate(1.2);
+}
+
+.bg-grid {
+  position: absolute;
+  top: 6%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: repeat(8, 64px);
+  gap: 18px;
+  font-size: 42px;
+  text-align: center;
+  user-select: none;
+}
+
+.bg-text {
+  position: absolute;
+  left: 50%;
+  top: 34%;
+  transform: translateX(-50%);
+  width: min(860px, 88vw);
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+
+  h1 {
+    font-size: 44px;
+    letter-spacing: 1px;
+    margin: 0 0 14px;
+  }
+
+  p {
+    font-size: 17px;
+    line-height: 1.8;
+    margin: 0 0 18px;
+  }
+}
+
+.bg-stripes {
+  height: 60px;
+  margin: 10px 0 18px;
+  border-radius: 10px;
+  background: repeating-linear-gradient(
+    90deg,
+    #fff 0 10px, #111 10px 20px,
+    #f43f5e 20px 30px, #111 30px 40px,
+    #38bdf8 40px 50px, #111 50px 60px
+  );
+}
+
+/* ============ 玻璃面板 ============ */
+.glass {
+  position: fixed;
+  left: 50%;
+  top: 58%;
+  width: 360px;
+  height: 220px;
+  border-radius: 40px;
+  cursor: grab;
+  touch-action: none;
+  /* backdrop-filter 由 JS 挂上（url(#lg3)），这里给非 Chromium 的降级 */
+  backdrop-filter: blur(6px) saturate(1.2);
+  -webkit-backdrop-filter: blur(6px) saturate(1.2);
+  background: rgba(255, 255, 255, var(--tint-alpha, 0.08));
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.35),
+    inset 1.5px 1.5px 1px rgba(255, 255, 255, 0.35),
+    inset -1px -1px 1px rgba(255, 255, 255, 0.22);
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  z-index: 10;
+}
+
+.glass:active { cursor: grabbing; }
+
+.glass.show-map {
+  /* 调试：直接把位移贴图铺在面板上看 */
+  background-image: var(--map-url);
+  background-size: 100% 100%;
+}
+
+.glass-label {
+  padding: 14px 22px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+/* ============ 调试贴图预览 ============ */
+.debug-maps[hidden] { display: none; }
+
+.debug-maps {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  display: flex;
+  gap: 12px;
+  z-index: 20;
+
+  figure {
+    margin: 0;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.55);
+    border-radius: 10px;
+    color: #ccc;
+    font-size: 11px;
+    text-align: center;
+  }
+
+  img {
+    display: block;
+    width: 160px;
+    border-radius: 6px;
+    background:
+      repeating-conic-gradient(#333 0 25%, #444 0 50%) 0 0 / 16px 16px;
+    margin-bottom: 6px;
+  }
+}
+
+.browser-warn {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 18px;
+  background: rgba(200, 60, 60, 0.92);
+  color: #fff;
+  border-radius: 10px;
+  font-size: 13px;
+  z-index: 50;
+}
+
+.filter-defs {
+  position: fixed;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}

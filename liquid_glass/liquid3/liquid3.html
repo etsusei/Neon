@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Liquid Glass v3 — 物理折射位移贴图实验</title>
+<link rel="stylesheet" href="liquid3.css">
+</head>
+<body>
+  <!-- 测试背景：高对比、多细节，便于观察折射/色差/高光 -->
+  <div class="bg">
+    <div class="bg-blobs"></div>
+    <div class="bg-grid">
+      <span>🌊</span><span>🔮</span><span>🍀</span><span>🌸</span><span>⚡</span><span>🎵</span><span>🪩</span><span>🧊</span>
+      <span>🌈</span><span>🚀</span><span>🎧</span><span>💿</span><span>🫧</span><span>🌙</span><span>☀️</span><span>🔥</span>
+    </div>
+    <div class="bg-text">
+      <h1>Liquid Glass Refraction</h1>
+      <p>The quick brown fox jumps over the lazy dog — 0123456789 — 苹果液态玻璃：边缘透镜折射，中心保持清晰。
+      Lensing bends background content near the bezel while the center stays undistorted.
+      把玻璃拖到文字、表情、色块交界处观察边缘的弯曲、色散与高光。</p>
+      <div class="bg-stripes"></div>
+      <p>Snell's law: n₁·sin(θ₁) = n₂·sin(θ₂). Air (n=1.0) → Glass (n≈1.5).
+      Displacement map: R = X-offset, G = Y-offset, 128 = neutral.
+      Convex squircle profile: y = ⁴√(1 − (1−x)⁴) keeps gradients smooth when stretched.</p>
+    </div>
+  </div>
+
+  <!-- 玻璃面板（可拖动） -->
+  <div class="glass" id="glass">
+    <div class="glass-label">Liquid Glass v3</div>
+  </div>
+
+  <!-- 位移贴图 / 高光贴图调试预览 -->
+  <div class="debug-maps" id="debugMaps" hidden>
+    <figure><img id="debugDisp" alt="displacement map"><figcaption>位移贴图 (R=X G=Y)</figcaption></figure>
+    <figure><img id="debugSpec" alt="specular map"><figcaption>高光贴图</figcaption></figure>
+  </div>
+
+  <!-- 非 Chromium 提示 -->
+  <div class="browser-warn" id="browserWarn" hidden>
+    ⚠️ backdrop-filter: url(#svg) 目前只有 Chromium(Chrome/Edge) 支持，本页在当前浏览器只能看到降级效果
+  </div>
+
+  <!-- SVG 滤镜（管线由 JS 动态生成） -->
+  <svg class="filter-defs" aria-hidden="true">
+    <defs>
+      <filter id="lg3" x="0" y="0" width="1" height="1"
+              filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"></filter>
+    </defs>
+  </svg>
+
+  <script type="module" src="liquid3.js"></script>
+</body>
+</html>
