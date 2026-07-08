@@ -114,12 +114,12 @@ export default {
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
         this.gl.uniform1f(this.widthHandle, window.innerWidth);
         this.gl.uniform1f(this.heightHandle, window.innerHeight);
-        
-        // 即使在暂停状态下，也要渲染一帧以更新画面，避免黑屏
-        if (this.isPaused) {
-          this.gl.uniform1f(this.timeHandle, this.time);
-          this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
-        }
+
+        // 设置 canvas.width/height 会立即清空画布缓冲(露出黑底)，而 rAF 循环
+        // 限速 30fps，拖动窗口时清空(约60Hz)比重绘快，页面会黑帧狂闪——
+        // 所以不论是否暂停，resize 后都必须同步补画一帧
+        this.gl.uniform1f(this.timeHandle, this.time);
+        this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
       }
     },
     compileShader(shaderSource, shaderType) {

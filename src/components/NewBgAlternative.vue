@@ -484,8 +484,9 @@ export default {
       this.renderer.setSize(rw, rh, false);
       this.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
 
-      // Even while paused, render once so resize updates the frame.
-      if (this.isPaused && this.renderer && this.scene && this.camera) {
+      // setSize 会清空绘制缓冲，必须立即补画一帧（无论是否暂停），
+      // 否则窗口拖动期间会露出黑底来回闪
+      if (this.renderer && this.scene && this.camera) {
         this.renderer.render(this.scene, this.camera);
       }
     }
