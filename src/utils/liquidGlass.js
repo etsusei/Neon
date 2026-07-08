@@ -76,26 +76,34 @@ function makeSDF(w, h, r) {
   }
 }
 
-// 位移贴图
+// 位移贴图。
+// 性能：内部按降采样分辨率生成(位移场是平滑渐变，feImage 拉伸无损观感)，
+// 大面板的生成成本从 ~70 万像素降到 ~20 万以内
+const MAP_MAX_DIM = 480
+
 function renderDisplacementMap(w, h, r, opts) {
+  const q = Math.min(1, MAP_MAX_DIM / Math.max(w, h))
+  const mw = Math.max(2, Math.round(w * q))
+  const mh = Math.max(2, Math.round(h * q))
+
   const lut = buildMagnitudeLUT(opts)
   let maxMag = 0
   for (let i = 0; i < LUT_SIZE; i++) maxMag = Math.max(maxMag, Math.abs(lut[i]))
   maxMag = maxMag || 1
-  const sdf = makeSDF(w, h, r)
+  const sdf = makeSDF(mw, mh, r * q)
   const sign = opts.invert ? -1 : 1
-  const bezel = opts.bezelWidth
+  const bezel = opts.bezelWidth * q
 
   const canvas = document.createElement('canvas')
-  canvas.width = w
-  canvas.height = h
+  canvas.width = mw
+  canvas.height = mh
   const ctx = canvas.getContext('2d')
-  const img = ctx.createImageData(w, h)
+  const img = ctx.createImageData(mw, mh)
   const data = img.data
 
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      const i = (y * w + x) * 4
+  for (let y = 0; y < mh; y++) {
+    for (let x = 0; x < mw; x++) {
+      const i = (y * mw + x) * 4
       const d = -sdf(x + 0.5, y + 0.5)
       let rx = 0, ry = 0
 
@@ -192,11 +200,14 @@ const CHANNEL_MATRIX = {
   B: '0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0',
 }
 
+// 大面积元素自动关闭色差：滤镜链从 3 次位移采样降到 1 次（滚动性能的大头），
+// 大面板上色差本来就几乎不可见，小弹窗/按钮保留完整效果
+const CA_AREA_LIMIT = 200000 // px²
+
 function buildFilter(id, w, h, r, opts) {
   const { url: mapUrl, maxMag } = renderDisplacementMap(w, h, r, opts)
-  const specUrl = renderSpecularMap(w, h, r, opts)
   const scalePx = maxMag * opts.strength
-  const ca = opts.chromaticAberration
+  const ca = w * h > CA_AREA_LIMIT ? 0 : opts.chromaticAberration
 
   const filter = fe('filter', {
     id, x: 0, y: 0, width: w, height: h,
@@ -225,9 +236,8 @@ function buildFilter(id, w, h, r, opts) {
   }
 
   filter.appendChild(fe('feGaussianBlur', { in: 'refracted', stdDeviation: opts.frost, result: 'frosted' }))
-  filter.appendChild(fe('feColorMatrix', { in: 'frosted', type: 'saturate', values: opts.saturation, result: 'satd' }))
-  filter.appendChild(fe('feImage', { href: specUrl, x: 0, y: 0, width: w, height: h, result: 'spec' }))
-  filter.appendChild(fe('feBlend', { in: 'spec', in2: 'satd', mode: 'screen' }))
+  filter.appendChild(fe('feColorMatrix', { in: 'frosted', type: 'saturate', values: opts.saturation }))
+  // 高光不进滤镜链：作为 effect 层的 CSS 背景图一次合成，滚动时零开销
   return filter
 }
 
@@ -243,7 +253,13 @@ function acquireFilter(w, h, r, opts) {
   let entry = filterCache.get(key)
   if (!entry) {
     const id = `lqg-${++uidCounter}`
-    entry = { id, refs: 0, el: buildFilter(id, w, h, r, opts), key }
+    entry = {
+      id,
+      refs: 0,
+      el: buildFilter(id, w, h, r, opts),
+      specUrl: renderSpecularMap(w, h, r, opts),
+      key,
+    }
     defsEl.appendChild(entry.el)
     filterCache.set(key, entry)
   }
@@ -296,6 +312,9 @@ export function attachLiquidGlass(el, options = {}) {
     currentKey = key
     el.style.backdropFilter = `url(#${entry.id})`
     el.style.webkitBackdropFilter = `url(#${entry.id})`
+    // 高光作为本层背景图（画在滤镜结果之上），不占滤镜链的每帧开销
+    el.style.backgroundImage = `url(${entry.specUrl})`
+    el.style.backgroundSize = '100% 100%'
   }
 
   // 尺寸变化防抖重建：拖动窗口过程中不反复生成贴图
