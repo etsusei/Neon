@@ -128,7 +128,8 @@ export default {
     // 懒加载：每次只拉下一批 BATCH_SIZE 首；滚动接近底部时再拉下一批。
     // 既避免巨型请求在弱网整体卡死（分批），又避免进页面就全拉（懒加载）。
     async loadNextBatch() {
-      if (this.loading || this.noMore) return;
+      // songs 未就绪时（歌单详情还没返回）哨兵可能已被 observer 触发
+      if (this.loading || this.noMore || !this.songs) return;
       const chunk = this.songs.slice(this.loadedCount, this.loadedCount + BATCH_SIZE);
       if (chunk.length === 0) { this.noMore = true; return; }
       this.loading = true;

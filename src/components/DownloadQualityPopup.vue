@@ -4,7 +4,7 @@
       <div v-if="show" class="dl-overlay" @click.self="close">
         <div class="dl-popup">
           <!-- 液态玻璃三层结构，与 LiquidCard 保持一致 -->
-          <div class="dl-glass-effect"></div>
+          <div class="dl-glass-effect" v-liquid-glass></div>
           <div class="dl-glass-tint"></div>
           <div class="dl-glass-shine"></div>
           <div class="dl-glass-content">

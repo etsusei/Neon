@@ -26,7 +26,7 @@
     
     <!-- Liquid Glass 登录框 -->
     <div class="liquid-glass-wrapper">
-      <div class="liquid-glass-effect"></div>
+      <div class="liquid-glass-effect" v-liquid-glass></div>
       <div class="liquid-glass-tint"></div>
       <div class="liquid-glass-shine"></div>
       <div class="liquid-glass-content">

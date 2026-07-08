@@ -5,7 +5,7 @@
     <div v-if="show" class="playlist-popup-overlay" @click.self="close">
       <div class="playlist-popup">
         <!-- 液态玻璃四层结构，与其他弹窗保持一致 -->
-        <div class="pp-glass-effect"></div>
+        <div class="pp-glass-effect" v-liquid-glass></div>
         <div class="pp-glass-tint"></div>
         <div class="pp-glass-shine"></div>
         <div class="pp-glass-content">

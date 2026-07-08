@@ -1,6 +1,6 @@
 <template>
   <div class="liquid-card" :class="customClass" :style="containerStyle" @click="$emit('click', $event)">
-    <div class="liquid-card-effect" :style="effectStyle"></div>
+    <div class="liquid-card-effect" :style="effectStyle" v-liquid-glass="{ disabled: noDistortion }"></div>
     <div class="liquid-card-tint" :style="tintStyle"></div>
     <div class="liquid-card-shine" :style="shineStyle"></div>
     <div class="liquid-card-content">
@@ -10,6 +10,8 @@
 </template>
 
 <script>
+import { isLiquidGlassSupported } from '../utils/liquidGlass';
+
 export default {
   name: 'LiquidCard',
   props: {
@@ -52,7 +54,9 @@ export default {
       };
     },
     effectStyle() {
-      if (this.noDistortion) {
+      // 物理折射引擎(v-liquid-glass 指令)可用时由它设置 backdrop-filter；
+      // 这里只在引擎不可用(非 Chromium)时输出旧的噪声滤镜作降级
+      if (this.noDistortion || isLiquidGlassSupported()) {
         return {
           borderRadius: this.borderRadius
         };

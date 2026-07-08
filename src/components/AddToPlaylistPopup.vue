@@ -6,7 +6,7 @@
     <div v-if="show" class="add-to-playlist-overlay" @click.self="close">
       <div class="atp-popup">
         <!-- 液态玻璃四层结构，与 DownloadQualityPopup/LiquidCard 保持一致 -->
-        <div class="atp-glass-effect"></div>
+        <div class="atp-glass-effect" v-liquid-glass></div>
         <div class="atp-glass-tint"></div>
         <div class="atp-glass-shine"></div>
         <div class="atp-glass-content">

@@ -28,6 +28,7 @@ import './css/mobile-player.css'
 import store from './store'
 // PrimeVue：管理后台 UI 框架（组件在各 admin 页面内按需引入）
 // @primeuix 子路径由 vue.config.js 里的 alias 映射到 dist（webpack 4 不支持 exports）
+import { liquidGlassDirective } from './utils/liquidGlass'
 import PrimeVue from 'primevue/config'
 import ToastService from 'primevue/toastservice'
 import ConfirmationService from 'primevue/confirmationservice'
@@ -54,4 +55,5 @@ createApp(App)
   .use(ElTabs)
   .use(ElTabPane)
   .use(ElIcon)
+  .directive('liquid-glass', liquidGlassDirective)
   .mount('#app')
