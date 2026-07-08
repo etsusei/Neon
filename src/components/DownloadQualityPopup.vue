@@ -94,6 +94,26 @@
       </div>
     </transition>
   </teleport>
+
+  <!-- 直链下载进度：fetch 流式读取时浏览器下载栏不显示进度，自己画一个，弹窗关闭后仍常驻右下角 -->
+  <teleport to="body">
+    <div class="dl-progress-stack" v-if="activeDownloads.length">
+      <div v-for="d in activeDownloads" :key="d.key" class="dl-progress-item">
+        <div class="dl-progress-name" :title="d.filename">
+          <i class="fa" :class="d.done ? 'fa-check-circle' : 'fa-download'"></i>
+          <span>{{ d.filename }}</span>
+        </div>
+        <div class="dl-progress-bar">
+          <div
+            class="dl-progress-fill"
+            :class="{ indeterminate: d.percent == null && !d.done }"
+            :style="{ width: (d.done ? 100 : (d.percent == null ? 100 : d.percent)) + '%' }"
+          ></div>
+        </div>
+        <div class="dl-progress-meta">{{ d.metaText }}</div>
+      </div>
+    </div>
+  </teleport>
 </template>
 
 <script>
@@ -114,6 +134,15 @@ const FORMAT_LEVELS = {
   mp3: ['standard', 'higher', 'exhigh'],
   flac: ['lossless', 'hires']
 }
+
+const formatBytes = (n) => {
+  if (typeof n !== 'number' || !isFinite(n)) return ''
+  if (n >= 1048576) return (n / 1048576).toFixed(1) + ' MB'
+  if (n >= 1024) return Math.round(n / 1024) + ' KB'
+  return n + ' B'
+}
+
+let downloadKeySeq = 0
 
 export default {
   name: 'DownloadQualityPopup',
@@ -151,7 +180,9 @@ export default {
       failInfo: null,
       // 各音质挡位是否实际可下载(用 hires 挡位向后端探测一次得出)；null 表示未知，不做限制
       qualityMap: null,
-      maxLevel: null
+      maxLevel: null,
+      // 进行中的直链下载，驱动右下角进度条
+      activeDownloads: []
     }
   },
   computed: {
@@ -307,7 +338,6 @@ export default {
         if (res.data.code === 200 && data && data.url) {
           const ext = data.format === 'flac' ? 'flac' : 'mp3'
           await this.saveFromUrl(data.url, `${filename}.${ext}`)
-          ElMessage.success('下载完成')
           return
         }
       } catch (err) {
@@ -324,18 +354,65 @@ export default {
         document.body.removeChild(iframe)
       }, 8000)
     },
+    // 流式拉取并显示进度：网易 CDN 带 access-control-expose-headers: *，content-length 可读
     async saveFromUrl(url, filename) {
-      const resp = await fetch(url)
-      if (!resp.ok) throw new Error(`fetch failed: ${resp.status}`)
-      const blob = await resp.blob()
-      const objectUrl = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = objectUrl
-      a.download = filename
-      document.body.appendChild(a)
-      a.click()
-      a.remove()
-      setTimeout(() => URL.revokeObjectURL(objectUrl), 10000)
+      const entry = {
+        key: ++downloadKeySeq,
+        filename,
+        percent: null,
+        metaText: '连接中...',
+        done: false
+      }
+      this.activeDownloads.push(entry)
+      const removeEntry = (delay = 0) => {
+        setTimeout(() => {
+          const i = this.activeDownloads.indexOf(entry)
+          if (i !== -1) this.activeDownloads.splice(i, 1)
+        }, delay)
+      }
+
+      try {
+        const resp = await fetch(url)
+        if (!resp.ok) throw new Error(`fetch failed: ${resp.status}`)
+
+        const total = Number(resp.headers.get('content-length')) || 0
+        const reader = resp.body.getReader()
+        const chunks = []
+        let received = 0
+        for (;;) {
+          const { done, value } = await reader.read()
+          if (done) break
+          chunks.push(value)
+          received += value.length
+          if (total) {
+            entry.percent = Math.min(100, Math.round((received / total) * 100))
+            entry.metaText = `${formatBytes(received)} / ${formatBytes(total)}`
+          } else {
+            entry.metaText = formatBytes(received)
+          }
+        }
+
+        const blob = new Blob(chunks, {
+          type: filename.endsWith('.flac') ? 'audio/flac' : 'audio/mpeg'
+        })
+        const objectUrl = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = objectUrl
+        a.download = filename
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 10000)
+
+        entry.done = true
+        entry.percent = 100
+        entry.metaText = `已完成 · ${formatBytes(received)}`
+        removeEntry(3000)
+      } catch (err) {
+        // 失败就撤掉进度条，由调用方回退到服务器代理下载
+        removeEntry()
+        throw err
+      }
     },
     close() {
       this.failInfo = null
@@ -705,6 +782,110 @@ export default {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+</style>
+
+<!-- 下载进度条 teleport 到 body，不能用 scoped -->
+<style lang="scss">
+.dl-progress-stack {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 280px;
+  max-width: calc(100vw - 32px);
+}
+
+.dl-progress-item {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.dl-progress-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 7px;
+
+  i {
+    color: #1f6f64;
+    flex-shrink: 0;
+  }
+
+  span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.dl-progress-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.dl-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #1f6f64, #b49a62);
+  transition: width 0.25s ease;
+
+  // 拿不到 content-length 时的不确定态：滚动光带
+  &.indeterminate {
+    background: linear-gradient(90deg, rgba(31, 111, 100, 0.25), #1f6f64, rgba(31, 111, 100, 0.25));
+    background-size: 200% 100%;
+    animation: dl-indeterminate 1.2s linear infinite;
+  }
+}
+
+@keyframes dl-indeterminate {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+.dl-progress-meta {
+  margin-top: 5px;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode-active {
+  .dl-progress-item {
+    background: rgba(30, 30, 30, 0.92);
+    color: #e0e0e0;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+  }
+
+  .dl-progress-name i {
+    color: #66d2bd;
+  }
+
+  .dl-progress-bar {
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .dl-progress-fill {
+    background: linear-gradient(90deg, #1d6b60, #a98d55);
+
+    &.indeterminate {
+      background: linear-gradient(90deg, rgba(102, 210, 189, 0.2), #66d2bd, rgba(102, 210, 189, 0.2));
+      background-size: 200% 100%;
+    }
+  }
+
+  .dl-progress-meta {
+    color: rgba(255, 255, 255, 0.45);
+  }
 }
 </style>
 
