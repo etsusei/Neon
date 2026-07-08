@@ -20,6 +20,11 @@
             <span>{{ song.name }}<template v-if="song.artist"> - {{ song.artist }}</template></span>
           </div>
 
+          <div class="max-quality-tip" v-if="maxLevelLabel">
+            <i class="fa fa-signal"></i>
+            <span>本曲最高音质：{{ maxLevelLabel }}</span>
+          </div>
+
           <!-- 选择质量和格式 -->
           <div v-if="!failInfo" class="select-section">
             <div class="section-label">格式</div>
@@ -28,7 +33,7 @@
                 v-for="f in formats"
                 :key="f.key"
                 class="format-tab"
-                :class="{ active: selectedFormat === f.key }"
+                :class="{ active: selectedFormat === f.key, unavailable: !isFormatAvailable(f.key) }"
                 @click="switchFormat(f.key)"
               >{{ f.label }}</div>
             </div>
@@ -39,13 +44,16 @@
                 v-for="opt in currentLevels"
                 :key="opt.level"
                 class="level-item"
-                :class="{ selected: selectedLevel === opt.level }"
-                @click="selectedLevel = opt.level"
+                :class="{ selected: selectedLevel === opt.level, unavailable: !isLevelAvailable(opt.level) }"
+                @click="selectLevel(opt)"
               >
                 <div class="level-radio"><span v-if="selectedLevel === opt.level"></span></div>
                 <div class="level-info">
-                  <div class="level-name">{{ opt.name }}</div>
-                  <div class="level-desc">{{ opt.desc }}</div>
+                  <div class="level-name">
+                    {{ opt.name }}
+                    <span v-if="opt.level === maxLevel" class="max-badge">最高</span>
+                  </div>
+                  <div class="level-desc">{{ isLevelAvailable(opt.level) ? opt.desc : '该歌曲无此音质资源' }}</div>
                 </div>
               </div>
             </div>
@@ -90,6 +98,7 @@
 
 <script>
 import { baseUrl, apiClient } from '../api/http'
+import { getSongsDetailChunk } from '../api/neteaseApi'
 import { ElMessage } from 'element-plus/es/components/message'
 
 const LEVEL_LABELS = {
@@ -98,6 +107,13 @@ const LEVEL_LABELS = {
   exhigh: 'MP3 极高 320kbps',
   lossless: 'FLAC 无损',
   hires: 'FLAC Hi-Res'
+}
+
+// 音质从高到低，用于找最高可下挡位
+const LEVEL_ORDER = ['hires', 'lossless', 'exhigh', 'higher', 'standard']
+const FORMAT_LEVELS = {
+  mp3: ['standard', 'higher', 'exhigh'],
+  flac: ['lossless', 'hires']
 }
 
 export default {
@@ -133,12 +149,18 @@ export default {
       selectedFormat: 'mp3',
       selectedLevel: 'exhigh',
       checking: false,
-      failInfo: null
+      failInfo: null,
+      // 各音质挡位是否有资源(song/detail 的 l/m/h/sq/hr 字段)；null 表示未知，不做限制
+      qualityMap: null,
+      maxLevel: null
     }
   },
   computed: {
     currentLevels() {
       return this.levelsByFormat[this.selectedFormat] || []
+    },
+    maxLevelLabel() {
+      return this.maxLevel ? LEVEL_LABELS[this.maxLevel] : null
     },
     requestedLabel() {
       return LEVEL_LABELS[this.selectedLevel] || this.selectedLevel
@@ -160,14 +182,68 @@ export default {
       if (val) {
         this.failInfo = null
         this.checking = false
+        this.fetchQuality()
       }
     }
   },
   methods: {
+    isLevelAvailable(level) {
+      // 详情还没拿到(或拿失败)时不做限制，保持原有流程
+      if (!this.qualityMap) return true
+      return !!this.qualityMap[level]
+    },
+    isFormatAvailable(key) {
+      if (!this.qualityMap) return true
+      return (FORMAT_LEVELS[key] || []).some(l => this.qualityMap[l])
+    },
+    async fetchQuality() {
+      this.qualityMap = null
+      this.maxLevel = null
+      if (!this.song || !this.song.id) return
+      const songId = this.song.id
+      try {
+        const res = await getSongsDetailChunk(songId)
+        const data = res.data
+        const track = data && data.code === 200 && Array.isArray(data.songs) ? data.songs[0] : null
+        // 弹窗可能已经关掉或换了歌，丢弃过期结果
+        if (!track || !this.song || this.song.id !== songId) return
+        this.qualityMap = {
+          standard: !!track.l,
+          higher: !!track.m,
+          exhigh: !!track.h,
+          lossless: !!track.sq,
+          hires: !!track.hr
+        }
+        this.maxLevel = LEVEL_ORDER.find(l => this.qualityMap[l]) || null
+        this.ensureSelectable()
+      } catch (e) {
+        // 详情拿不到就不展示最高音质，也不限制选择
+        console.warn('获取歌曲音质信息失败:', e)
+      }
+    },
+    // 当前选中的格式/挡位没有资源时，自动落到可用的最高挡位
+    ensureSelectable() {
+      if (!this.qualityMap) return
+      if (!this.isFormatAvailable(this.selectedFormat)) {
+        const other = this.selectedFormat === 'mp3' ? 'flac' : 'mp3'
+        if (this.isFormatAvailable(other)) this.selectedFormat = other
+      }
+      if (!this.isLevelAvailable(this.selectedLevel)) {
+        const best = LEVEL_ORDER.find(
+          l => (FORMAT_LEVELS[this.selectedFormat] || []).includes(l) && this.qualityMap[l]
+        )
+        if (best) this.selectedLevel = best
+      }
+    },
+    selectLevel(opt) {
+      if (!this.isLevelAvailable(opt.level)) return
+      this.selectedLevel = opt.level
+    },
     switchFormat(key) {
-      if (this.selectedFormat === key) return
+      if (this.selectedFormat === key || !this.isFormatAvailable(key)) return
       this.selectedFormat = key
       this.selectedLevel = key === 'flac' ? 'lossless' : 'exhigh'
+      this.ensureSelectable()
     },
     async confirmDownload() {
       if (!this.song || this.checking) return
@@ -373,6 +449,22 @@ export default {
   }
 }
 
+.max-quality-tip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 20px 0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--dl-accent-soft);
+  font-size: 12px;
+  color: var(--dl-accent-strong);
+
+  i {
+    font-size: 11px;
+  }
+}
+
 .select-section {
   padding: 12px 20px 20px;
 }
@@ -409,6 +501,15 @@ export default {
     color: var(--dl-accent-strong);
     font-weight: 600;
   }
+
+  &.unavailable {
+    opacity: 0.4;
+    cursor: not-allowed;
+
+    &:hover {
+      border-color: rgba(0, 0, 0, 0.12);
+    }
+  }
 }
 
 .level-list {
@@ -435,6 +536,28 @@ export default {
     border-color: var(--dl-accent);
     background: var(--dl-accent-soft);
   }
+
+  &.unavailable {
+    opacity: 0.4;
+    cursor: not-allowed;
+
+    &:hover {
+      border-color: rgba(0, 0, 0, 0.12);
+    }
+  }
+}
+
+.max-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.5;
+  vertical-align: 1px;
+  background: var(--dl-accent-soft);
+  color: var(--dl-accent-strong);
 }
 
 .level-radio {
@@ -619,6 +742,11 @@ body.dark-mode-active {
     &:hover {
       border-color: rgba(255, 255, 255, 0.3);
     }
+  }
+
+  .dl-popup .format-tab.unavailable:hover,
+  .dl-popup .level-item.unavailable:hover {
+    border-color: rgba(255, 255, 255, 0.15);
   }
 
   .dl-popup .format-tab.active {
