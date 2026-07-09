@@ -112,13 +112,19 @@ export default {
 <style scoped>
 .app-background-layer {
   position: fixed;
-  inset: 0;
+  /* 向四周出血：iOS PWA 冷启动首帧布局视口会算小/偏移（划一下才恢复），
+     背景多铺出安全区+余量，黑边期间露出的也是背景色而不是 body 的黑底 */
+  top: calc(-1 * env(safe-area-inset-top, 0px) - 80px);
+  bottom: calc(-1 * env(safe-area-inset-bottom, 0px) - 120px);
+  left: -20px;
+  right: -20px;
   overflow: hidden;
   z-index: -2;
 }
 
 .app-background-layer__idle {
-  position: fixed;
+  /* absolute 跟随出血后的父级（fixed 会重新相对视口定位，失去出血效果） */
+  position: absolute;
   inset: 0;
   overflow: hidden;
   z-index: -2;

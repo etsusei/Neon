@@ -71,29 +71,38 @@
   }
 }
 
-// Phone layout
+// Phone layout（iOS PWA 风格：底部 Tab Bar + 迷你播放条）
 @media screen and (max-width: 520px) {
-  .app-header {
-    flex-direction: column;
-    gap: 12px;
-    padding: 12px;
+  .app-container {
+    height: 100vh;
+    height: 100dvh; // 移动端动态视口，规避地址栏收缩造成的空隙
   }
-  
+
+  .app-header {
+    padding: 12px;
+    // PWA 全屏（black-translucent）时内容顶到状态栏下面，让出安全区
+    padding-top: calc(12px + env(safe-area-inset-top));
+
+    .fa-music {
+      display: none;
+    }
+  }
+
   .app-header-left {
     width: 100%;
     justify-content: space-between;
   }
-  
+
   .app-header-right {
     width: 100%;
     justify-content: flex-end;
-    display: none;
+    display: none; // 隐藏用户头像/暗色开关，入口在底部导航 Settings
   }
-  
+
   .app-name {
     display: none;
   }
-  
+
   .profile-btn {
     padding-left: 8px;
     border-left: 1px solid #ddd;
@@ -101,30 +110,52 @@
       display: none;
     }
   }
-  
+
   .search-wrapper {
-    max-width: calc(100% - 80px);
+    display: none; // 顶部搜索隐藏，搜索页内自带搜索框
   }
-  
+
+  /* 显示移动端底部导航 */
+  .mobile-bottom-nav {
+    display: flex;
+  }
+
+  /* 内容区：为 迷你播放条(56px) + Tab Bar(49px+安全区) 留空间 */
+  .app-content {
+    flex-direction: column;
+    padding: 0 8px;
+    padding-bottom: calc(120px + env(safe-area-inset-bottom));
+  }
+
   .projects-section {
-    padding: 16px 12px;
-    border-radius: 20px;
-    height: calc(100vh - 200px);
+    padding: 0;
+    border-radius: 24px;
+    flex: 1;
+    margin: 0;
+    width: 100%;
+    min-height: 0;
+
+    .projects-section-content {
+      padding: 16px 12px 0 12px;
+      /* iOS 惯性滚动 + 明确竖向手势，页面唯一的滚动容器 */
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
+    }
   }
-  
+
   .projects-section-header {
     margin-bottom: 16px;
-    
+
     p {
       font-size: 20px;
       line-height: 28px;
     }
-    
+
     .time {
       font-size: 16px;
     }
   }
-  
+
   .project-boxes {
     overflow-y: visible;
   }

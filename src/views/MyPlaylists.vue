@@ -636,4 +636,77 @@ export default {
     font-size: 16px;
   }
 }
+
+/* Mobile Optimization: 歌单库双列网格 */
+@media screen and (max-width: 520px) {
+  .my-playlists-container {
+    padding: 8px 4px 24px 4px;
+  }
+
+  .playlists-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .playlist-item {
+    margin-bottom: 0;
+  }
+
+  .playlist-content-wrapper {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px;
+    height: auto;
+  }
+
+  .playlist-cover {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .playlist-info {
+    margin-left: 0;
+    width: 100%;
+    text-align: left;
+  }
+
+  .playlist-name {
+    font-size: 14px;
+    line-height: 1.3;
+    margin-bottom: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .playlist-count {
+    font-size: 12px;
+    color: #888;
+  }
+
+  .header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .header h1 {
+    font-size: 20px;
+  }
+
+  .header-actions button {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  /* 网格卡片上隐藏删除按钮，保持简洁（长按/桌面端管理） */
+  .playlist-actions {
+    display: none;
+  }
+}
 </style>

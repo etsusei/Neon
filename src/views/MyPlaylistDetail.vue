@@ -317,4 +317,95 @@ export default {
     margin-bottom: 16px;
   }
 }
+
+/* Mobile Optimization: 歌单详情竖排 + iOS 风格歌曲列表 */
+@media screen and (max-width: 520px) {
+  .playlist-detail-container {
+    padding: 0 4px 24px 4px;
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-top: 12px;
+    margin-bottom: 24px;
+    width: 100%;
+  }
+
+  /* 底部导航自带 Back，页内返回按钮隐藏 */
+  .back-btn {
+    display: none;
+  }
+
+  .playlist-header-info {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  .playlist-cover {
+    width: 220px;
+    height: 220px;
+    margin: 0 auto 20px auto;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  }
+
+  .playlist-meta {
+    margin-left: 0;
+    margin-bottom: 16px;
+    width: 100%;
+  }
+
+  .playlist-meta h1 {
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+
+  .play-all-btn {
+    margin: 0 auto;
+  }
+
+  /* Song List Mobile */
+  .song-index {
+    display: none;
+  }
+
+  .song-item {
+    padding: 12px 0;
+    border-bottom: 0.5px solid rgba(0, 0, 0, 0.05);
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .song-cover {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    margin-right: 14px;
+  }
+
+  .song-info {
+    overflow: hidden;
+  }
+
+  .song-name {
+    font-size: 16px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+
+  .song-actions {
+    flex-shrink: 0;
+  }
+}
 </style>

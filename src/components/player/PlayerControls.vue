@@ -2,20 +2,20 @@
   <div class="player-controls">
     <div class="track-control">
       <div class="track-control_row">
-        <div class="track-control_icon" @click="$emit('add-to-playlist')" title="添加到歌单">
+        <div class="track-control_icon btn-heart" @click="$emit('add-to-playlist')" title="添加到歌单">
           <i class="fa fa-heart"></i>
         </div>
-        <div class="track-control_icon" @click="$emit('prev-track')">
+        <div class="track-control_icon btn-prev" @click="$emit('prev-track')">
           <i class="fa fa-backward"></i>
         </div>
         <div class="track-control_iconPlay" @click="$emit('play')">
           <i class="fa fa-pause-circle-o" v-if="isPlaying"></i>
           <i class="fa fa-play-circle-o" v-else></i>
         </div>
-        <div class="track-control_icon" @click="$emit('next-track')">
+        <div class="track-control_icon btn-next" @click="$emit('next-track')">
           <i class="fa fa-forward"></i>
         </div>
-        <div class="track-control_icon" @click="$emit('toggle-play-mode')" :title="playModeTitle">
+        <div class="track-control_icon btn-mode" @click="$emit('toggle-play-mode')" :title="playModeTitle">
           <i class="fa fa-repeat" v-if="playMode === 'sequence'"></i>
           <i class="fa fa-random" v-else-if="playMode === 'shuffle'"></i>
           <i class="fa fa-repeat" style="color: #f6002e;" v-else></i>

@@ -150,6 +150,12 @@ export default {
     }
   },
   mounted(){
+    // 移动端不做卡片内滚动（iOS 嵌套滚动不可靠），一次性渲染全部，
+    // 数据本来就是全量拉回后本地 slice 的，放开只影响 DOM 数量
+    if (window.innerWidth <= 520) {
+      this.trendingDisplayCount = Number.MAX_SAFE_INTEGER;
+      this.rankingDisplayCount = Number.MAX_SAFE_INTEGER;
+    }
     this.getTrend();
     this.getRankList();
   }
@@ -164,7 +170,8 @@ h1 {
   border-radius: 32px;
 }
 .home-warpper {
-  width: 1480px;
+  width: 100%;
+  max-width: 1480px;
   display: flex;
   flex-direction: column;
 }
@@ -361,10 +368,33 @@ h1 {
     font-size: 20px;
     padding: 8px 0;
   }
-  
+
+  /* 取消卡片内滚动：高度自适应，整页由 projects-section-content 单一滚动 */
   .list-card {
-    max-height: 300px;
+    height: auto;
+    max-height: none;
     border-radius: 16px;
+  }
+
+  .trending-row,
+  .ranking-row {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    gap: 0;
+    padding: 8px 12px;
+  }
+
+  /* iOS 列表行：收紧行距，分隔线代替空隙 */
+  .cover-warpper {
+    height: auto;
+    margin: 0;
+    padding: 8px 0;
+    border-bottom: 0.5px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .cover-warpper:last-of-type {
+    border-bottom: none;
   }
 }
 </style>

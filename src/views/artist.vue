@@ -72,7 +72,8 @@ export default {
 
 <style lang="scss">
 .artist-wrapper {
-  width: 1480px;
+  width: 100%;
+  max-width: 1480px;
   height: 100%;
   //height: 600px;
   display: flex;
@@ -158,5 +159,41 @@ div#pane-1 {
   border-radius: 0 0 10px 10px;
   border-right-color: none;
   border-left-color: none;
+}
+
+/* Mobile Optimization: 歌手页竖排布局 */
+@media screen and (max-width: 520px) {
+  .artist-wrapper {
+    width: 100%;
+    padding: 0 0 24px 0;
+    height: auto;
+    border-radius: 0;
+  }
+
+  .artist-section {
+    height: auto;
+    padding: 20px 0;
+  }
+
+  .artist-imgTop {
+    width: 200px;
+    height: 200px;
+    margin: 20px auto 20px auto;
+    border-radius: 50%;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  }
+
+  .artist-name {
+    font-size: 24px;
+    text-align: center;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .el-tabs--border-card > .el-tabs__header {
+    margin-top: 0;
+    background: transparent;
+    border-radius: 0;
+  }
 }
 </style>

@@ -63,9 +63,9 @@
     <div
       class="app-content"
       :style="{
-        opacity: isImmersiveMode ? 0 : 1,
+        opacity: (isImmersiveMode || isPlayerExpanded) ? 0 : 1,
         transition: 'opacity 0.5s ease',
-        pointerEvents: isImmersiveMode ? 'none' : 'auto'
+        pointerEvents: (isImmersiveMode || isPlayerExpanded) ? 'none' : 'auto'
       }"
     >
       <div class="app-sidebar">
@@ -119,6 +119,8 @@
     </div>
 
     <music-player />
+    <!-- 移动端底部导航（桌面端由 CSS 隐藏） -->
+    <bottom-nav class="mobile-bottom-nav" />
   </div>
 </template>
 
@@ -126,13 +128,15 @@
 import MusicPlayer from './MusicPlayer.vue';
 import LyricDisplay from './LyricDisplay.vue';
 import LiquidCard from './LiquidCard.vue';
+import BottomNav from './BottomNav.vue';
 
 export default {
   name: 'AppMainLayout',
   components: {
     MusicPlayer,
     LyricDisplay,
-    LiquidCard
+    LiquidCard,
+    BottomNav
   },
   props: {
     isImmersiveMode: {
@@ -157,6 +161,11 @@ export default {
     return {
       search: ''
     };
+  },
+  computed: {
+    isPlayerExpanded() {
+      return this.$store.state.isPlayerExpanded;
+    }
   },
   methods: {
     searchClick() {

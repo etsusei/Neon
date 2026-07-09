@@ -159,49 +159,67 @@ export default {
   grid-column: 1 / -1;
 }
 
-// 移动端响应式样式 - 使用行列表显示
-@media screen and (max-width: 768px) {
+/* Mobile Optimization: 封面网格转 iOS 风格列表 */
+@media screen and (max-width: 520px) {
   .list-search-container {
     display: flex;
     flex-direction: column;
-    flex-wrap: nowrap;
+    gap: 0;
+    padding: 0;
+    overflow-x: hidden;
   }
-  
+
   .cover-warpper {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-start;
-    align-items: center;
-    height: 60px;
+    display: grid;
+    grid-template-columns: 50px 1fr;
+    grid-template-rows: auto;
+    gap: 0 12px;
+    padding: 8px 12px;
     width: 100%;
-    margin: 5px 0;
-    padding: 5px 10px;
-    border-radius: 10px;
-    transition: all 0.3s ease-in-out;
+    height: auto;
+    align-items: center;
+    border-bottom: 0.5px solid rgba(0, 0, 0, 0.05);
+    margin: 0;
+    background-color: transparent !important;
   }
-  
+
   .cover-warpper:hover {
-    background-color: rgba(210, 210, 210, 0.4);
+    background-color: transparent;
   }
-  
-  .cover {
+
+  .cover-warpper > a {
+    display: block;
     width: 50px;
     height: 50px;
+    grid-column: 1;
+  }
+
+  .cover {
+    width: 100% !important;
+    height: 100% !important;
+    aspect-ratio: 1;
     border-radius: 8px;
     margin: 0;
-    flex-shrink: 0;
   }
-  
+
   .cover:hover img {
     transform: none;
   }
-  
+
   .name {
-    flex: 1;
-    padding-left: 12px;
-    font-size: 14px;
+    grid-column: 2;
     text-align: left;
-    max-width: none;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
+    line-height: normal;
   }
 }
 </style>

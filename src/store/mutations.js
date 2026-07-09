@@ -90,6 +90,9 @@ const mutations = {
     [types.ToggleDarkMode](state) {
         state.isDarkMode = !state.isDarkMode;
     },
+    [types.SetIsPlayerExpanded](state, isExpanded) {
+        state.isPlayerExpanded = isExpanded;
+    },
 
     // Legacy aliases.
     [types.GetIndex]: requestTrackPlayback,

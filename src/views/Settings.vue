@@ -53,6 +53,26 @@
       </liquid-card>
     </div>
 
+    <!-- 外观：深色模式（移动端顶栏开关被隐藏，这里是手机上的唯一入口） -->
+    <div class="settings-card-wrapper">
+      <liquid-card custom-class="settings-card-glass">
+        <div class="settings-form-content">
+          <div class="form-row toggle-row">
+            <label>深色模式</label>
+            <button
+              type="button"
+              class="btn-toggle-dark"
+              :class="{ active: isDarkMode }"
+              @click="toggleDarkMode"
+            >
+              <i class="fa" :class="isDarkMode ? 'fa-sun-o' : 'fa-moon-o'"></i>
+              {{ isDarkMode ? '已开启' : '已关闭' }}
+            </button>
+          </div>
+        </div>
+      </liquid-card>
+    </div>
+
     <!-- 退出登录 -->
     <button class="btn-logout" @click="handleLogout">
       <i class="fa fa-sign-out"></i> 退出登录
@@ -84,7 +104,18 @@ export default {
   components: {
     LiquidCard
   },
+  computed: {
+    isDarkMode() {
+      return this.$store.state.isDarkMode
+    }
+  },
   methods: {
+    toggleDarkMode() {
+      // 与 App.vue 顶栏开关保持同一套持久化逻辑
+      this.$store.commit('ToggleDarkMode')
+      localStorage.setItem('neon_dark_mode', this.isDarkMode ? '1' : '0')
+      document.body.classList.toggle('dark-mode-active', this.isDarkMode)
+    },
     async handleUpdate() {
       this.error = ''
       this.success = ''
@@ -357,4 +388,38 @@ export default {
     box-shadow: 0 0 15px rgba(255, 77, 79, 0.4);
   }
 }
+
+/* 深色模式开关行 */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.btn-toggle-dark {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.08);
+  color: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &.active {
+    background: #1f1c2e;
+    color: #fff;
+  }
+}
+
+/* 移动端：为底部导航和迷你播放条留出空间 */
+@media screen and (max-width: 520px) {
+  .settings-page {
+    padding-bottom: 24px;
+  }
+}
+
 </style>

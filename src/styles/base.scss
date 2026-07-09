@@ -69,3 +69,16 @@ a {
     filter: grayscale(1);
   }
 }
+
+/* iOS PWA（从主屏启动的 standalone 模式）：
+   冷启动首帧 100vh/100dvh 可能按缩小的视口计算，用 fill-available 兜底 */
+@media all and (display-mode: standalone) {
+  html {
+    height: -webkit-fill-available;
+  }
+
+  body {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+}

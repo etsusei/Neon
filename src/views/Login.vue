@@ -424,11 +424,15 @@ export default {
 
 <style lang="scss" scoped>
 .login-container {
-  min-height: 100vh;
+  /* 固定定位铺满整屏（含 iOS 安全区），避免 PWA 下出现空隙 */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
   overflow: hidden;
   background: transparent;
   z-index: 0;

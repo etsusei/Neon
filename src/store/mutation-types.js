@@ -15,6 +15,7 @@ export const SetAudioIntensity = "SetAudioIntensity";
 export const ToggleImmersiveMode = "ToggleImmersiveMode";
 export const SetLyricDarkMode = "SetLyricDarkMode";
 export const ToggleDarkMode = "ToggleDarkMode";
+export const SetIsPlayerExpanded = "SetIsPlayerExpanded";
 
 // Legacy mutation names kept as aliases during the store naming migration.
 export const GetIndex = "GetIndex";

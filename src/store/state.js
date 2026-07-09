@@ -19,7 +19,9 @@ const state = {
     audioIntensity: 0.0,
     isImmersiveMode: false,
     lyricDarkMode: false,
-    isDarkMode: false
+    isDarkMode: false,
+    isPlayerExpanded: false // 移动端播放器是否展开为全屏
+
 }
 
 export default state;

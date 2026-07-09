@@ -156,4 +156,57 @@ export default {
 a {
   color: black;
 }
+
+/* Mobile Optimization: iOS 风格行列表 */
+@media screen and (max-width: 520px) {
+  .album-index {
+    display: none;
+  }
+
+  .albumRow {
+    padding: 12px 0;
+    height: auto;
+    border-bottom: 0.5px solid rgba(0, 0, 0, 0.05);
+    border-radius: 0;
+    background-color: transparent !important;
+  }
+
+  .albumRow:hover {
+    background-color: transparent;
+  }
+
+  .album-songname {
+    border: none;
+    margin: 0;
+    width: 100%;
+    height: auto;
+    justify-content: flex-start;
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+
+  .album-content {
+    margin: 0;
+    text-align: left;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 16px;
+  }
+
+  .album-plus-icon {
+    margin: 0 4px 0 auto;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .album-download-icon {
+    display: none;
+  }
+}
 </style>

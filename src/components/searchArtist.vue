@@ -152,4 +152,64 @@ export default {
   color: #999;
   grid-column: 1 / -1;
 }
+
+/* Mobile Optimization: 封面网格转 iOS 风格列表 */
+@media screen and (max-width: 520px) {
+  .artist-search-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  .cover-warpper {
+    display: grid;
+    grid-template-columns: 50px 1fr;
+    grid-template-rows: auto;
+    gap: 0 12px;
+    padding: 8px 12px;
+    width: 100%;
+    height: auto;
+    align-items: center;
+    border-bottom: 0.5px solid rgba(0, 0, 0, 0.05);
+    margin: 0;
+    background-color: transparent !important;
+  }
+
+  .cover-warpper:hover {
+    background-color: transparent;
+  }
+
+  .cover-warpper > a {
+    display: block;
+    width: 50px;
+    height: 50px;
+    grid-column: 1;
+  }
+
+  .cover {
+    width: 100% !important;
+    height: 100% !important;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    margin: 0;
+  }
+
+  .name {
+    grid-column: 2;
+    text-align: left;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
+    line-height: normal;
+  }
+}
 </style>

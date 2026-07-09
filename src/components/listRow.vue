@@ -302,4 +302,110 @@ export default {
   margin-right: 20px;
   width: 20px;
 }
+
+/* Mobile Optimization: iOS 风格行列表 */
+@media screen and (max-width: 520px) {
+  .head-listRow {
+    display: none;
+  }
+
+  .listRow {
+    display: grid;
+    grid-template-columns: 50px 1fr auto auto;
+    grid-template-rows: auto auto;
+    gap: 0 12px;
+    padding: 8px 0;
+    width: 100%;
+    align-items: center;
+    border-bottom: 0.5px solid rgba(0, 0, 0, 0.05);
+    background-color: transparent !important;
+  }
+
+  .listRow:hover {
+    background-color: transparent;
+  }
+
+  .list-album-img {
+    grid-row: 1 / 3;
+    grid-column: 1;
+    width: 50px;
+    height: 50px;
+    margin: 0;
+    padding: 0;
+    border-radius: 8px;
+  }
+
+  .list-songname {
+    grid-row: 1;
+    grid-column: 2;
+    border: none;
+    margin: 0;
+    width: 100%;
+    height: auto;
+    justify-content: flex-start;
+    align-items: flex-end;
+    padding-bottom: 2px;
+  }
+
+  .list-songname .list-content {
+    font-size: 15px;
+    text-align: left;
+    margin: 0;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .list-artist {
+    grid-row: 2;
+    grid-column: 2;
+    width: 100%;
+    height: auto;
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+
+  .list-artist .list-content .link {
+    font-size: 12px;
+    color: #888;
+    text-decoration: none !important;
+    margin: 0;
+    text-align: left;
+    display: block;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .list-artist .list-content {
+    margin: 0;
+    width: 100%;
+  }
+
+  .list-albuminfo {
+    display: none;
+  }
+
+  .plus-icon {
+    grid-row: 1 / 3;
+    grid-column: 3;
+    margin: 0 4px;
+    width: 30px;
+    height: 30px;
+  }
+
+  .trash-icon {
+    grid-row: 1 / 3;
+    grid-column: 4;
+    margin: 0 4px;
+    width: 30px;
+    height: 30px;
+  }
+
+  .download-icon {
+    display: none;
+  }
+}
 </style>

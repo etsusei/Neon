@@ -184,7 +184,8 @@ export default {
 
 <style lang="scss">
 .album-wrapper {
-  width: 1480px;
+  width: 100%;
+  max-width: 1480px;
   //height: 600px;
   display: flex;
   flex-direction: column;
@@ -294,5 +295,70 @@ export default {
   border-radius: 32px;
   top: 0;
   filter: blur(30px);
+}
+
+/* Mobile Optimization: 详情页头部竖排 + 大封面居中 */
+@media screen and (max-width: 520px) {
+  .album-wrapper {
+    width: 100%;
+    padding: 0 0 24px 0;
+    height: auto;
+    border-radius: 0;
+  }
+
+  .info-section {
+    flex-direction: column;
+    align-items: center;
+    height: auto;
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+
+  .img-cover {
+    width: 220px;
+    height: 220px;
+    margin: 0 auto 20px auto;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  }
+
+  .info-right {
+    margin: 0;
+    align-items: center;
+    width: 100%;
+  }
+
+  .album-name {
+    font-size: 24px;
+    text-align: center;
+    margin-bottom: 8px;
+    width: 100%;
+    word-break: break-all;
+  }
+
+  .artist-info {
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+
+  .details {
+    width: 100%;
+    height: auto;
+    max-height: 80px;
+    margin-top: 0;
+    background: transparent;
+    padding: 0 10px;
+  }
+
+  .details p {
+    margin: 0;
+    text-align: center;
+    color: var(--text-secondary, #666);
+    font-size: 13px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 }
 </style>

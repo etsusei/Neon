@@ -152,6 +152,11 @@ body {
   }
 }
 
+/* 移动端底部导航：桌面/平板默认隐藏，520px 以下由 responsive.scss 显示 */
+.mobile-bottom-nav {
+  display: none;
+}
+
 .search-wrapper {
   border-radius: 20px;
   width: 100%;

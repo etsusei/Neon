@@ -1,139 +1,510 @@
 /* Mobile Responsive Styles for MusicPlayer */
 
-/* 平板设备及以下 (768px) */
+/* 展开态附属元素仅在手机断点显示（防止拉宽窗口时裸露） */
+.collapse-btn,
+.expanded-queue-btn {
+  display: none;
+}
+
+/* 平板设备及以下 (768px)：全宽底部播放器微调 */
 @media screen and (max-width: 768px) {
   .musicplayer {
     min-width: unset !important;
     width: 100% !important;
     padding: 0 12px !important;
   }
-  
+
   .album-info {
     padding: 0 0 0 12px !important;
   }
-  
+
   .volume-control {
     padding: 0 12px 0 0 !important;
   }
 }
 
-/* 手机设备 (520px及以下) */  
+/*
+ * 手机设备 (520px 及以下)：Apple Music 风格
+ * 迷你条（悬浮于底部 Tab Bar 之上）+ 点击展开全屏播放器
+ * 断点须与 MusicPlayer.vue togglePlayer 的 520 判断保持一致
+ */
 @media screen and (max-width: 520px) {
+
+  /* === RESET & LAYOUT CLEANUP === */
+  .player-controls,
+  .track-control,
+  .track-control_row,
+  .musicplayer-middle {
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* 迷你条：悬浮在 Tab Bar（约 49px + 安全区）上方 */
   .playerwarper {
-    height: 90px !important;
+    width: 100%;
+    position: fixed;
+    bottom: calc(52px + constant(safe-area-inset-bottom));
+    bottom: calc(52px + env(safe-area-inset-bottom));
+    left: 0;
+    right: 0;
+    z-index: 950; /* Above BottomNav (900) */
+    padding: 0 10px !important;
+    height: 56px !important;
+    overflow: visible !important;
+    transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1);
   }
-  
+
+  /* === EXPANDED STATE === */
+  .playerwarper.is-expanded {
+    bottom: 0 !important;
+    top: calc(env(safe-area-inset-top) + 48px) !important;
+    height: auto !important;
+    width: 100% !important;
+    padding: 0 !important;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    overflow: visible !important;
+  }
+
   .musicplayer {
-    height: 60px !important;
-    border-top-left-radius: 20px !important;
-    border-top-right-radius: 20px !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding: 0 !important;
+    /* 组件 scoped 样式里是 32px 的 longhand，必须用 !important 压住，
+       否则迷你条外框和玻璃卡片会出现两种弧度 */
+    border-radius: 12px !important;
+    overflow: hidden;
   }
-  
+
+  .playerwarper.is-expanded .musicplayer {
+    min-height: 100% !important;
+    display: flex;
+    flex-direction: column;
+    background: transparent !important;
+    overflow: visible !important;
+    border-radius: 0 !important;
+  }
+
+  /* 展开态隐藏玻璃卡的 tint/shine 叠层，避免深色底被冲成灰紫 */
+  .playerwarper.is-expanded .liquid-card-tint,
+  .playerwarper.is-expanded .liquid-card-shine {
+    display: none !important;
+  }
+
+  /* 液态玻璃卡片：迷你条为亮色圆角矩形 */
+  .player-liquid-glass {
+    height: 100%;
+    border-radius: 12px !important;
+    backdrop-filter: blur(40px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
+    background-color: rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.4s ease;
+  }
+
+  body.dark-mode-active .playerwarper:not(.is-expanded) .player-liquid-glass {
+    background-color: rgba(23, 23, 23, 0.6) !important;
+  }
+
+  /* 展开态：深色全屏背景 */
+  .playerwarper.is-expanded .player-liquid-glass {
+    border-radius: 0 !important;
+    background-color: #1f1c2e !important;
+    border: none;
+  }
+
+  body.dark-mode-active .playerwarper.is-expanded .player-liquid-glass {
+    background-color: #171717 !important;
+  }
+
+  /* 迷你条内容布局 */
+  .musicplayer-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between !important;
+    height: 100%;
+    padding: 0 16px;
+    width: 100%;
+    position: relative;
+  }
+
+  .playerwarper.is-expanded .musicplayer-content {
+    flex-direction: column;
+    justify-content: space-between !important;
+    align-items: center;
+    padding: 20px 24px calc(100px + env(safe-area-inset-bottom));
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* === LEFT SECTION: Cover + Name === */
   .musicplayer-left {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    margin-right: 12px;
     position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    height: auto !important;
   }
-  
+
+  .playerwarper.is-expanded .musicplayer-left {
+    flex-direction: column;
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
+    margin-right: 0;
+    margin-bottom: 10px;
+    overflow: visible;
+    justify-content: center;
+  }
+
   .album-info {
-    padding: 0 0 0 8px !important;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    overflow: hidden;
+    padding: 0 !important;
+    border-radius: 0 !important;
   }
-  
+
+  .playerwarper.is-expanded .album-info {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    overflow: visible;
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  /* 封面 */
   .player-cover__item {
-    width: 60px !important;
-    height: 60px !important;
-    margin-top: -20px !important;
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 8px !important;
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+    margin-right: 12px;
+    margin-top: 0 !important;
+    border: none !important;
+    background-color: transparent !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    margin-left: 4px;
   }
-  
-  .player-cover__item:before,
-  .player-cover__item:after {
-    width: 60px !important;
-    height: 60px !important;
+
+  .player-cover__item::before,
+  .player-cover__item::after {
+    display: none !important;
   }
-  
+
   .cover-overlay {
-    width: 60px !important;
-    height: 60px !important;
+    display: none !important;
   }
-  
-  .cover-overlay i {
+
+  .playerwarper.is-expanded .player-cover__item {
+    width: 70vw !important;
+    max-width: 280px !important;
+    height: auto !important;
+    aspect-ratio: 1 / 1;
+    border-radius: 16px !important;
+    margin-right: 0;
+    margin-bottom: 20px;
+    margin-left: 0;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
+    display: block !important;
+    flex-shrink: 1;
+  }
+
+  /* 歌名/歌手（MarqueeText 容器） */
+  .album-right {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+    min-width: 0;
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    text-align: left !important;
+  }
+
+  .playerwarper.is-expanded .album-right {
+    width: 100%;
+    align-items: center;
+    text-align: center !important;
+    flex: 0 0 auto;
+  }
+
+  .album-right_name {
+    font-size: 15px !important;
+    font-weight: 600;
+    color: #000 !important;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  body.dark-mode-active .album-right_name {
+    color: #fff !important;
+  }
+
+  .playerwarper.is-expanded .album-right_name {
+    font-size: 22px !important;
+    font-weight: 700;
+    color: #fff !important;
+    margin-bottom: 6px;
+    /* MarqueeText 组件默认 text-align:left，展开态两行都居中 */
+    text-align: center !important;
+  }
+
+  /* 迷你条隐藏歌手行 */
+  .album-right_info {
+    display: none !important;
+  }
+
+  .playerwarper.is-expanded .album-right_info {
+    display: block !important;
+    font-size: 15px !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+    margin-top: 4px;
+    overflow: hidden;
+    text-align: center !important;
+  }
+
+  /* === CONTROLS SECTION === */
+  .musicplayer-middle {
+    flex: 0 0 auto;
+    width: auto !important;
+    height: 100% !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  .playerwarper.is-expanded .musicplayer-middle {
+    width: 100% !important;
+    height: auto !important;
+    flex-direction: column;
+    flex: 0 0 auto;
+    justify-content: flex-end;
+    margin: 0 !important;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .player-controls {
+    display: flex;
+    align-items: center;
+    margin: 0 !important;
+    width: auto !important;
+    height: 100% !important;
+  }
+
+  .playerwarper.is-expanded .player-controls {
+    flex-direction: column-reverse; /* 进度条排到控制键上方 */
+    width: 100% !important;
+    gap: 20px;
+  }
+
+  .track-control {
+    width: auto !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: center;
+  }
+
+  .playerwarper.is-expanded .track-control {
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  .track-control_row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    width: auto !important;
+    padding: 0 !important;
+  }
+
+  .playerwarper.is-expanded .track-control_row {
+    width: 100% !important;
+    justify-content: space-between;
+    padding: 0 10px !important;
+  }
+
+  /* 迷你条默认隐藏所有图标，仅露出 上一首/播放/下一首 */
+  .track-control_icon {
+    font-size: 24px !important;
+    color: #000;
+    cursor: pointer;
+    display: none;
+    opacity: 1 !important;
+  }
+
+  body.dark-mode-active .track-control_icon {
+    color: #fff;
+  }
+
+  .track-control_iconPlay {
+    font-size: 30px !important;
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: auto !important;
+    height: auto !important;
+    cursor: pointer;
+  }
+
+  body.dark-mode-active .track-control_iconPlay {
+    color: #fff;
+  }
+
+  .track-control_icon.btn-prev,
+  .track-control_icon.btn-next {
+    display: block !important;
     font-size: 24px !important;
   }
-  
-  .album-right {
-    padding: 0 8px !important;
-    max-width: 120px !important;
+
+  /* 展开态显示全部图标（心/上一首/播放/下一首/模式） */
+  .playerwarper.is-expanded .track-control_icon {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    color: #fff !important;
+    font-size: 28px !important;
+    width: 50px;
+    height: 50px;
   }
-  
-  .album-right_name,
-  .album-right_info {
-    font-size: 12px !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+
+  .playerwarper.is-expanded .track-control_iconPlay {
+    font-size: 72px !important;
+    color: #fff !important;
+    width: 80px;
+    height: 80px;
   }
-  
-  .player-controls {
-    margin-top: -20px !important;
+
+  /* 进度条：仅展开态显示 */
+  .progress {
+    display: none !important;
   }
-  
-  .track-control {
-    height: 52px !important;
-    width: 240px !important;
+
+  .playerwarper.is-expanded .progress {
+    display: flex !important;
+    flex-direction: column;
+    width: 100% !important;
+    margin: 0 0 20px 0 !important;
+    padding: 0 4px;
   }
-  
-  .track-control_row {
-    width: 80% !important;
+
+  .playerwarper.is-expanded .progress_bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.3) !important;
+    border-radius: 3px;
+    cursor: pointer;
+    position: relative;
   }
-  
-  .track-control_icon {
-    font-size: 18px !important;
+
+  .playerwarper.is-expanded .progress_current {
+    height: 100%;
+    background: #fff !important;
+    border-radius: 3px;
+    position: relative;
   }
-  
-  .track-control_iconPlay,
-  .track-control_iconPlay:hover {
-    font-size: 40px !important;
+
+  /* 拖动手柄 */
+  .playerwarper.is-expanded .progress_current::after {
+    content: '';
+    position: absolute;
+    right: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   }
-  
-  .progress_bar {
-    height: 4px !important;
+
+  .playerwarper.is-expanded .time {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 10px;
   }
-  
-  .volume-control {
-    padding: 0 8px 0 0 !important;
+
+  .playerwarper.is-expanded .progress_time,
+  .playerwarper.is-expanded .progress_duration {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6) !important;
+    font-weight: 500;
   }
-  
-  .volume-control_row {
-    flex-direction: column !important;
+
+  /* 音量区整体隐藏（含桌面播放列表按钮，移动端由展开态右上角按钮代替） */
+  .musicplayer-right {
+    display: none !important;
   }
-  
-  .bar {
-    width: 60px !important;
-    height: 4px !important;
-    transform: rotate(90deg) !important;
-    margin-top: 30px !important;
+
+  /* 展开态顶部：收起指示条 */
+  .collapse-btn {
+    display: flex;
+    position: absolute;
+    top: 10px;
+    left: 0;
+    right: 0;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2001;
+    cursor: pointer;
   }
-  
-  .volume-control_speaker {
-    padding: 0 !important;
-    font-size: 14px !important;
+
+  .collapse-indicator {
+    width: 40px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+  }
+
+  /* 展开态右上角：播放队列按钮 */
+  .expanded-queue-btn {
+    display: flex;
+    position: absolute;
+    top: 6px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2001;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 18px;
+    cursor: pointer;
   }
 }
 
-/* 超小屏幕设备 (375px及以下) */
-@media screen and (max-width: 375px) {
-  .album-right {
-    display: none !important;
+/* 弹窗层级/定位：手机端需盖过展开态播放器(z-index 2000)并居中 */
+@media screen and (max-width: 520px) {
+  .playlist-popup-overlay,
+  .add-to-playlist-overlay,
+  .dl-overlay {
+    z-index: 2100 !important;
+    justify-content: center !important;
+    padding-right: 0 !important;
   }
-  
-  .track-control {
-    width: 200px !important;
-  }
-  
-  .track-control_icon {
-    font-size: 16px !important;
-  }
-  
-  .track-control_iconPlay,
-  .track-control_iconPlay:hover {
-    font-size: 36px !important;
+
+  /* 下载进度浮条抬到 Tab Bar / 迷你播放条之上 */
+  .dl-progress-stack {
+    z-index: 2200 !important;
+    bottom: calc(120px + env(safe-area-inset-bottom)) !important;
   }
 }

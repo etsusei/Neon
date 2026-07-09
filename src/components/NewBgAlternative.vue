@@ -497,14 +497,16 @@ export default {
 <style scoped>
 .new-bg-alternative {
   position: fixed;
-  top: 0;
+  /* 上下多铺出安全区，配合 scale 放大：iOS PWA 首帧视口偏移时不露黑边 */
+  top: calc(-1 * env(safe-area-inset-top, 0px));
   left: 0;
   width: 100vw;
   height: 100vh;
+  height: 100lvh; /* 大视口单位：不受地址栏/首帧视口收缩影响 */
   z-index: 0;
   pointer-events: none;
   transition: opacity 0.8s ease-in-out;
-  transform: scale(1.1);
+  transform: scale(1.25);
   transform-origin: center center;
 }
 

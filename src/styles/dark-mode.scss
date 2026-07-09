@@ -138,3 +138,15 @@ body.dark-mode-active {
     background-color: transparent !important;
   }
 }
+
+/* 移动端列表分隔线：浅色分隔线在深色模式下改用白色低透明度 */
+@media screen and (max-width: 520px) {
+  body.dark-mode-active {
+    .listRow,
+    .albumRow,
+    .cover-warpper,
+    .song-item {
+      border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+    }
+  }
+}

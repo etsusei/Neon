@@ -1,7 +1,20 @@
 ﻿<template>
-  <div class="playerwarper">
-    <div class="musicplayer">
-      <liquid-card border-radius="32px 32px 0 0" custom-class="player-liquid-glass" :overflow-visible="true">
+  <div class="playerwarper" :class="{ 'is-expanded': isPlayerExpanded }">
+    <!-- 展开态顶部：下拉收起指示条 + 播放队列按钮（仅移动端展开时渲染） -->
+    <div v-if="isPlayerExpanded" class="collapse-btn" @click.stop="collapsePlayer">
+      <div class="collapse-indicator"></div>
+    </div>
+    <div v-if="isPlayerExpanded" class="expanded-queue-btn" @click.stop="showPlaylist = true">
+      <i class="fa fa-list"></i>
+    </div>
+
+    <div class="musicplayer" @click="togglePlayer">
+      <liquid-card
+        border-radius="32px 32px 0 0"
+        custom-class="player-liquid-glass"
+        :overflow-visible="true"
+        :no-distortion="isPlayerExpanded"
+      >
         <div class="musicplayer-content">
           <div class="musicplayer-left">
             <player-track-info
@@ -10,7 +23,7 @@
               @toggle-immersive-mode="toggleImmersiveMode"
             />
           </div>
-          <div class="musicplayer-middle">
+          <div class="musicplayer-middle" @click.stop>
             <player-controls
               :is-playing="isTimerPlaying"
               :play-mode="playMode"
@@ -26,7 +39,7 @@
               @add-to-playlist="openAddToPlaylist"
             />
           </div>
-          <div class="musicplayer-right">
+          <div class="musicplayer-right" @click.stop>
             <player-volume
               :volume-width="volumeWidth"
               @set-volume-percentage="setVolumePercentage"
@@ -95,6 +108,9 @@ export default {
   },
   computed: {
     ...mapGetters(["tracks", "trackChangeRequest"]),
+    isPlayerExpanded() {
+      return this.$store.state.isPlayerExpanded;
+    },
     requestedTrackIndex() {
       return this.trackChangeRequest;
     },
@@ -152,6 +168,12 @@ export default {
         this.seekToTime(time);
         // Reset seekTime after consuming it.
         this.$store.commit('SetPlaybackSeekTime', null);
+      }
+    },
+    // 路由跳转时收起移动端全屏播放器，避免遮挡新页面
+    $route() {
+      if (this.isPlayerExpanded) {
+        this.$store.commit('SetIsPlayerExpanded', false);
       }
     }
   },
@@ -582,7 +604,18 @@ export default {
     },
     
     toggleImmersiveMode() {
+      // 移动端点击封面交给 togglePlayer 冒泡处理（展开/收起全屏播放器）
+      if (window.innerWidth <= 520) return;
       this.$store.commit('ToggleImmersiveMode');
+    },
+    togglePlayer() {
+      // 仅移动端：点击迷你条展开/收起全屏播放器
+      if (window.innerWidth <= 520) {
+        this.$store.commit('SetIsPlayerExpanded', !this.isPlayerExpanded);
+      }
+    },
+    collapsePlayer() {
+      this.$store.commit('SetIsPlayerExpanded', false);
     },
     
     // Media Session API for lock-screen controls and metadata.

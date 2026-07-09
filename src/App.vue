@@ -74,8 +74,18 @@ export default {
   mounted() {
     this.dateToday = dayjs().format("YYYY,MMM,DD");
     this.applySavedDarkMode();
+    this.kickStandaloneViewport();
   },
   methods: {
+    kickStandaloneViewport() {
+      // iOS PWA 冷启动首帧视口偏小/偏移（页面上划一下才自愈），
+      // 启动后做一次 1px 微滚动促使 WKWebView 立即重算视口
+      if (!window.navigator.standalone) return;
+      setTimeout(() => {
+        window.scrollTo(0, 1);
+        window.scrollTo(0, 0);
+      }, 80);
+    },
     applySavedDarkMode() {
       const savedDarkMode = localStorage.getItem('neon_dark_mode');
       if (savedDarkMode === '1' && !this.isDarkMode) {
