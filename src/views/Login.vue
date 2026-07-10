@@ -82,24 +82,78 @@
           </button>
         </form>
 
-        <!-- 网易云扫码登录 -->
+        <!-- 桌面端扫码，移动端手机号验证码登录 -->
         <div v-else class="netease-login">
           <template v-if="!showManualCookie">
-            <div class="qr-box">
-              <img v-if="qrImg" :src="qrImg" alt="登录二维码" />
-              <div v-else class="qr-loading"><i class="fa fa-spinner fa-spin"></i></div>
-              <div v-if="qrStatus === 'expired'" class="qr-mask" @click="startNeteaseLogin">
-                <i class="fa fa-refresh"></i>
-                <span>二维码已过期<br/>点击刷新</span>
+            <form
+              v-if="isMobileViewport"
+              class="login-form netease-sms-form"
+              @submit.prevent="handleNeteaseSmsLogin"
+            >
+              <p class="sms-intro">使用网易云绑定的中国大陆手机号登录</p>
+
+              <div class="input-group">
+                <label for="netease-phone">手机号</label>
+                <i class="fa fa-mobile"></i>
+                <input
+                  id="netease-phone"
+                  v-model.trim="neteasePhone"
+                  type="tel"
+                  inputmode="numeric"
+                  autocomplete="tel"
+                  maxlength="11"
+                  placeholder="11 位手机号"
+                  required
+                />
               </div>
-              <div v-else-if="qrStatus === 'scanned'" class="qr-mask scanned">
-                <i class="fa fa-check-circle"></i>
-                <span>已扫码<br/>请在手机上确认</span>
+
+              <div class="input-group captcha-group">
+                <label for="netease-captcha">短信验证码</label>
+                <i class="fa fa-shield"></i>
+                <input
+                  id="netease-captcha"
+                  v-model.trim="neteaseCaptcha"
+                  type="text"
+                  inputmode="numeric"
+                  autocomplete="one-time-code"
+                  maxlength="8"
+                  placeholder="输入验证码"
+                  required
+                />
+                <button
+                  type="button"
+                  class="captcha-send-btn"
+                  :disabled="captchaSending || captchaCountdown > 0"
+                  @click="handleSendCaptcha"
+                >
+                  {{ captchaSending ? '发送中' : captchaCountdown > 0 ? `${captchaCountdown}s` : '获取验证码' }}
+                </button>
               </div>
-            </div>
-            <p class="qr-hint">{{ qrHint }}</p>
-            <p v-if="neteaseError" class="error-msg">{{ neteaseError }}</p>
-            <a class="manual-toggle" @click="openManualCookie">扫码不可用？手动填入 Cookie</a>
+
+              <p v-if="neteaseError" class="error-msg">{{ neteaseError }}</p>
+              <button type="submit" class="login-btn" :disabled="neteaseLoading">
+                {{ neteaseLoading ? '登录中...' : '登录网易云' }}
+              </button>
+              <a class="manual-toggle" @click="openManualCookie">验证码不可用？手动填入 Cookie</a>
+            </form>
+
+            <template v-else>
+              <div class="qr-box">
+                <img v-if="qrImg" :src="qrImg" alt="登录二维码" />
+                <div v-else class="qr-loading"><i class="fa fa-spinner fa-spin"></i></div>
+                <div v-if="qrStatus === 'expired'" class="qr-mask" @click="startNeteaseLogin">
+                  <i class="fa fa-refresh"></i>
+                  <span>二维码已过期<br/>点击刷新</span>
+                </div>
+                <div v-else-if="qrStatus === 'scanned'" class="qr-mask scanned">
+                  <i class="fa fa-check-circle"></i>
+                  <span>已扫码<br/>请在手机上确认</span>
+                </div>
+              </div>
+              <p class="qr-hint">{{ qrHint }}</p>
+              <p v-if="neteaseError" class="error-msg">{{ neteaseError }}</p>
+              <a class="manual-toggle" @click="openManualCookie">扫码不可用？手动填入 Cookie</a>
+            </template>
           </template>
           <template v-else>
             <textarea
@@ -112,7 +166,9 @@
             <button type="button" class="login-btn" :disabled="neteaseLoading" @click="handleManualCookieLogin">
               {{ neteaseLoading ? '验证中...' : '用 Cookie 登录' }}
             </button>
-            <a class="manual-toggle" @click="backToQr">返回扫码登录</a>
+            <a class="manual-toggle" @click="backToNeteaseLogin">
+              {{ isMobileViewport ? '返回验证码登录' : '返回扫码登录' }}
+            </a>
           </template>
         </div>
 
@@ -171,7 +227,13 @@
 
 <script>
 import { login } from '../api/userApi'
-import { getQrKey, checkQrStatus, getNeteaseLoginStatus } from '../api/neteaseUserApi'
+import {
+  getQrKey,
+  checkQrStatus,
+  getNeteaseLoginStatus,
+  sendNeteaseCaptcha,
+  loginNeteaseWithCaptcha
+} from '../api/neteaseUserApi'
 import { setNeteaseLogin, isNeteaseLoggedIn } from '../utils/neteaseAuth'
 import QRCode from 'qrcode'
 import BackgroundAnimation from '../components/BackgroundAnimation.vue'
@@ -215,7 +277,15 @@ export default {
       neteaseError: '',
       neteaseLoading: false,
       showManualCookie: false,
-      manualCookie: ''
+      manualCookie: '',
+      // 移动端网易云验证码登录
+      isMobileViewport: false,
+      neteasePhone: '',
+      neteaseCaptcha: '',
+      captchaSending: false,
+      captchaCountdown: 0,
+      captchaTimer: null,
+      mobileMediaQuery: null
     }
   },
   computed: {
@@ -289,9 +359,88 @@ export default {
       this.neteaseError = ''
       if (mode === 'netease') {
         this.showManualCookie = false
-        this.startNeteaseLogin()
+        if (this.isMobileViewport) {
+          this.stopPolling()
+        } else {
+          this.startNeteaseLogin()
+        }
       } else {
         this.stopPolling()
+      }
+    },
+    handleViewportChange(event) {
+      const nextMobile = !!event.matches
+      if (this.isMobileViewport === nextMobile) return
+      this.isMobileViewport = nextMobile
+
+      if (this.loginMode !== 'netease' || this.showManualCookie) return
+      if (nextMobile) {
+        this.stopPolling()
+        this.qrImg = ''
+      } else {
+        this.startNeteaseLogin()
+      }
+    },
+    isValidNeteasePhone() {
+      return /^1\d{10}$/.test(this.neteasePhone)
+    },
+    startCaptchaCountdown() {
+      if (this.captchaTimer) clearInterval(this.captchaTimer)
+      this.captchaCountdown = 60
+      this.captchaTimer = setInterval(() => {
+        this.captchaCountdown -= 1
+        if (this.captchaCountdown <= 0) {
+          clearInterval(this.captchaTimer)
+          this.captchaTimer = null
+          this.captchaCountdown = 0
+        }
+      }, 1000)
+    },
+    async handleSendCaptcha() {
+      if (!this.isValidNeteasePhone()) {
+        this.neteaseError = '请输入正确的 11 位手机号'
+        return
+      }
+      if (this.captchaSending || this.captchaCountdown > 0) return
+
+      this.neteaseError = ''
+      this.captchaSending = true
+      try {
+        const res = await sendNeteaseCaptcha(this.neteasePhone)
+        if (res.data?.code !== 200) {
+          this.neteaseError = res.data?.message || res.data?.msg || '验证码发送失败'
+          return
+        }
+        this.startCaptchaCountdown()
+      } catch (err) {
+        this.neteaseError = err.response?.data?.message || err.response?.data?.msg || '验证码发送失败，请稍后重试'
+      } finally {
+        this.captchaSending = false
+      }
+    },
+    async handleNeteaseSmsLogin() {
+      if (!this.isValidNeteasePhone()) {
+        this.neteaseError = '请输入正确的 11 位手机号'
+        return
+      }
+      if (!/^\d{4,8}$/.test(this.neteaseCaptcha)) {
+        this.neteaseError = '请输入正确的短信验证码'
+        return
+      }
+
+      this.neteaseError = ''
+      this.neteaseLoading = true
+      try {
+        const res = await loginNeteaseWithCaptcha(this.neteasePhone, this.neteaseCaptcha)
+        if (res.data?.code !== 200) {
+          this.neteaseError = res.data?.message || res.data?.msg || '验证码登录失败'
+          return
+        }
+        await this.finishNeteaseLogin(res.data.cookie)
+      } catch (err) {
+        this.neteaseError = err.response?.data?.message || err.response?.data?.msg || '验证码登录失败，请稍后重试'
+      } finally {
+        this.neteaseLoading = false
       }
     },
     async startNeteaseLogin() {
@@ -403,10 +552,10 @@ export default {
       this.showManualCookie = true
       this.neteaseError = ''
     },
-    backToQr() {
+    backToNeteaseLogin() {
       this.showManualCookie = false
       this.neteaseError = ''
-      this.startNeteaseLogin()
+      if (!this.isMobileViewport) this.startNeteaseLogin()
     },
     async handleManualCookieLogin() {
       const cookie = this.cleanCookieString(this.manualCookie)
@@ -421,10 +570,25 @@ export default {
     // 如果已登录（自建账号或网易云任一），跳转首页
     if (localStorage.getItem('auth_token') || isNeteaseLoggedIn()) {
       this.$router.push('/')
+      return
+    }
+
+    this.mobileMediaQuery = window.matchMedia('(max-width: 520px)')
+    this.isMobileViewport = this.mobileMediaQuery.matches
+    if (this.mobileMediaQuery.addEventListener) {
+      this.mobileMediaQuery.addEventListener('change', this.handleViewportChange)
+    } else {
+      this.mobileMediaQuery.addListener(this.handleViewportChange)
     }
   },
   beforeUnmount() {
     this.stopPolling()
+    if (this.captchaTimer) clearInterval(this.captchaTimer)
+    if (this.mobileMediaQuery?.removeEventListener) {
+      this.mobileMediaQuery.removeEventListener('change', this.handleViewportChange)
+    } else {
+      this.mobileMediaQuery?.removeListener(this.handleViewportChange)
+    }
   }
 }
 </script>
@@ -578,6 +742,46 @@ export default {
   flex-direction: column;
   align-items: center;
   gap: 14px;
+}
+
+.netease-sms-form {
+  width: 100%;
+}
+
+.sms-intro {
+  margin: 0 0 2px;
+  color: var(--login-ink-soft);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.captcha-group {
+  input {
+    padding-right: 124px;
+  }
+}
+
+.captcha-send-btn {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  min-width: 108px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.66);
+  color: rgba(35, 48, 69, 0.78);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.84);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.58;
+    cursor: not-allowed;
+  }
 }
 
 .qr-box {

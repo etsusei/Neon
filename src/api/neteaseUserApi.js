@@ -19,6 +19,15 @@ export const getNeteaseLoginStatus = (cookie) => {
     })
 }
 
+// 移动端手机号验证码登录。使用 POST，避免手机号和验证码进入 URL/访问日志。
+export const sendNeteaseCaptcha = (phone, countrycode = '86') => {
+    return apiClient.post('captcha/sent', { phone, ctcode: countrycode })
+}
+
+export const loginNeteaseWithCaptcha = (phone, captcha, countrycode = '86') => {
+    return apiClient.post('login/cellphone', { phone, captcha, countrycode })
+}
+
 // ========== 网易云歌单（需登录态，拦截器自动带 X-Netease-Cookie） ==========
 
 export const getNeteaseUserPlaylists = (uid) => {
