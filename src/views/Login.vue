@@ -24,11 +24,12 @@
       </defs>
     </svg>
     
-    <!-- Liquid Glass 登录框 -->
-    <div class="liquid-glass-wrapper">
-      <div class="liquid-glass-effect" v-liquid-glass></div>
-      <div class="liquid-glass-tint"></div>
-      <div class="liquid-glass-shine"></div>
+    <!-- 与登录后页面共用 LiquidCard + liquidGlass.js 的物理折射实现 -->
+    <liquid-card
+      custom-class="login-liquid-card"
+      border-radius="32px"
+      :tint-opacity="0.32"
+    >
       <div class="liquid-glass-content">
         <h1 class="login-title">Neon</h1>
         <p class="login-subtitle">在线音乐播放器</p>
@@ -48,8 +49,10 @@
 
         <form v-if="loginMode === 'account'" @submit.prevent="handleLogin" class="login-form">
           <div class="input-group">
+            <label for="login-username">用户名</label>
             <i class="fa fa-user"></i>
             <input 
+              id="login-username"
               v-model="username" 
               type="text" 
               placeholder="用户名"
@@ -59,8 +62,10 @@
           </div>
           
           <div class="input-group">
+            <label for="login-password">密码</label>
             <i class="fa fa-lock"></i>
             <input 
+              id="login-password"
               v-model="password" 
               type="password" 
               placeholder="密码"
@@ -117,7 +122,7 @@
           </a>
         </div>
       </div>
-    </div>
+    </liquid-card>
 
     <!-- 管理员登录弹窗 -->
     <Dialog
@@ -170,6 +175,7 @@ import { getQrKey, checkQrStatus, getNeteaseLoginStatus } from '../api/neteaseUs
 import { setNeteaseLogin, isNeteaseLoggedIn } from '../utils/neteaseAuth'
 import QRCode from 'qrcode'
 import BackgroundAnimation from '../components/BackgroundAnimation.vue'
+import LiquidCard from '../components/LiquidCard.vue'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
@@ -180,6 +186,7 @@ export default {
   name: 'Login',
   components: {
     BackgroundAnimation,
+    LiquidCard,
     Dialog,
     InputText,
     Password,
@@ -438,58 +445,20 @@ export default {
   z-index: 0;
 }
 
-.liquid-glass-filter {
-  position: absolute;
-  width: 0;
-  height: 0;
-  pointer-events: none;
-}
-
-/* Liquid Glass 样式 */
-.liquid-glass-wrapper {
+/* 登录后页面同款 LiquidCard；折射与边缘高光由 liquidGlass.js 生成。 */
+.login-liquid-card {
   position: relative;
-  display: flex;
-  overflow: hidden;
-  border-radius: 32px;
+  width: min(460px, calc(100vw - 32px));
+  height: auto;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2);
   z-index: 10;
-  
-  &:hover {
-    transform: scale(1.02);
-  }
-}
-
-.liquid-glass-effect {
-  position: absolute;
-  z-index: 0;
-  inset: 0;
-  backdrop-filter: url(#glass-distortion);
-  overflow: hidden;
-  isolation: isolate;
-}
-
-.liquid-glass-tint {
-  z-index: 1;
-  position: absolute;
-  inset: 0;
-  background: transparent;
-}
-
-.liquid-glass-shine {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  overflow: hidden;
-  border-radius: inherit;
-  box-shadow: 
-    inset 1px 1px 1px 0 rgba(255, 255, 255, 0.3),
-    inset -1px -1px 1px 0 rgba(255, 255, 255, 0.2);
+  --login-ink: rgba(24, 31, 45, 0.92);
+  --login-ink-soft: rgba(43, 53, 71, 0.72);
 }
 
 .liquid-glass-content {
-  z-index: 3;
   padding: 48px 40px;
-  width: 380px;
+  width: 100%;
 }
 
 /* 登录表单样式 */
@@ -497,14 +466,14 @@ export default {
   text-align: center;
   font-size: 42px;
   margin: 0 0 8px;
-  color: white;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  color: var(--login-ink);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.78);
   font-weight: 700;
 }
 
 .login-subtitle {
   text-align: center;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--login-ink-soft);
   margin: 0 0 32px;
   font-size: 16px;
 }
@@ -517,53 +486,68 @@ export default {
 
 .input-group {
   position: relative;
+
+  label {
+    display: block;
+    margin: 0 0 7px 2px;
+    color: rgba(30, 38, 54, 0.82);
+    font-size: 13px;
+    font-weight: 650;
+    letter-spacing: 0.02em;
+  }
   
   i {
     position: absolute;
     left: 16px;
-    top: 50%;
+    top: 42px;
     transform: translateY(-50%);
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(43, 55, 76, 0.62);
   }
   
   input {
     width: 100%;
     padding: 14px 14px 14px 44px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.68);
     border-radius: 12px;
     font-size: 15px;
     transition: all 0.2s;
     box-sizing: border-box;
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.48);
+    color: var(--login-ink);
+    font-weight: 500;
+    backdrop-filter: blur(14px) saturate(115%);
+    -webkit-backdrop-filter: blur(14px) saturate(115%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.46);
     
     &::placeholder {
-      color: rgba(255, 255, 255, 0.5);
+      color: rgba(43, 55, 76, 0.48);
     }
     
     &:focus {
       outline: none;
-      border-color: rgba(255, 255, 255, 0.6);
-      background: rgba(255, 255, 255, 0.15);
-      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+      border-color: rgba(116, 153, 205, 0.62);
+      background: rgba(255, 255, 255, 0.72);
+      box-shadow: 0 0 0 3px rgba(145, 183, 232, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.76);
     }
   }
 }
 
 .error-msg {
-  color: #ff6b6b;
+  color: #8a3040;
   font-size: 14px;
   margin: 0;
   text-align: center;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  padding: 9px 12px;
+  border: 1px solid rgba(177, 80, 98, 0.22);
+  border-radius: 10px;
+  background: rgba(255, 225, 231, 0.58);
 }
 
 /* 登录方式切换 */
 .login-mode-switch {
   display: flex;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.24);
+  border: 1px solid rgba(255, 255, 255, 0.48);
   border-radius: 12px;
   padding: 4px;
   margin-bottom: 24px;
@@ -574,15 +558,16 @@ export default {
     border: none;
     border-radius: 9px;
     background: transparent;
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(43, 53, 71, 0.62);
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
 
     &.active {
-      background: rgba(255, 255, 255, 0.2);
-      color: white;
+      background: rgba(255, 255, 255, 0.66);
+      color: var(--login-ink);
+      box-shadow: 0 3px 10px rgba(65, 79, 107, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.86);
     }
   }
 }
@@ -602,6 +587,8 @@ export default {
   border-radius: 16px;
   overflow: hidden;
   background: white;
+  border: 1px solid rgba(255, 255, 255, 0.76);
+  box-shadow: 0 10px 28px rgba(53, 67, 95, 0.16);
 
   img {
     display: block;
@@ -649,41 +636,44 @@ export default {
 
 .qr-hint {
   margin: 0;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--login-ink-soft);
   font-size: 14px;
   text-align: center;
 }
 
 .manual-toggle {
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(38, 50, 70, 0.64);
   font-size: 13px;
   cursor: pointer;
   transition: color 0.2s;
 
   &:hover {
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(24, 31, 45, 0.92);
   }
 }
 
 .cookie-input {
   width: 100%;
   padding: 12px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.68);
   border-radius: 12px;
   font-size: 13px;
   box-sizing: border-box;
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.48);
+  color: var(--login-ink);
+  backdrop-filter: blur(14px) saturate(115%);
+  -webkit-backdrop-filter: blur(14px) saturate(115%);
   resize: vertical;
 
   &::placeholder {
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(43, 55, 76, 0.48);
   }
 
   &:focus {
     outline: none;
-    border-color: rgba(255, 255, 255, 0.6);
+    border-color: rgba(116, 153, 205, 0.62);
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: 0 0 0 3px rgba(145, 183, 232, 0.24);
   }
 }
 
@@ -692,13 +682,13 @@ export default {
   text-align: center;
 
   a {
-    color: rgba(255, 255, 255, 0.55);
+    color: rgba(38, 50, 70, 0.64);
     font-size: 13px;
     cursor: pointer;
     transition: color 0.2s;
 
     &:hover {
-      color: rgba(255, 255, 255, 0.9);
+      color: rgba(24, 31, 45, 0.92);
     }
   }
 }
@@ -723,21 +713,23 @@ export default {
 
 .login-btn {
   padding: 14px;
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(218, 234, 255, 0.76));
+  color: rgba(25, 37, 57, 0.90);
+  border: 1px solid rgba(255, 255, 255, 0.82);
   border-radius: 12px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
   margin-top: 10px;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  box-shadow: 0 10px 24px rgba(72, 91, 123, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.92);
   
   &:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.3);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(228, 241, 255, 0.90));
     transform: translateY(-2px);
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 14px 30px rgba(72, 91, 123, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.98);
   }
   
   &:disabled {
@@ -745,13 +737,66 @@ export default {
     cursor: not-allowed;
   }
 }
-</style>
 
-<!-- 非 scoped 样式，用于 SVG filter -->
-<style lang="scss">
-/* Liquid Glass 扭曲效果需要非 scoped 样式才能正确引用 SVG filter */
-.liquid-glass-effect {
-  filter: url(#glass-distortion) !important;
+@media (max-width: 520px) {
+  .login-container {
+    justify-content: center;
+    padding:
+      calc(16px + env(safe-area-inset-top))
+      12px
+      calc(16px + env(safe-area-inset-bottom));
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /*
+   * 移动端降级为登录后迷你播放器使用的雾面卡片：
+   * 不运行位移折射层，只保留系统模糊、浅色底、细边框与高光。
+   */
+  .login-liquid-card {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 460px;
+    background-color: rgba(255, 255, 255, 0.4) !important;
+    backdrop-filter: blur(40px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+  }
+
+  :deep(.login-liquid-card .liquid-card-effect) {
+    display: none !important;
+    background-image: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  :deep(.login-liquid-card .liquid-card-tint) {
+    --glass-opacity: 0.25 !important;
+  }
+
+  .liquid-glass-content {
+    padding: 36px 24px;
+  }
+}
+
+/* 极矮屏幕允许卡片从安全区顶部开始滚动，避免表单被裁切。 */
+@media (max-width: 520px) and (max-height: 700px) {
+  .login-container {
+    justify-content: flex-start;
+  }
+}
+
+/* 老旧 WebView 不支持背景模糊时，使用更实的浅色雾面兜底。 */
+@media (max-width: 520px) {
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .login-liquid-card {
+      background-color: rgba(245, 249, 255, 0.82) !important;
+    }
+  }
 }
 </style>
 
