@@ -433,12 +433,16 @@ export default {
 
 <style lang="scss" scoped>
 .login-container {
-  /* 固定定位铺满整屏（含 iOS 安全区），避免 PWA 下出现空隙 */
+  /* 固定定位铺满整屏并向上下"出血"：iOS PWA 冷启动首帧布局视口偏小，
+     且本页没有滚动容器无法靠手势触发重算，出血保证黑边区域也被背景覆盖 */
   position: fixed;
-  top: 0;
+  top: calc(-1 * env(safe-area-inset-top, 0px) - 80px);
+  bottom: -160px;
   left: 0;
   right: 0;
-  bottom: 0;
+  /* 与出血等量的内边距（border-box），登录卡片仍按真实屏幕居中 */
+  padding-top: calc(env(safe-area-inset-top, 0px) + 80px);
+  padding-bottom: 160px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -743,10 +747,12 @@ export default {
 @media (max-width: 520px) {
   .login-container {
     justify-content: center;
+    /* 基础 padding 之上叠加与容器出血等量的补偿（上 80 / 下 160），
+       保证卡片仍按真实屏幕居中，见桌面规则里的出血说明 */
     padding:
-      calc(16px + env(safe-area-inset-top))
+      calc(96px + env(safe-area-inset-top))
       12px
-      calc(16px + env(safe-area-inset-bottom));
+      calc(176px + env(safe-area-inset-bottom));
     overflow-x: hidden;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
