@@ -15,7 +15,7 @@
       <div class="head-download-icon"></div>
       <div class="head-trash-icon" v-if="editable"></div>
     </div>
-    <div class="listRow" :class="{ 'track-unavailable': isUnavailableSong(track) }" v-for="(track, $index) in displayTracks" :key="track.id || $index" @click="play(displayTracks,$index)">
+    <div class="listRow" :class="{ 'track-unavailable': isUnavailableSong(track), 'list-row-editable': editable }" v-for="(track, $index) in displayTracks" :key="track.id || $index" @click="play(displayTracks,$index)">
       <div
         class="list-album-img"
         :style="{ backgroundImage: `url(${thumb(track.al.picUrl, 100)})` }"
@@ -311,14 +311,19 @@ export default {
 
   .listRow {
     display: grid;
-    grid-template-columns: 50px 1fr auto auto;
+    grid-template-columns: 50px minmax(0, 1fr) 40px 40px;
     grid-template-rows: auto auto;
-    gap: 0 12px;
+    gap: 0 6px;
     padding: 8px 0;
     width: 100%;
     align-items: center;
     border-bottom: 0.5px solid rgba(0, 0, 0, 0.05);
     background-color: transparent !important;
+  }
+
+  .listRow.list-row-editable {
+    grid-template-columns: 50px minmax(0, 1fr) 40px 40px 40px;
+    gap: 0 4px;
   }
 
   .listRow:hover {
@@ -391,21 +396,32 @@ export default {
   .plus-icon {
     grid-row: 1 / 3;
     grid-column: 3;
-    margin: 0 4px;
-    width: 30px;
-    height: 30px;
+    margin: 0;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
   }
 
   .trash-icon {
     grid-row: 1 / 3;
-    grid-column: 4;
-    margin: 0 4px;
-    width: 30px;
-    height: 30px;
+    grid-column: 5;
+    margin: 0;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
   }
 
   .download-icon {
-    display: none;
+    display: flex;
+    grid-row: 1 / 3;
+    grid-column: 4;
+    width: 40px;
+    height: 40px;
+    margin: 0;
+    align-items: center;
+    justify-content: center;
   }
 }
 </style>

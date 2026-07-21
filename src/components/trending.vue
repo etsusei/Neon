@@ -361,9 +361,9 @@ export default {
 
   .listRow {
     display: grid;
-    grid-template-columns: 50px 1fr auto;
+    grid-template-columns: 50px minmax(0, 1fr) 40px 40px;
     grid-template-rows: auto auto;
-    gap: 0 12px;
+    gap: 0 6px;
     padding: 8px 0;
     width: 100%;
     align-items: center;
@@ -437,13 +437,22 @@ export default {
   .plus-icon {
     grid-row: 1 / 3;
     grid-column: 3;
-    margin: 0 4px;
-    width: 30px;
-    height: 30px;
+    margin: 0;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
   }
 
   .download-icon {
-    display: none;
+    display: flex;
+    grid-row: 1 / 3;
+    grid-column: 4;
+    width: 40px;
+    height: 40px;
+    margin: 0;
+    align-items: center;
+    justify-content: center;
   }
 }
 </style>

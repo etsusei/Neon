@@ -783,6 +783,42 @@ export default {
 .fade-leave-to {
   opacity: 0;
 }
+
+@media screen and (max-width: 520px) {
+  .dl-overlay {
+    box-sizing: border-box;
+    padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+  }
+
+  .dl-popup {
+    width: calc(100% - 24px);
+    max-width: 360px;
+    max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  }
+
+  .dl-glass-content {
+    max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .popup-header {
+    padding: 14px 16px;
+  }
+
+  .song-brief {
+    padding: 10px 16px 0;
+  }
+
+  .max-quality-tip {
+    margin-right: 16px;
+    margin-left: 16px;
+  }
+
+  .select-section {
+    padding: 10px 16px 16px;
+  }
+}
 </style>
 
 <!-- 下载进度条 teleport 到 body，不能用 scoped -->

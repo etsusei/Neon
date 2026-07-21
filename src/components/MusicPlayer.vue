@@ -1,12 +1,13 @@
 ﻿<template>
   <div class="playerwarper" :class="{ 'is-expanded': isPlayerExpanded }">
     <!-- 展开态顶部：下拉收起指示条 + 播放队列按钮（仅移动端展开时渲染） -->
-    <div v-if="isPlayerExpanded" class="collapse-btn" @click.stop="collapsePlayer">
+    <button v-if="isPlayerExpanded" type="button" class="collapse-btn" aria-label="收起播放器" @click.stop="collapsePlayer">
       <div class="collapse-indicator"></div>
-    </div>
-    <div v-if="isPlayerExpanded" class="expanded-queue-btn" @click.stop="showPlaylist = true">
+    </button>
+    <div v-if="isPlayerExpanded" class="expanded-player-title">正在播放</div>
+    <button v-if="isPlayerExpanded" type="button" class="expanded-queue-btn" aria-label="打开播放队列" @click.stop="showPlaylist = true">
       <i class="fa fa-list"></i>
-    </div>
+    </button>
 
     <div class="musicplayer" @click="togglePlayer">
       <liquid-card
@@ -244,6 +245,8 @@ export default {
       getSongUrl(next.id).catch(() => {});
     },
     seekToPercentage(percentage) {
+      if (!this.audio || !Number.isFinite(this.audio.duration) || this.audio.duration <= 0) return;
+      const wasPlaying = this.isTimerPlaying && !this.audio.paused;
       let maxduration = this.audio.duration;
       if (percentage > 100) {
         percentage = 100;
@@ -253,8 +256,13 @@ export default {
       }
       this.barWidth = percentage + "%";
       this.audio.currentTime = (maxduration * percentage) / 100;
-      this.audio.play();
-      this.isTimerPlaying = true;
+      this.generateTime();
+      if (wasPlaying) {
+        this.audio.play().catch(() => {
+          this.isTimerPlaying = false;
+          this.$store.commit('SetPlaybackActive', false);
+        });
+      }
     },
     generateVolume() {
       // Convert audio volume back to slider percentage (inverse of logarithmic curve)
@@ -609,9 +617,9 @@ export default {
       this.$store.commit('ToggleImmersiveMode');
     },
     togglePlayer() {
-      // 仅移动端：点击迷你条展开/收起全屏播放器
-      if (window.innerWidth <= 520) {
-        this.$store.commit('SetIsPlayerExpanded', !this.isPlayerExpanded);
+      // 仅移动端：迷你条负责展开；展开态只允许通过顶部收起按钮关闭，避免误触封面。
+      if (window.innerWidth <= 520 && !this.isPlayerExpanded) {
+        this.$store.commit('SetIsPlayerExpanded', true);
       }
     },
     collapsePlayer() {

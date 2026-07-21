@@ -166,6 +166,7 @@ a {
   .albumRow {
     padding: 12px 0;
     height: auto;
+    gap: 4px;
     border-bottom: 0.5px solid rgba(0, 0, 0, 0.05);
     border-radius: 0;
     background-color: transparent !important;
@@ -182,6 +183,7 @@ a {
     height: auto;
     justify-content: flex-start;
     flex: 1;
+    min-width: 0;
     display: flex;
     align-items: center;
   }
@@ -197,16 +199,22 @@ a {
   }
 
   .album-plus-icon {
-    margin: 0 4px 0 auto;
-    width: 30px;
-    height: 30px;
+    margin: 0 0 0 auto;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
   .album-download-icon {
-    display: none;
+    display: flex;
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    margin: 0;
+    align-items: center;
+    justify-content: center;
   }
 }
 </style>
