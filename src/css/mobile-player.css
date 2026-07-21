@@ -60,15 +60,13 @@
   /* === EXPANDED STATE === */
   .playerwarper.is-expanded {
     bottom: 0 !important;
-    top: 0 !important;
     height: 100dvh !important;
-    min-height: 100dvh !important;
     width: 100% !important;
     padding: 0 !important;
     z-index: 2000;
     display: flex;
     flex-direction: column;
-    overflow: visible !important;
+    overflow: hidden !important;
   }
 
   .musicplayer {
@@ -86,7 +84,7 @@
     display: flex;
     flex-direction: column;
     background: transparent !important;
-    overflow: visible !important;
+    overflow: hidden !important;
     border-radius: 0 !important;
   }
 
@@ -139,18 +137,57 @@
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
   }
 
-  /* 展开态：深色全屏背景 */
+  /* 展开态复用 AppBackgroundLayer 的同一块播放动态背景，仅叠加可读性遮罩。 */
   .playerwarper.is-expanded .player-liquid-glass {
     border-radius: 0 !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-    background: linear-gradient(180deg, #292438 0%, #1d1a29 46%, #14121b 100%) !important;
+    background: linear-gradient(180deg, rgba(12, 10, 19, 0.26) 0%, rgba(12, 10, 19, 0.4) 55%, rgba(8, 7, 12, 0.62) 100%) !important;
     border: none;
     box-shadow: none;
   }
 
   body.dark-mode-active .playerwarper.is-expanded .player-liquid-glass {
-    background: linear-gradient(180deg, #242329 0%, #17171b 48%, #0f0f12 100%) !important;
+    background: linear-gradient(180deg, rgba(8, 8, 10, 0.32) 0%, rgba(8, 8, 10, 0.48) 55%, rgba(5, 5, 7, 0.7) 100%) !important;
+  }
+
+  /* 内容随卡片展开进入，避免布局切换时整屏瞬间出现。 */
+  .playerwarper.is-expanded .musicplayer-content {
+    animation: mobile-player-content-in 0.38s 0.08s cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+
+  .playerwarper.is-expanded .collapse-btn,
+  .playerwarper.is-expanded .expanded-player-title,
+  .playerwarper.is-expanded .expanded-queue-btn {
+    animation: mobile-player-header-in 0.28s 0.18s ease both;
+  }
+
+  @keyframes mobile-player-content-in {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes mobile-player-header-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .playerwarper,
+    .player-liquid-glass,
+    .playerwarper.is-expanded .musicplayer-content,
+    .playerwarper.is-expanded .collapse-btn,
+    .playerwarper.is-expanded .expanded-player-title,
+    .playerwarper.is-expanded .expanded-queue-btn {
+      animation: none !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 
   /* 迷你条内容布局 */

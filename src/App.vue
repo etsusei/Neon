@@ -7,6 +7,7 @@
     <template v-else>
       <app-background-layer
         :is-playing="isPlaying"
+        :is-player-expanded="isPlayerExpanded"
         :is-dark-mode="isDarkMode"
         :cover-image="playbackCoverImage"
       />
@@ -47,7 +48,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["isImmersiveMode", "isDarkMode"]),
+    ...mapState(["isImmersiveMode", "isDarkMode", "isPlayerExpanded"]),
     isPlaying() {
       return this.$store.state.playback.isPlaying;
     },

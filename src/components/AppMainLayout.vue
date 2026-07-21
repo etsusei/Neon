@@ -3,9 +3,9 @@
     <div
       class="app-header"
       :style="{
-        opacity: isImmersiveMode ? 0 : 1,
+        opacity: (isImmersiveMode || isPlayerExpanded) ? 0 : 1,
         transition: 'opacity 0.5s ease',
-        pointerEvents: isImmersiveMode ? 'none' : 'auto'
+        pointerEvents: (isImmersiveMode || isPlayerExpanded) ? 'none' : 'auto'
       }"
     >
       <div class="app-header-left">
@@ -120,7 +120,14 @@
 
     <music-player />
     <!-- 移动端底部导航（桌面端由 CSS 隐藏） -->
-    <bottom-nav class="mobile-bottom-nav" />
+    <bottom-nav
+      class="mobile-bottom-nav"
+      :style="{
+        opacity: isPlayerExpanded ? 0 : 1,
+        transition: 'opacity 0.35s ease',
+        pointerEvents: isPlayerExpanded ? 'none' : 'auto'
+      }"
+    />
   </div>
 </template>
 

@@ -6,7 +6,7 @@
         :no-blur="false"
         v-show="!isDarkMode"
         :style="{
-          opacity: isPlaying ? 0 : 1,
+          opacity: showMusicBackground ? 0 : 1,
           transition: 'opacity 0.8s ease-in-out'
         }"
       />
@@ -14,11 +14,11 @@
 
     <new-bg-alternative
       ref="musicBackground"
-      v-show="!isDarkMode"
-      :visible="isPlaying"
+      v-show="!isDarkMode || isPlayerExpanded"
+      :visible="showMusicBackground"
       :cover-image="coverImage"
       :style="{
-        opacity: isPlaying ? 1 : 0,
+        opacity: showMusicBackground ? 1 : 0,
         transition: 'opacity 0.8s ease-in-out'
       }"
     />
@@ -42,6 +42,10 @@ export default {
       type: Boolean,
       default: false
     },
+    isPlayerExpanded: {
+      type: Boolean,
+      default: false
+    },
     isDarkMode: {
       type: Boolean,
       default: false
@@ -56,8 +60,16 @@ export default {
       renderSwitchTimer: null
     };
   },
+  computed: {
+    showMusicBackground() {
+      return Boolean(this.coverImage) && (this.isPlaying || this.isPlayerExpanded);
+    }
+  },
   watch: {
     isPlaying() {
+      this.scheduleBackgroundSwitch();
+    },
+    isPlayerExpanded() {
       this.scheduleBackgroundSwitch();
     },
     isDarkMode() {
@@ -76,7 +88,7 @@ export default {
   },
   methods: {
     scheduleBackgroundSwitch() {
-      if (this.isDarkMode) return;
+      if (this.isDarkMode && !this.isPlayerExpanded) return;
       if (this.renderSwitchTimer) {
         clearTimeout(this.renderSwitchTimer);
       }
@@ -85,12 +97,12 @@ export default {
       }, 1000);
     },
     applyBackgroundState() {
-      if (document.hidden || this.isDarkMode) {
+      if (document.hidden || (this.isDarkMode && !this.isPlayerExpanded)) {
         this.pauseAll();
         return;
       }
 
-      if (this.isPlaying) {
+      if (this.showMusicBackground) {
         this.$refs.idleBackground?.pauseRendering();
         this.$refs.musicBackground?.resumeRendering();
       } else {
