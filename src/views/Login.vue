@@ -1,5 +1,5 @@
 <template>
-  <div class="login-container">
+  <div class="login-container" :class="{ 'keyboard-open': isKeyboardOpen }">
     <!-- 待机动态背景 (不模糊) -->
     <background-animation ref="bgAnimation" :no-blur="true" />
     
@@ -215,7 +215,10 @@ export default {
       neteaseError: '',
       neteaseLoading: false,
       showManualCookie: false,
-      manualCookie: ''
+      manualCookie: '',
+      isKeyboardOpen: false,
+      viewportFrame: null,
+      viewportSettleTimer: null
     }
   },
   computed: {
@@ -230,6 +233,24 @@ export default {
     }
   },
   methods: {
+    scheduleViewportSync() {
+      if (this.viewportFrame) cancelAnimationFrame(this.viewportFrame)
+      this.viewportFrame = requestAnimationFrame(() => {
+        this.viewportFrame = null
+        this.syncViewport()
+      })
+    },
+    syncViewport() {
+      const viewport = window.visualViewport
+      const viewportHeight = Math.round(viewport?.height || window.innerHeight)
+      const viewportTop = Math.round(viewport?.offsetTop || 0)
+      const activeElement = document.activeElement
+      const isFormField = activeElement && ['INPUT', 'TEXTAREA'].includes(activeElement.tagName)
+
+      document.documentElement.style.setProperty('--login-viewport-height', `${viewportHeight}px`)
+      document.documentElement.style.setProperty('--login-viewport-top', `${viewportTop}px`)
+      this.isKeyboardOpen = Boolean(isFormField && viewportHeight < window.innerHeight - 120)
+    },
     async handleLogin() {
       this.error = ''
       this.loading = true
@@ -424,31 +445,65 @@ export default {
       return
     }
 
+    window.addEventListener('resize', this.scheduleViewportSync, { passive: true })
+    window.addEventListener('orientationchange', this.scheduleViewportSync, { passive: true })
+    window.addEventListener('focusin', this.scheduleViewportSync, { passive: true })
+    window.addEventListener('focusout', this.scheduleViewportSync, { passive: true })
+    window.visualViewport?.addEventListener('resize', this.scheduleViewportSync, { passive: true })
+    window.visualViewport?.addEventListener('scroll', this.scheduleViewportSync, { passive: true })
+    this.syncViewport()
+
+    // iOS standalone 冷启动时 visualViewport 可能在首帧后才校准，再补一次最终尺寸。
+    this.viewportSettleTimer = setTimeout(this.scheduleViewportSync, 350)
+
   },
   beforeUnmount() {
     this.stopPolling()
+    window.removeEventListener('resize', this.scheduleViewportSync)
+    window.removeEventListener('orientationchange', this.scheduleViewportSync)
+    window.removeEventListener('focusin', this.scheduleViewportSync)
+    window.removeEventListener('focusout', this.scheduleViewportSync)
+    window.visualViewport?.removeEventListener('resize', this.scheduleViewportSync)
+    window.visualViewport?.removeEventListener('scroll', this.scheduleViewportSync)
+    if (this.viewportFrame) cancelAnimationFrame(this.viewportFrame)
+    if (this.viewportSettleTimer) clearTimeout(this.viewportSettleTimer)
+    document.documentElement.style.removeProperty('--login-viewport-height')
+    document.documentElement.style.removeProperty('--login-viewport-top')
   }
 }
 </script>
 
 <style lang="scss" scoped>
 .login-container {
-  /* 固定定位铺满整屏并向上下"出血"：iOS PWA 冷启动首帧布局视口偏小，
-     且本页没有滚动容器无法靠手势触发重算，出血保证黑边区域也被背景覆盖 */
+  /* 内容严格跟随 visualViewport；PWA 键盘与状态栏变化时由组件同步这两个变量。 */
   position: fixed;
-  top: calc(-1 * env(safe-area-inset-top, 0px) - 80px);
-  bottom: -160px;
+  top: var(--login-viewport-top, 0px);
+  bottom: auto;
   left: 0;
   right: 0;
-  /* 与出血等量的内边距（border-box），登录卡片仍按真实屏幕居中 */
-  padding-top: calc(env(safe-area-inset-top, 0px) + 80px);
-  padding-bottom: 160px;
+  width: 100%;
+  height: var(--login-viewport-height, 100dvh);
+  min-height: 0;
+  padding:
+    max(16px, env(safe-area-inset-top))
+    16px
+    max(16px, env(safe-area-inset-bottom));
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   background: transparent;
   z-index: 0;
+}
+
+/* 只让 WebGL 背景出血，避免 iOS PWA 冷启动校准视口时露出黑边。 */
+.login-container :deep(#canvas) {
+  position: fixed;
+  top: calc(var(--login-viewport-top, 0px) - 96px);
+  left: -32px;
+  width: calc(100% + 64px);
+  height: calc(var(--login-viewport-height, 100dvh) + 256px);
 }
 
 /* 登录后页面同款 LiquidCard；折射与边缘高光由 liquidGlass.js 生成。 */
@@ -747,15 +802,17 @@ export default {
 @media (max-width: 520px) {
   .login-container {
     justify-content: center;
-    /* 基础 padding 之上叠加与容器出血等量的补偿（上 80 / 下 160），
-       保证卡片仍按真实屏幕居中，见桌面规则里的出血说明 */
     padding:
-      calc(96px + env(safe-area-inset-top))
+      max(16px, env(safe-area-inset-top))
       12px
-      calc(176px + env(safe-area-inset-bottom));
+      max(16px, env(safe-area-inset-bottom));
     overflow-x: hidden;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    scroll-padding-block:
+      max(16px, env(safe-area-inset-top))
+      max(16px, env(safe-area-inset-bottom));
   }
 
   /*
@@ -794,6 +851,13 @@ export default {
 /* 极矮屏幕允许卡片从安全区顶部开始滚动，避免表单被裁切。 */
 @media (max-width: 520px) and (max-height: 700px) {
   .login-container {
+    justify-content: flex-start;
+  }
+}
+
+/* iOS 的布局视口在键盘出现后可能仍保持原高度，用运行时状态补足媒体查询。 */
+@media (max-width: 520px) {
+  .login-container.keyboard-open {
     justify-content: flex-start;
   }
 }
