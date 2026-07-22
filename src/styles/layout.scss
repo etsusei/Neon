@@ -60,6 +60,8 @@ body {
     /* 应用壳固定为视口高度：页面本身永不滚动，滚动全部发生在面板内部。
        原来由内容撑高，calc 魔法数字对不上就会把 body 撑出几像素的滚动条 */
     height: 100vh;
+    height: 100dvh;
+    height: var(--app-viewport-height, 100dvh);
     background-color: var(--app-container);
     background: none !important; /* Force transparent */
     /* transition: 0.2s; Stacking context fix */
