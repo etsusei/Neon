@@ -57,12 +57,3 @@ createApp(App)
   .use(ElIcon)
   .directive('liquid-glass', liquidGlassDirective)
   .mount('#app')
-
-// 让 Chromium/Android 把 Neon 识别为可安装 PWA，而不是普通桌面快捷方式。
-// Service Worker 使用 network-only 策略，不缓存 API 或旧版前端资源。
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register(`${process.env.BASE_URL}service-worker.js`)
-      .catch(error => console.warn('Service worker registration failed:', error))
-  })
-}

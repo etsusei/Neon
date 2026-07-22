@@ -61,7 +61,6 @@
   .playerwarper.is-expanded {
     bottom: 0 !important;
     height: 100dvh !important;
-    height: var(--app-viewport-height, 100dvh) !important;
     width: 100% !important;
     padding: 0 !important;
     z-index: 2000;

@@ -44,8 +44,7 @@ export default {
   },
   data() {
     return {
-      dateToday: '',
-      removeViewportListeners: null
+      dateToday: ''
     };
   },
   computed: {
@@ -76,45 +75,17 @@ export default {
   mounted() {
     this.dateToday = dayjs().format("YYYY,MMM,DD");
     this.applySavedDarkMode();
-    this.initViewportSizing();
-  },
-  beforeUnmount() {
-    if (this.removeViewportListeners) {
-      this.removeViewportListeners();
-    }
+    this.kickStandaloneViewport();
   },
   methods: {
-    initViewportSizing() {
-      // iOS 主屏 Web App 冷启动时，100vh/100dvh 的首帧值可能滞后。
-      // 直接跟随 visualViewport，不再依赖 1px 滚动这种不稳定的视口刷新技巧。
-      const syncViewportHeight = () => {
-        const viewportHeight = window.visualViewport?.height || window.innerHeight;
-        document.documentElement.style.setProperty(
-          '--app-viewport-height',
-          `${Math.round(viewportHeight)}px`
-        );
-      };
-
-      const visualViewport = window.visualViewport;
-      syncViewportHeight();
-      window.addEventListener('resize', syncViewportHeight, { passive: true });
-      window.addEventListener('orientationchange', syncViewportHeight, { passive: true });
-      window.addEventListener('pageshow', syncViewportHeight, { passive: true });
-      visualViewport?.addEventListener('resize', syncViewportHeight, { passive: true });
-
-      // WebKit 会在首帧后才校准安全区/可视视口，补两次延迟同步。
-      const startupTimers = [
-        window.setTimeout(syncViewportHeight, 100),
-        window.setTimeout(syncViewportHeight, 500)
-      ];
-
-      this.removeViewportListeners = () => {
-        startupTimers.forEach(timer => window.clearTimeout(timer));
-        window.removeEventListener('resize', syncViewportHeight);
-        window.removeEventListener('orientationchange', syncViewportHeight);
-        window.removeEventListener('pageshow', syncViewportHeight);
-        visualViewport?.removeEventListener('resize', syncViewportHeight);
-      };
+    kickStandaloneViewport() {
+      // iOS PWA 冷启动首帧视口偏小/偏移（页面上划一下才自愈），
+      // 启动后做一次 1px 微滚动促使 WKWebView 立即重算视口
+      if (!window.navigator.standalone) return;
+      setTimeout(() => {
+        window.scrollTo(0, 1);
+        window.scrollTo(0, 0);
+      }, 80);
     },
     applySavedDarkMode() {
       const savedDarkMode = localStorage.getItem('neon_dark_mode');

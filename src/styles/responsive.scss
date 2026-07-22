@@ -76,7 +76,6 @@
   .app-container {
     height: 100vh;
     height: 100dvh; // 移动端动态视口，规避地址栏收缩造成的空隙
-    height: var(--app-viewport-height, 100dvh);
   }
 
   .app-header {
