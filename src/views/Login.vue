@@ -173,6 +173,11 @@
 import { login } from '../api/userApi'
 import { getQrKey, checkQrStatus, getNeteaseLoginStatus } from '../api/neteaseUserApi'
 import { setNeteaseLogin, isNeteaseLoggedIn } from '../utils/neteaseAuth'
+import {
+  clearLocalSession,
+  getLocalTokenState,
+  setLocalSession
+} from '../utils/localAuth'
 import QRCode from 'qrcode'
 import BackgroundAnimation from '../components/BackgroundAnimation.vue'
 import LiquidCard from '../components/LiquidCard.vue'
@@ -258,9 +263,8 @@ export default {
       try {
         const res = await login(this.username, this.password)
         if (res.data.code === 200) {
-          localStorage.setItem('auth_token', res.data.data.token)
-          localStorage.setItem('user_info', JSON.stringify(res.data.data.user))
-          this.$router.push('/')
+          setLocalSession(res.data.data.token, res.data.data.user)
+          this.$router.replace(this.safeLoginRedirect('/'))
         } else {
           this.error = res.data.msg || '登录失败'
         }
@@ -285,9 +289,8 @@ export default {
             this.adminError = '该账号没有管理员权限'
             return
           }
-          localStorage.setItem('auth_token', res.data.data.token)
-          localStorage.setItem('user_info', JSON.stringify(res.data.data.user))
-          this.$router.push('/admin')
+          setLocalSession(res.data.data.token, res.data.data.user)
+          this.$router.replace(this.safeLoginRedirect('/admin'))
         } else {
           this.adminError = res.data.msg || '登录失败'
         }
@@ -302,6 +305,18 @@ export default {
       this.adminPassword = ''
       this.adminError = ''
       this.adminLoading = false
+    },
+    safeLoginRedirect(fallback) {
+      const redirect = this.$route.query.redirect
+      if (
+        typeof redirect === 'string' &&
+        redirect.startsWith('/') &&
+        !redirect.startsWith('//') &&
+        !redirect.startsWith('/login')
+      ) {
+        return redirect
+      }
+      return fallback
     },
     // ========== 网易云扫码登录 ==========
     switchMode(mode) {
@@ -439,8 +454,23 @@ export default {
     }
   },
   mounted() {
-    // 如果已登录（自建账号或网易云任一），跳转首页
-    if (localStorage.getItem('auth_token') || isNeteaseLoggedIn()) {
+    const forceAccountLogin = this.$route.query.mode === 'account'
+    if (forceAccountLogin) this.loginMode = 'account'
+    if (
+      forceAccountLogin &&
+      typeof this.$route.query.redirect === 'string' &&
+      this.$route.query.redirect.startsWith('/admin')
+    ) {
+      this.showAdminDialog = true
+    }
+
+    const tokenState = getLocalTokenState()
+    if (tokenState.status === 'expired' || tokenState.status === 'invalid') {
+      clearLocalSession()
+    }
+
+    // 强制重新登录时，即使网易云登录态仍在，也不自动弹回首页。
+    if (!forceAccountLogin && (tokenState.status === 'valid' || isNeteaseLoggedIn())) {
       this.$router.push('/')
       return
     }
@@ -871,5 +901,3 @@ export default {
   }
 }
 </style>
-
-

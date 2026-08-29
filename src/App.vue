@@ -35,6 +35,9 @@ import { mapState } from 'vuex';
 import AppBackgroundLayer from "./components/AppBackgroundLayer.vue";
 import AppMainLayout from "./components/AppMainLayout.vue";
 import LyricDisplay from "./components/LyricDisplay.vue";
+import { refreshLocalSession } from './api/http';
+
+const AUTH_REFRESH_INTERVAL_MS = 12 * 60 * 60 * 1000;
 
 export default {
   components: {
@@ -44,7 +47,8 @@ export default {
   },
   data() {
     return {
-      dateToday: ''
+      dateToday: '',
+      authRefreshTimer: null
     };
   },
   computed: {
@@ -76,8 +80,30 @@ export default {
     this.dateToday = dayjs().format("YYYY,MMM,DD");
     this.applySavedDarkMode();
     this.kickStandaloneViewport();
+    this.startLocalSessionRefresh();
+  },
+  beforeUnmount() {
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+    if (this.authRefreshTimer) clearInterval(this.authRefreshTimer);
   },
   methods: {
+    startLocalSessionRefresh() {
+      document.addEventListener('visibilitychange', this.handleVisibilityChange);
+      this.authRefreshTimer = setInterval(() => {
+        if (document.visibilityState === 'visible') this.silentlyRefreshLocalSession();
+      }, AUTH_REFRESH_INTERVAL_MS);
+    },
+    handleVisibilityChange() {
+      if (document.visibilityState === 'visible') this.silentlyRefreshLocalSession();
+    },
+    silentlyRefreshLocalSession() {
+      refreshLocalSession().catch(error => {
+        // 明确的认证失效由响应拦截器处理；断网/5xx 仅记录，不退出。
+        if (!error.response?.data?.auth_code) {
+          console.warn('Silent session refresh failed:', error)
+        }
+      });
+    },
     kickStandaloneViewport() {
       // iOS PWA 冷启动首帧视口偏小/偏移（页面上划一下才自愈），
       // 启动后做一次 1px 微滚动促使 WKWebView 立即重算视口
